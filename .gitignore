@@ -31,3 +31,5 @@ override.tf.json
 # example: *tfplan*
 
 terraform-provider-zerotier
+
+dist
