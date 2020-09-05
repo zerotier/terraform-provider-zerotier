@@ -120,7 +120,7 @@ func resourceMemberRead(ctx context.Context, d *schema.ResourceData, m interface
 	
 	// Attempt to read from an upstream API
 	nwid, nodeId := resourceNetworkAndNodeIdentifiers(d)
-	member, err := c.GetMember(nwid, nodeId)
+	member, err := c.PollMember(nwid, nodeId)
 
 	// If the resource does not exist, inform Terraform. We want to immediately
 	// return here to prevent further processing.

@@ -316,6 +316,16 @@ func (c *Client) GetMember(nwid string, nodeId string) (*Member, error) {
         return &data, nil
 }
 
+func (c *Client) PollMember(nwid string, nodeId string) (*Member, error) {
+	member, err := c.GetMember(nwid, nodeId)
+
+	if err != nil {
+		return nil, err
+	}
+	
+	return member, nil
+}
+
 func (c *Client) postMember(member *Member, reqName string) (*Member, error) {
         url := fmt.Sprintf(c.HostURL+"/network/%s/member/%s", member.NetworkId, member.NodeId)
 
