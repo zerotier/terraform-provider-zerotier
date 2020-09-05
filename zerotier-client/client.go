@@ -10,6 +10,7 @@ import (
 	"bytes"
 	"time"
 	"errors"
+	"log"
 )
 
 // HostURL - Default Zerotier URL
@@ -318,10 +319,11 @@ func (c *Client) GetMember(nwid string, nodeId string) (*Member, error) {
 
 func (c *Client) PollMember(nwid string, nodeId string) (*Member, error) {
 	member, err := c.GetMember(nwid, nodeId)
-
 	if err != nil {
 		return nil, err
 	}
+
+	log.Printf(member)
 	
 	return member, nil
 }
