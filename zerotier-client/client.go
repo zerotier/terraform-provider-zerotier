@@ -11,7 +11,7 @@ import (
 	"time"
 	"errors"
 
-	"log"
+	// "log"
 	// "context"
 	// "github.com/sethvargo/go-retry"
 	"reflect"
@@ -328,7 +328,7 @@ func (c *Client) PollMember(nwid string, nodeId string) (*Member, error) {
 		return nil, get_err
 	}
 
-	log.Println("SEANDEBUG: ", reflect.TypeOf(member))
+	fmt.Println("SEANDEBUG: ", reflect.TypeOf(member))
 	
 	return member, nil
 }
