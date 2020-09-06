@@ -328,7 +328,7 @@ func (c *Client) PollMember(nwid string, nodeId string) (*Member, error) {
 		return nil, get_err
 	}
 
-	log.Println(reflect.TypeOf(member))
+	log.Println("SEANDEBUG: ", reflect.TypeOf(member))
 	
 	return member, nil
 }
