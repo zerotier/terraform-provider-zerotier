@@ -10,7 +10,11 @@ import (
 	"bytes"
 	"time"
 	"errors"
+
 	"log"
+	// "context"
+	// "github.com/sethvargo/go-retry"
+	"reflect"
 )
 
 // HostURL - Default Zerotier URL
@@ -301,29 +305,30 @@ func (c *Client) GetMember(nwid string, nodeId string) (*Member, error) {
         if err != nil {
                 return nil, err
         }
-	
+
         bytes, err := c.doRequest(req)
         if err != nil {
                 return nil, err
         }
-	
+
         var data Member
 
         err = json.Unmarshal(bytes, &data)
         if err != nil {
                 return nil, err
         }
-	
+
         return &data, nil
 }
 
 func (c *Client) PollMember(nwid string, nodeId string) (*Member, error) {
-	member, err := c.GetMember(nwid, nodeId)
-	if err != nil {
-		return nil, err
+
+	member, get_err := c.GetMember(nwid, nodeId)
+	if get_err != nil {
+		return nil, get_err
 	}
 
-	log.Printf(member)
+	log.Println(reflect.TypeOf(member))
 	
 	return member, nil
 }
@@ -335,24 +340,24 @@ func (c *Client) postMember(member *Member, reqName string) (*Member, error) {
         if err != nil {
                 return nil, err
         }
-	
+
         req, err := http.NewRequest("POST", url, bytes.NewBuffer(j))
         if err != nil {
                 return nil, err
         }
-	
+
         bytes, err := c.doRequest(req)
         if err != nil {
                 return nil, err
         }
-	
+
         var data Member
-	
-        err = json.Unmarshal(bytes, &data)	
+
+        err = json.Unmarshal(bytes, &data)
         if err != nil {
                 return nil, err
         }
-	
+
         return &data, nil
 }
 
@@ -371,7 +376,7 @@ func (c *Client) DeleteMember(member *Member) error {
         if err != nil {
                 return err
         }
-	
+
         _, err = c.doRequest(req)
         return err
 }
