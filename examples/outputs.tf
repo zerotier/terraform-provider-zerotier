@@ -6,9 +6,9 @@
 #   value = zerotier_identity.bob
 # }
 
-output "networks" {
-  value = {
-    for n in zerotier_network.this:
-    n.name => n.id
-  }
-}
+# output "networks" {
+#   value = {
+#     for n in zerotier_network.this:
+#     n.name => n.id
+#   }
+# }

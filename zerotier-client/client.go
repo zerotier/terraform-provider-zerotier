@@ -14,7 +14,7 @@ import (
 	// "log"
 	// "context"
 	// "github.com/sethvargo/go-retry"
-	"reflect"
+	"os"
 )
 
 // HostURL - Default Zerotier URL
@@ -322,15 +322,13 @@ func (c *Client) GetMember(nwid string, nodeId string) (*Member, error) {
 }
 
 func (c *Client) PollMember(nwid string, nodeId string) (*Member, error) {
-
-	member, get_err := c.GetMember(nwid, nodeId)
-	if get_err != nil {
-		return nil, get_err
+	member, err := c.GetMember(nwid, nodeId)
+	if err != nil {
+		return nil, err
 	}
 
-	fmt.Println("SEANDEBUG: ", reflect.TypeOf(member))
 	
-	return member, nil
+        return member, nil
 }
 
 func (c *Client) postMember(member *Member, reqName string) (*Member, error) {

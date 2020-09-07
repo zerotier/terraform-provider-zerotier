@@ -31,12 +31,7 @@ func resourceNetwork() *schema.Resource {
 			"rules_source": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
-				// pulled from ZT's default
-				Default: `drop
-  not ethertype ipv4
-  and not ethertype arp
-  and not ethertype ipv6
-;`,
+				Default: "#\n# Allow only IPv4, IPv4 ARP, and IPv6 Ethernet frames.\n#\ndrop\n\tnot ethertype ipv4\n\tand not ethertype arp\n\tand not ethertype ipv6\n;\n\n#\n# Uncomment to drop non-ZeroTier issued and managed IP addresses.\n#\n# This prevents IP spoofing but also blocks manual IP management at the OS level and\n# bridging unless special rules to exempt certain hosts or traffic are added before\n# this rule.\n#\n#drop\n#\tnot chr ipauth\n#;\n\n# Accept anything else. This is required since default is 'drop'.\naccept;",
 				Set:     stringHash,
 			},
 			"private": &schema.Schema{
