@@ -20,15 +20,15 @@ provider "zerotier" {}
 variable "networks" {
   type = map
   default  = {
-    occams_router2 = {
+    occams_router = {
       ipv4_cidr = "10.0.1.0/24"
       ipv6_cidr = "fc19:c8b9:01/80"
     }
-    schrödingers_nat2 = {
+    schrödingers_nat = {
       ipv4_cidr = "10.0.2.0/24"
       ipv6_cidr = "fc19:c8b9:02/80"
     }
-    silence_of_the_lan2  = {
+    silence_of_the_lan  = {
       ipv4_cidr = "10.0.3.0/24"
       ipv6_cidr = "fc19:c8b9:03/80"
     }

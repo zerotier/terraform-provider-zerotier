@@ -31,8 +31,8 @@ func resourceNetwork() *schema.Resource {
 			"rules_source": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
-				Default: "#\n# Allow only IPv4, IPv4 ARP, and IPv6 Ethernet frames.\n#\ndrop\n\tnot ethertype ipv4\n\tand not ethertype arp\n\tand not ethertype ipv6\n;\n\n#\n# Uncomment to drop non-ZeroTier issued and managed IP addresses.\n#\n# This prevents IP spoofing but also blocks manual IP management at the OS level and\n# bridging unless special rules to exempt certain hosts or traffic are added before\n# this rule.\n#\n#drop\n#\tnot chr ipauth\n#;\n\n# Accept anything else. This is required since default is 'drop'.\naccept;",
 				Set:     stringHash,
+				Default: "#\n# This is a default rule set that allows IPv4 and IPv6 traffic but otherwise\n# behaves like a standard Ethernet switch.\n#\n# Please keep in mind that ZeroTier versions prior to 1.2.0 do NOT support advanced\n# network rules.\n#\n# Since both senders and receivers enforce rules, you will get the following\n# behavior in a network with both old and new versions:\n#\n# (old: 1.1.14 and older, new: 1.2.0 and newer)\n#\n# old <--> old: No rules are honored.\n# old <--> new: Rules work but are only enforced by new side. Tags will NOT work, and\n#               capabilities will only work if assigned to the new side.\n# new <--> new: Full rules engine support including tags and capabilities.\n#\n# We recommend upgrading all your devices to 1.2.0 as soon as convenient. Version\n# 1.2.0 also includes a significantly improved software update mechanism that is\n# turned on by default on Mac and Windows. (Linux and mobile are typically kept up\n# to date using package/app management.)\n#\n\n#\n# Allow only IPv4, IPv4 ARP, and IPv6 Ethernet frames.\n#\ndrop\n\tnot ethertype ipv4\n\tand not ethertype arp\n\tand not ethertype ipv6\n;\n\n#\n# Uncomment to drop non-ZeroTier issued and managed IP addresses.\n#\n# This prevents IP spoofing but also blocks manual IP management at the OS level and\n# bridging unless special rules to exempt certain hosts or traffic are added before\n# this rule.\n#\n#drop\n#\tnot chr ipauth\n#;\n\n# Accept anything else. This is required since default is 'drop'.\naccept;\n",
 			},
 			"private": &schema.Schema{
 				Type:     schema.TypeBool,
@@ -146,30 +146,47 @@ func resourceNetworkCreate(ctx context.Context, d *schema.ResourceData, m interf
 func resourceNetworkRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := m.(*zt.Client)
 
-	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
-	net, err := c.GetNetwork(d.Id())
+	zerotier_network, err := c.GetNetwork(d.Id())
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	if net == nil {
+	if zerotier_network == nil {
 		d.SetId("")
 		return nil
 	}
 
-	d.Set("name", net.Config.Name)
-	d.Set("description", net.Description)
-	d.Set("private", net.Config.Private)
-	d.Set("auto_assign_v4", net.Config.V4AssignMode.ZT)
-	d.Set("rules_source", net.RulesSource)
+	// why only these?
+	d.Set("name", zerotier_network.Config.Name)
+	d.Set("description", zerotier_network.Description)
+	d.Set("private", zerotier_network.Config.Private)
+	d.Set("auto_assign_v4", zerotier_network.Config.V4AssignMode.ZT)
+	d.Set("rules_source", zerotier_network.RulesSource)
 
-	setRoutes(d, net)
-        setAssignmentPools(d, net)
-
+	// why with function??
+	setRoutes(d, zerotier_network)
+        setAssignmentPools(d, zerotier_network)
 	return diags
 }
+
+func setRoutes(d *schema.ResourceData, n *zt.Network) {
+
+        routes := make([]interface{}, len(n.Config.Routes))
+
+        for i, route := range n.Config.Routes {
+                raw := make(map[string]interface{})
+
+                raw["target"] = route.Target
+                if route.Via != nil {
+                        raw["via"] = *route.Via
+                }
+                routes[i] = raw
+        }
+        d.Set("route", routes)
+}
+
 
 func resourceNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := m.(*zt.Client)
@@ -210,6 +227,8 @@ func resourceNetworkDelete(ctx context.Context, d *schema.ResourceData, m interf
 }
 
 func fromResourceData(d *schema.ResourceData) (*zt.Network, error) {
+
+	
         routesRaw := d.Get("route").([]interface{})
         var routes []zt.Route
         for _, raw := range routesRaw {
@@ -220,6 +239,7 @@ func fromResourceData(d *schema.ResourceData) (*zt.Network, error) {
                         Via:    &via,
                 })
         }
+	
         var pools []zt.IpRange
         for _, raw := range d.Get("assignment_pool").(*schema.Set).List() {
                 r := raw.(map[string]interface{})
@@ -234,6 +254,7 @@ func fromResourceData(d *schema.ResourceData) (*zt.Network, error) {
                         Last:  last.String(),
                 })
         }
+	
         n := &zt.Network{
                 Id:          d.Id(),
                 RulesSource: d.Get("rules_source").(string),
@@ -313,15 +334,3 @@ func diffSuppress(k, old, new string, d *schema.ResourceData) bool {
         return old == new
 }
 
-func setRoutes(d *schema.ResourceData, n *zt.Network) {
-        rawRoutes := make([]interface{}, len(n.Config.Routes))
-        for i, r := range n.Config.Routes {
-                raw := make(map[string]interface{})
-                raw["target"] = r.Target
-                if r.Via != nil {
-                        raw["via"] = *r.Via
-                }
-                rawRoutes[i] = raw
-        }
-        d.Set("route", rawRoutes)
-}

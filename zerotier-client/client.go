@@ -14,7 +14,6 @@ import (
 	// "log"
 	// "context"
 	// "github.com/sethvargo/go-retry"
-	"os"
 )
 
 // HostURL - Default Zerotier URL
@@ -326,9 +325,7 @@ func (c *Client) PollMember(nwid string, nodeId string) (*Member, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	
-        return member, nil
+	return member, nil
 }
 
 func (c *Client) postMember(member *Member, reqName string) (*Member, error) {
