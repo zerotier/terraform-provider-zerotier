@@ -165,8 +165,10 @@ func resourceNetworkRead(ctx context.Context, d *schema.ResourceData, m interfac
 	d.Set("rules_source", zerotier_network.RulesSource)
 
 	// do I need these in 13?
-	setRoutes(d, zerotier_network)
-        setAssignmentPools(d, zerotier_network)
+	// setRoutes(d, zerotier_network)
+        // setAssignmentPools(d, zerotier_network)
+	d.Set("route", zerotier_network.Config.Routes)
+	d.Set("assignment_pool", zerotier_network.Config.IpAssignmentPools)
 	return diags
 }
 

@@ -2,21 +2,21 @@ package zerotier
 
 import (
 	"fmt"
-	//	"strconv"
-	"context"
+	"strconv"
 	"strings"
+	"context"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	zt "github.com/someara/terraform-provider-zerotier/zerotier-client"
 )
-
+x
 func resourceMember() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: memberCreate,
-		ReadContext:   memberRead,
-		UpdateContext: memberUpdate,
-		DeleteContext: memberDelete,
+		CreateContext: resourceMemberCreate,
+		ReadContext:   resourceMemberRead,
+		UpdateContext: resourceMemberUpdate,
+		DeleteContext: resourceMemberDelete,
 		Schema: map[string]*schema.Schema{
 			"network_id": {
 				Type:     schema.TypeString,
@@ -35,32 +35,32 @@ func resourceMember() *schema.Resource {
 			"description": {
 				Type:     schema.TypeString,
 				Optional: true,
-				Default:  "Managed by Terraform",
+			Default:  "Managed by Terraform",
 			},
 			"hidden": {
 				Type:     schema.TypeBool,
 				Optional: true,
-				Default:  false,
+			Default:  false,
 			},
 			"offline_notify_delay": {
 				Type:     schema.TypeInt,
 				Optional: true,
-				Default:  0,
+			Default:  0,
 			},
 			"authorized": {
 				Type:     schema.TypeBool,
 				Optional: true,
-				Default:  true,
+			Default:  true,
 			},
 			"allow_ethernet_bridging": {
 				Type:     schema.TypeBool,
 				Optional: true,
-				Default:  false,
+			Default:  false,
 			},
 			"no_auto_assign_ips": {
 				Type:     schema.TypeBool,
 				Optional: true,
-				Default:  false,
+			Default:  false,
 			},
 			"ip_assignments": {
 				Type:     schema.TypeList,
@@ -76,6 +76,13 @@ func resourceMember() *schema.Resource {
 					Type: schema.TypeInt,
 				},
 			},
+			"tags": {
+				Type:     schema.TypeMap,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeInt,
+				},
+			},
 		},
 	}
 }
@@ -84,65 +91,29 @@ func resourceMember() *schema.Resource {
 // CRUD
 //
 
-func memberCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceMemberCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := m.(*zt.Client)
-	var diags diag.Diagnostics
+        var diags diag.Diagnostics
 
-	member, err := memberInit(d)
+	member, err := memberFromResourceData(d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	cm, err := c.CreateMember(member)
+	
+	m, err := c.CreateMember(member)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	d.SetId(cm.Id)
-	setTags(d, cm)
+	
+	d.SetId(strconv.Itoa(m.ID))
+	setTags(d, new)
 	return diags
 }
 
-//
-// YOU ARE HERE
-//
-
-func memberInit(d *schema.ResourceData) (*zt.Member, error) {
-	capsRaw := d.Get("capabilities").([]interface{})
-	caps := make([]int, len(capsRaw))
-	for i := range capsRaw {
-		caps[i] = capsRaw[i].(int)
-	}
-
-	ipsRaw := d.Get("ip_assignments").([]interface{})
-	ips := make([]string, len(ipsRaw))
-	for i := range ipsRaw {
-		ips[i] = ipsRaw[i].(string)
-	}
-
-	n := &zt.Member{
-		Id:                 d.Id(),
-		NetworkId:          d.Get("network_id").(string),
-		NodeId:             d.Get("node_id").(string),
-		Hidden:             d.Get("hidden").(bool),
-		OfflineNotifyDelay: d.Get("offline_notify_delay").(int),
-		Name:               d.Get("name").(string),
-		Description:        d.Get("description").(string),
-		Config: &zt.MemberConfig{
-			Authorized:      d.Get("authorized").(bool),
-			ActiveBridge:    d.Get("allow_ethernet_bridging").(bool),
-			NoAutoAssignIps: d.Get("no_auto_assign_ips").(bool),
-			Capabilities:    caps,
-			IpAssignments:   ips,
-		},
-	}
-	return n, nil
-}
-
-func memberRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceMemberRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := m.(*zt.Client)
-	var diags diag.Diagnostics
-
+        var diags diag.Diagnostics
+	
 	zerotier_network_id, zerotier_node_id := resourceNetworkAndNodeIdentifiers(d)
 	member, err := c.PollMember(zerotier_network_id, zerotier_node_id)
 	if err != nil {
@@ -171,37 +142,37 @@ func memberRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag
 	return diags
 }
 
-func memberUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceMemberUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := m.(*zt.Client)
 
-	// Warning or errors can be collected in a slice type
-	var diags diag.Diagnostics
-
-	stored, err := memberInit(d)
+        // Warning or errors can be collected in a slice type
+        var diags diag.Diagnostics
+	
+	stored, err := memberFromResourceData(d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
+	
 	updated, err := c.UpdateMember(stored)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
+	
 	setTags(d, updated)
 	return diags
 }
 
-func memberDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceMemberDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := m.(*zt.Client)
 
 	// Warning or errors can be collected in a slice type
-	var diags diag.Diagnostics
-
-	member, err := memberInit(d)
+        var diags diag.Diagnostics
+	
+	member, err := memberFromResourceData(d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
+	
 	err = c.DeleteMember(member)
 	return diags
 }
@@ -213,6 +184,50 @@ func setTags(d *schema.ResourceData, member *zt.Member) {
 		val := tuple[1]
 		rawTags[key] = val
 	}
+}
+
+func memberFromResourceData(d *schema.ResourceData) (*zt.Member, error) {
+	tags := d.Get("tags").(map[string]interface{})
+	tagTuples := [][]int{}
+
+	for key, val := range tags {
+		i, err := strconv.Atoi(key)
+		if err != nil {
+			break
+		}
+		tagTuples = append(tagTuples, []int{i, val.(int)})
+	}
+
+	capsRaw := d.Get("capabilities").([]interface{})
+	caps := make([]int, len(capsRaw))
+	for i := range capsRaw {
+		caps[i] = capsRaw[i].(int)
+	}
+	
+	ipsRaw := d.Get("ip_assignments").([]interface{})
+	ips := make([]string, len(ipsRaw))
+	for i := range ipsRaw {
+		ips[i] = ipsRaw[i].(string)
+	}
+	
+	n := &zt.Member{
+		Id:                 d.Id(),
+		NetworkId:          d.Get("network_id").(string),
+		NodeId:             d.Get("node_id").(string),
+		Hidden:             d.Get("hidden").(bool),
+		OfflineNotifyDelay: d.Get("offline_notify_delay").(int),
+		Name:               d.Get("name").(string),
+		Description:        d.Get("description").(string),
+		Config: &zt.MemberConfig{
+			Authorized:      d.Get("authorized").(bool),
+			ActiveBridge:    d.Get("allow_ethernet_bridging").(bool),
+			NoAutoAssignIps: d.Get("no_auto_assign_ips").(bool),
+			Capabilities:    caps,
+			Tags:            tagTuples,
+			IpAssignments:   ips,
+		},
+	}
+	return n, nil
 }
 
 // Extracts the Network ID and Node ID from the resource definition, or from the id during import

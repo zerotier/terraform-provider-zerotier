@@ -72,3 +72,9 @@ resource "zerotier_member" "bob" {
   node_id    = zerotier_identity.bob.id
   network_id = zerotier_network.bob.id
 }
+
+resource "zerotier_member" "sean" {
+  name       = "sean"
+  node_id    = "eff05def90"
+  network_id = zerotier_network.bob.id
+}
