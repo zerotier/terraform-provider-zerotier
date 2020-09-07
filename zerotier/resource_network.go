@@ -26,23 +26,23 @@ func resourceNetwork() *schema.Resource {
 			"description": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
-				Default:  "Managed by Terraform",
+			Default:  "Managed by Terraform",
 			},
 			"rules_source": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
 				Set:     stringHash,
-				Default: "#\n# This is a default rule set that allows IPv4 and IPv6 traffic but otherwise\n# behaves like a standard Ethernet switch.\n#\n# Please keep in mind that ZeroTier versions prior to 1.2.0 do NOT support advanced\n# network rules.\n#\n# Since both senders and receivers enforce rules, you will get the following\n# behavior in a network with both old and new versions:\n#\n# (old: 1.1.14 and older, new: 1.2.0 and newer)\n#\n# old <--> old: No rules are honored.\n# old <--> new: Rules work but are only enforced by new side. Tags will NOT work, and\n#               capabilities will only work if assigned to the new side.\n# new <--> new: Full rules engine support including tags and capabilities.\n#\n# We recommend upgrading all your devices to 1.2.0 as soon as convenient. Version\n# 1.2.0 also includes a significantly improved software update mechanism that is\n# turned on by default on Mac and Windows. (Linux and mobile are typically kept up\n# to date using package/app management.)\n#\n\n#\n# Allow only IPv4, IPv4 ARP, and IPv6 Ethernet frames.\n#\ndrop\n\tnot ethertype ipv4\n\tand not ethertype arp\n\tand not ethertype ipv6\n;\n\n#\n# Uncomment to drop non-ZeroTier issued and managed IP addresses.\n#\n# This prevents IP spoofing but also blocks manual IP management at the OS level and\n# bridging unless special rules to exempt certain hosts or traffic are added before\n# this rule.\n#\n#drop\n#\tnot chr ipauth\n#;\n\n# Accept anything else. This is required since default is 'drop'.\naccept;\n",
+			Default: "#\n# This is a default rule set that allows IPv4 and IPv6 traffic but otherwise\n# behaves like a standard Ethernet switch.\n#\n# Please keep in mind that ZeroTier versions prior to 1.2.0 do NOT support advanced\n# network rules.\n#\n# Since both senders and receivers enforce rules, you will get the following\n# behavior in a network with both old and new versions:\n#\n# (old: 1.1.14 and older, new: 1.2.0 and newer)\n#\n# old <--> old: No rules are honored.\n# old <--> new: Rules work but are only enforced by new side. Tags will NOT work, and\n#               capabilities will only work if assigned to the new side.\n# new <--> new: Full rules engine support including tags and capabilities.\n#\n# We recommend upgrading all your devices to 1.2.0 as soon as convenient. Version\n# 1.2.0 also includes a significantly improved software update mechanism that is\n# turned on by default on Mac and Windows. (Linux and mobile are typically kept up\n# to date using package/app management.)\n#\n\n#\n# Allow only IPv4, IPv4 ARP, and IPv6 Ethernet frames.\n#\ndrop\n\tnot ethertype ipv4\n\tand not ethertype arp\n\tand not ethertype ipv6\n;\n\n#\n# Uncomment to drop non-ZeroTier issued and managed IP addresses.\n#\n# This prevents IP spoofing but also blocks manual IP management at the OS level and\n# bridging unless special rules to exempt certain hosts or traffic are added before\n# this rule.\n#\n#drop\n#\tnot chr ipauth\n#;\n\n# Accept anything else. This is required since default is 'drop'.\naccept;\n",
 			},
 			"private": &schema.Schema{
 				Type:     schema.TypeBool,
 				Optional: true,
-				Default:  true,
+			Default:  true,
 			},
 			"auto_assign_v4": &schema.Schema{
 				Type:     schema.TypeBool,
 				Optional: true,
-				Default:  true,
+			Default:  true,
 			},
 			"route": &schema.Schema{
 				Type:     schema.TypeList,
@@ -158,31 +158,41 @@ func resourceNetworkRead(ctx context.Context, d *schema.ResourceData, m interfac
 		return nil
 	}
 
-	// why only these?
 	d.Set("name", zerotier_network.Config.Name)
 	d.Set("description", zerotier_network.Description)
 	d.Set("private", zerotier_network.Config.Private)
 	d.Set("auto_assign_v4", zerotier_network.Config.V4AssignMode.ZT)
 	d.Set("rules_source", zerotier_network.RulesSource)
 
-	// why with function??
 	setRoutes(d, zerotier_network)
         setAssignmentPools(d, zerotier_network)
 	return diags
 }
 
-func setRoutes(d *schema.ResourceData, n *zt.Network) {
+func setAssignmentPools(d *schema.ResourceData, n *zt.Network) {
+	pools := &schema.Set{F: resourceIpAssignmentHash}
 
+        for _, p := range n.Config.IpAssignmentPools {
+                pool := make(map[string]interface{})
+                // pool["cidr"] = SmallestCIDR(net.ParseIP(p.First), net.ParseIP(p.Last))
+                pool["first"] = p.First
+                pool["last"] = p.Last
+		pools.Add(pool)
+        }
+        d.Set("assignment_pool",pools)
+}
+
+func setRoutes(d *schema.ResourceData, n *zt.Network) {
         routes := make([]interface{}, len(n.Config.Routes))
 
-        for i, route := range n.Config.Routes {
-                raw := make(map[string]interface{})
+        for i, r := range n.Config.Routes {
+                route := make(map[string]interface{})
 
-                raw["target"] = route.Target
-                if route.Via != nil {
-                        raw["via"] = *route.Via
+                route["target"] = r.Target
+                if r.Via != nil {
+                        route["via"] = *r.Via
                 }
-                routes[i] = raw
+                routes[i] = route
         }
         d.Set("route", routes)
 }
@@ -270,17 +280,6 @@ func fromResourceData(d *schema.ResourceData) (*zt.Network, error) {
         return n, nil
 }
 
-func setAssignmentPools(d *schema.ResourceData, n *zt.Network) {
-        rawPools := &schema.Set{F: resourceIpAssignmentHash}
-        for _, p := range n.Config.IpAssignmentPools {
-                raw := make(map[string]interface{})
-                // raw["cidr"] = SmallestCIDR(net.ParseIP(p.First), net.ParseIP(p.Last))
-                raw["first"] = p.First
-                raw["last"] = p.Last
-                rawPools.Add(raw)
-        }
-        d.Set("assignment_pool", rawPools)
-}
 
 func resourceIpAssignmentHash(v interface{}) int {
         return hashcode.String(resourceIpAssignmentState(v))
