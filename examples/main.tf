@@ -36,27 +36,39 @@ variable "networks" {
 }
 
 #
-# Networks
+# Alice
 #
 
-resource "zerotier_network" "this" {
+resource "zerotier_network" "alice" {
   for_each = var.networks
   name = each.key
   assignment_pool { cidr = each.value.ipv4_cidr }
   route { target = each.value.ipv4_cidr }
 }
 
-
-#
-# Identity
-#
-
 resource "zerotier_identity" "alice" {}
 
-
 resource "zerotier_member" "alice" {
-  for_each   = zerotier_network.this
+  for_each   = zerotier_network.alice
   name       = "${each.key}-alice"
   node_id    = zerotier_identity.alice.id
   network_id = each.value.id
+}
+
+#
+# Bob
+#
+
+resource "zerotier_network" "bob" {
+  name = "bobs_garage"
+  assignment_pool { cidr = "192.168.1.0/24" }
+  route { target = "192.168.1.0/24" }
+}
+
+resource "zerotier_identity" "bob" {}
+
+resource "zerotier_member" "bob" {
+  name       = "bob"
+  node_id    = zerotier_identity.bob.id
+  network_id = zerotier_network.bob.id
 }
