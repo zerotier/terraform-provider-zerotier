@@ -174,7 +174,6 @@ func setAssignmentPools(d *schema.ResourceData, n *zt.Network) {
 
         for _, p := range n.Config.IpAssignmentPools {
                 pool := make(map[string]interface{})
-                // pool["cidr"] = SmallestCIDR(net.ParseIP(p.First), net.ParseIP(p.Last))
                 pool["first"] = p.First
                 pool["last"] = p.Last
 		pools.Add(pool)
@@ -187,7 +186,6 @@ func setRoutes(d *schema.ResourceData, n *zt.Network) {
 
         for i, r := range n.Config.Routes {
                 route := make(map[string]interface{})
-
                 route["target"] = r.Target
                 if r.Via != nil {
                         route["via"] = *r.Via
