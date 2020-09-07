@@ -164,6 +164,7 @@ func resourceNetworkRead(ctx context.Context, d *schema.ResourceData, m interfac
 	d.Set("auto_assign_v4", zerotier_network.Config.V4AssignMode.ZT)
 	d.Set("rules_source", zerotier_network.RulesSource)
 
+	// do I need these in 13?
 	setRoutes(d, zerotier_network)
         setAssignmentPools(d, zerotier_network)
 	return diags
