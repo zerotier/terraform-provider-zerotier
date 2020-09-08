@@ -222,7 +222,7 @@ func resourceNetworkAndNodeIdentifiers(d *schema.ResourceData) (string, string) 
 // coerce things
 //
 
-func toStringList(d *schema.ResourceData, attr string) []string {	
+func toStringList(d *schema.ResourceData, attr string) []string {
 	raw := d.Get(attr).([]interface{})
 	ray := make([]string, len(raw))
 	for i := range raw {

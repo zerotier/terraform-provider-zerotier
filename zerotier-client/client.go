@@ -49,18 +49,18 @@ type Member struct {
 }
 
 type MemberConfig struct {
-	Authorized      bool     `json:"authorized"`
-	Capabilities    []int    `json:"capabilities"`
-	Tags            [][]int  `json:"tags"`
-	ActiveBridge    bool     `json:"activeBridge"`
-	NoAutoAssignIps bool     `json:"noAutoAssignIps"`
-	IpAssignments   []string `json:"ipAssignments"`
-	CreationTime       int `json:"creationTime"`
-	LastAuthorizedTime int `json:"lastAuthorizedTime"`
-	VMajor             int `json:"vMajor"`
-	VMinor             int `json:"vMinor"`
-	VRev               int `json:"vRev"`
-	VProto             int `json:"vProto"`
+	Authorized         bool     `json:"authorized"`
+	Capabilities       []int    `json:"capabilities"`
+	Tags               [][]int  `json:"tags"`
+	ActiveBridge       bool     `json:"activeBridge"`
+	NoAutoAssignIps    bool     `json:"noAutoAssignIps"`
+	IpAssignments      []string `json:"ipAssignments"`
+	CreationTime       int      `json:"creationTime"`
+	LastAuthorizedTime int      `json:"lastAuthorizedTime"`
+	VMajor             int      `json:"vMajor"`
+	VMinor             int      `json:"vMinor"`
+	VRev               int      `json:"vRev"`
+	VProto             int      `json:"vProto"`
 }
 
 type Network struct {
