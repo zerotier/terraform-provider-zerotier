@@ -31,8 +31,7 @@ func resourceNetwork() *schema.Resource {
 			"rules_source": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
-				Set:      stringHash,
-				Default:  "#\n# This is a default rule set that allows IPv4 and IPv6 traffic but otherwise\n# behaves like a standard Ethernet switch.\n#\n# Please keep in mind that ZeroTier versions prior to 1.2.0 do NOT support advanced\n# network rules.\n#\n# Since both senders and receivers enforce rules, you will get the following\n# behavior in a network with both old and new versions:\n#\n# (old: 1.1.14 and older, new: 1.2.0 and newer)\n#\n# old <--> old: No rules are honored.\n# old <--> new: Rules work but are only enforced by new side. Tags will NOT work, and\n#               capabilities will only work if assigned to the new side.\n# new <--> new: Full rules engine support including tags and capabilities.\n#\n# We recommend upgrading all your devices to 1.2.0 as soon as convenient. Version\n# 1.2.0 also includes a significantly improved software update mechanism that is\n# turned on by default on Mac and Windows. (Linux and mobile are typically kept up\n# to date using package/app management.)\n#\n\n#\n# Allow only IPv4, IPv4 ARP, and IPv6 Ethernet frames.\n#\ndrop\n\tnot ethertype ipv4\n\tand not ethertype arp\n\tand not ethertype ipv6\n;\n\n#\n# Uncomment to drop non-ZeroTier issued and managed IP addresses.\n#\n# This prevents IP spoofing but also blocks manual IP management at the OS level and\n# bridging unless special rules to exempt certain hosts or traffic are added before\n# this rule.\n#\n#drop\n#\tnot chr ipauth\n#;\n\n# Accept anything else. This is required since default is 'drop'.\naccept;\n",
+				Computed: true,
 			},
 			"private": &schema.Schema{
 				Type:     schema.TypeBool,
@@ -57,17 +56,14 @@ func resourceNetwork() *schema.Resource {
 						"cidr": &schema.Schema{
 							Type:     schema.TypeString,
 							Optional: true,
-							// ConflictsWith: []string{"assignment_pool.first", "assignment_pool.last"},
 						},
 						"first": &schema.Schema{
 							Type:     schema.TypeString,
 							Optional: true,
-							//							ConflictsWith: []string{"assignment_pool.cidr"},
 						},
 						"last": &schema.Schema{
 							Type:     schema.TypeString,
 							Optional: true,
-							// ConflictsWith: []string{"assignment_pool.cidr"},
 						},
 					},
 				},
