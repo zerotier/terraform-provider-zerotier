@@ -55,9 +55,6 @@ type MemberConfig struct {
 	ActiveBridge    bool     `json:"activeBridge"`
 	NoAutoAssignIps bool     `json:"noAutoAssignIps"`
 	IpAssignments   []string `json:"ipAssignments"`
-}
-
-type MemberConfigReadOnly struct {
 	CreationTime       int `json:"creationTime"`
 	LastAuthorizedTime int `json:"lastAuthorizedTime"`
 	VMajor             int `json:"vMajor"`
@@ -96,9 +93,6 @@ type NetworkConfig struct {
 	Rules             []IRule            `json:"rules"`
 	Tags              []Tag              `json:"tags"`
 	V4AssignMode      V4AssignModeConfig `json:"v4AssignMode"`
-}
-
-type NetworkReadOnly struct {
 }
 
 type Capability struct {

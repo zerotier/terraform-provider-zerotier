@@ -77,4 +77,5 @@ resource "zerotier_member" "sean" {
   name       = "sean"
   node_id    = "eff05def90"
   network_id = zerotier_network.bob.id
+  ip_assignments = [ "192.168.1.42", "192.168.1.69" ]
 }
