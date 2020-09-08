@@ -1,19 +1,15 @@
 package zerotier
 
 import (
+	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net"
 	"net/http"
 	"strings"
-	"bytes"
 	"time"
-	"errors"
-
-	// "log"
-	// "context"
-	// "github.com/sethvargo/go-retry"
 )
 
 // HostURL - Default Zerotier URL
@@ -28,15 +24,13 @@ type Client struct {
 }
 
 type Route struct {
-	// cidr
-	Target string `json:"target"`
-	// nil if handled by 's 'LAN'
-	Via *string `json:"via"`
+	Target string  `json:"target"`
+	Via    *string `json:"via"`
 }
 
 type IpRange struct {
-	First string `json:"ipRangeStart"`
-	Last  string `json:"ipRangeEnd"`
+	Start string `json:"ipRangeStart"`
+	End   string `json:"ipRangeEnd"`
 }
 
 type V4AssignModeConfig struct {
@@ -47,7 +41,7 @@ type Member struct {
 	Id                 string        `json:"id"`
 	NetworkId          string        `json:"networkId"`
 	NodeId             string        `json:"nodeId"`
-	OfflineNotifyDelay int           `json:"offlineNotifyDelay"` // milliseconds
+	OfflineNotifyDelay int           `json:"offlineNotifyDelay"`
 	Name               string        `json:"name"`
 	Description        string        `json:"description"`
 	Hidden             bool          `json:"hidden"`
@@ -57,7 +51,7 @@ type Member struct {
 type MemberConfig struct {
 	Authorized      bool     `json:"authorized"`
 	Capabilities    []int    `json:"capabilities"`
-	Tags            [][]int  `json:"tags"` // array of [tag id, value] tuples
+	Tags            [][]int  `json:"tags"`
 	ActiveBridge    bool     `json:"activeBridge"`
 	NoAutoAssignIps bool     `json:"noAutoAssignIps"`
 	IpAssignments   []string `json:"ipAssignments"`
@@ -72,54 +66,39 @@ type MemberConfigReadOnly struct {
 	VProto             int `json:"vProto"`
 }
 
-type NetworkConfig struct {
-	Name              string             `json:"name"`
-	Private           bool               `json:"private"`
-	Routes            []Route            `json:"routes"`
-	IpAssignmentPools []IpRange          `json:"ipAssignmentPools"`
-	V4AssignMode      V4AssignModeConfig `json:"v4AssignMode"`
-}
-
-type NetworkConfigReadOnly struct {
-	NetworkConfig
-
-	// if you include these three in a POST request, Central won't compile RulesSource for you
-	// so, we only want them when reading from the API
-	// this struct lets you do that
-	Tags         []Tag        `json:"tags"`
-	Rules        []IRule      `json:"rules"`
-	Capabilities []Capability `json:"capabilities"`
-
-	CreationTime int64 `json:"creationTime"`
-	LastModified int64 `json:"lastModified"`
-	Revision     int   `json:"revision"`
-}
-
-type NetworkReadOnly struct {
-	Id                 string                 `json:"id"`
-	Description        string                 `json:"description"`
-	RulesSource        string                 `json:"rulesSource"`
-	Config             *NetworkConfigReadOnly `json:"config"`
-	TagsByName         map[string]TagByName   `json:"tagsByName"`
-	CapabilitiesByName map[string]int         `json:"capabilitiesByName"`
-}
-
 type Network struct {
-	//
-	Id                    string                 `json:"id"`
-	Type                  string                 `json:"type"`
+	AuthorizedMemberCount int                    `json:"authorizedMemberCount"`
+	CapabilitiesByName    map[string]interface{} `json:"capabilitiesByName"`
 	Clock                 int                    `json:"clock"`
 	Config                *NetworkConfig         `json:"config"`
 	Description           string                 `json:"description"`
-	RulesSource           string                 `json:"rulesSource"`
-	Permissions           map[string]interface{} `json:"permissions"`
-	OwnerId               string                 `json:"ownerId"`
+	Id                    string                 `json:"id"`
 	OnlineMemberCount     int                    `json:"onlineMemberCount"`
-	AuthorizedMemberCount int                    `json:"authorizedMemberCount"`
-	TotalMemberCount      int                    `json:"totalMemberCount"`
-	CapabilitiesByName    map[string]interface{} `json:"capabilitiesByName"`
+	OwnerId               string                 `json:"ownerId"`
+	Permissions           map[string]interface{} `json:"permissions"`
+	RulesSource           string                 `json:"rulesSource"`
+	Tags                  map[string]interface{} `json:"tags"`
 	TagsByName            map[string]interface{} `json:"tagsByName"`
+	TotalMemberCount      int                    `json:"totalMemberCount"`
+	Type                  string                 `json:"type"`
 	Ui                    map[string]interface{} `json:"ui"`
+}
+
+type NetworkConfig struct {
+	Capabilities      []Capability       `json:"capabilities"`
+	CreationTime      int64              `json:"creationTime"`
+	IpAssignmentPools []IpRange          `json:"ipAssignmentPools"`
+	LastModified      int64              `json:"lastModified"`
+	Name              string             `json:"name"`
+	Private           bool               `json:"private"`
+	Revision          int                `json:"revision"`
+	Routes            []Route            `json:"routes"`
+	Rules             []IRule            `json:"rules"`
+	Tags              []Tag              `json:"tags"`
+	V4AssignMode      V4AssignModeConfig `json:"v4AssignMode"`
+}
+
+type NetworkReadOnly struct {
 }
 
 type Capability struct {
@@ -144,7 +123,6 @@ type TagByName struct {
 	Flags map[string]int `json:"flags"`
 }
 
-// NewClient -
 func NewClient(zerotier_controller_url, zerotier_controller_token *string) (*Client, error) {
 	c := Client{
 		HTTPClient: &http.Client{Timeout: 10 * time.Second},

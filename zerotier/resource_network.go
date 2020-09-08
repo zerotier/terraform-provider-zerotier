@@ -2,11 +2,8 @@ package zerotier
 
 import (
 	"context"
-	"fmt"
 	"net"
-	"bytes"
 
-	"github.com/hashicorp/terraform-plugin-sdk/helper/hashcode"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	zt "github.com/someara/terraform-provider-zerotier/zerotier-client"
@@ -46,7 +43,18 @@ func resourceNetwork() *schema.Resource {
 			"route": &schema.Schema{
 				Type:     schema.TypeList,
 				Optional: true,
-				Elem:     route(),
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"target": &schema.Schema{
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"via": &schema.Schema{
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+					},
+				},
 			},
 			"assignment_pool": &schema.Schema{
 				Type:     schema.TypeSet,
@@ -57,17 +65,18 @@ func resourceNetwork() *schema.Resource {
 							Type:     schema.TypeString,
 							Optional: true,
 						},
-						"first": &schema.Schema{
+						"ip_range_start": &schema.Schema{
 							Type:     schema.TypeString,
 							Optional: true,
+							Computed: true,
 						},
-						"last": &schema.Schema{
+						"ip_range_end": &schema.Schema{
 							Type:     schema.TypeString,
 							Optional: true,
+							Computed: true,
 						},
 					},
 				},
-				Set: resourceIpAssignmentHash,
 			},
 			"v4_assign_mode": &schema.Schema{
 				Type:     schema.TypeSet,
@@ -120,8 +129,6 @@ func resourceNetwork() *schema.Resource {
 
 func resourceNetworkCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := m.(*zt.Client)
-
-	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
 	n, err := fromResourceData(d)
@@ -135,7 +142,6 @@ func resourceNetworkCreate(ctx context.Context, d *schema.ResourceData, m interf
 	}
 
 	d.SetId(created.Id)
-	setAssignmentPools(d, created)
 	return diags
 }
 
@@ -160,35 +166,9 @@ func resourceNetworkRead(ctx context.Context, d *schema.ResourceData, m interfac
 	d.Set("auto_assign_v4", zerotier_network.Config.V4AssignMode.ZT)
 	d.Set("rules_source", zerotier_network.RulesSource)
 
-	setRoutes(d, zerotier_network)
-	setAssignmentPools(d, zerotier_network)
+	// setRoutes(d, zerotier_network)
+	// setAssignmentPools(d, zerotier_network)
 	return diags
-}
-
-func setAssignmentPools(d *schema.ResourceData, n *zt.Network) {
-	pools := &schema.Set{F: resourceIpAssignmentHash}
-
-	for _, p := range n.Config.IpAssignmentPools {
-		pool := make(map[string]interface{})
-		pool["first"] = p.First
-		pool["last"] = p.Last
-		pools.Add(pool)
-	}
-	d.Set("assignment_pool", pools)
-}
-
-func setRoutes(d *schema.ResourceData, n *zt.Network) {
-	routes := make([]interface{}, len(n.Config.Routes))
-
-	for i, r := range n.Config.Routes {
-		route := make(map[string]interface{})
-		route["target"] = r.Target
-		if r.Via != nil {
-			route["via"] = *r.Via
-		}
-		routes[i] = route
-	}
-	d.Set("route", routes)
 }
 
 func resourceNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
@@ -199,20 +179,16 @@ func resourceNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interf
 		return diag.FromErr(err)
 	}
 
-	updated, err := c.UpdateNetwork(d.Id(), n)
+	_, err = c.UpdateNetwork(d.Id(), n)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
-	setAssignmentPools(d, updated)
-
+	
 	return resourceNetworkRead(ctx, d, m)
 }
 
 func resourceNetworkDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := m.(*zt.Client)
-
-	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
 	networkID := d.Id()
@@ -222,8 +198,6 @@ func resourceNetworkDelete(ctx context.Context, d *schema.ResourceData, m interf
 		return diag.FromErr(err)
 	}
 
-	// d.SetId("") is automatically called assuming delete returns no errors, but
-	// it is added here for explicitness.
 	d.SetId("")
 
 	return diags
@@ -248,12 +222,12 @@ func fromResourceData(d *schema.ResourceData) (*zt.Network, error) {
 		cidr := r["cidr"].(string)
 		first, last, err := zt.CIDRToRange(cidr)
 		if err != nil {
-			first = net.ParseIP(r["first"].(string))
-			last = net.ParseIP(r["last"].(string))
+			first = net.ParseIP(r["ip_range_start"].(string))
+			last = net.ParseIP(r["ip_range_end"].(string))
 		}
 		pools = append(pools, zt.IpRange{
-			First: first.String(),
-			Last:  last.String(),
+			Start: first.String(),
+			End:   last.String(),
 		})
 	}
 
@@ -270,56 +244,4 @@ func fromResourceData(d *schema.ResourceData) (*zt.Network, error) {
 		},
 	}
 	return n, nil
-}
-
-func resourceIpAssignmentHash(v interface{}) int {
-	return hashcode.String(resourceIpAssignmentState(v))
-}
-
-func resourceIpAssignmentState(v interface{}) string {
-	var buf bytes.Buffer
-	m := v.(map[string]interface{})
-
-	if v, ok := m["cidr"]; ok && len(v.(string)) > 0 {
-		if first, last, err := zt.CIDRToRange(v.(string)); err == nil {
-			buf.WriteString(fmt.Sprintf("%s-", first.String()))
-			buf.WriteString(fmt.Sprintf("%s", last.String()))
-		}
-	} else {
-		if v, ok := m["first"]; ok {
-			buf.WriteString(fmt.Sprintf("%s-", v.(string)))
-		}
-
-		if v, ok := m["last"]; ok {
-			buf.WriteString(fmt.Sprintf("%s", v.(string)))
-		}
-	}
-
-	return buf.String()
-}
-
-func stringHash(v interface{}) int {
-	s := v.(string)
-	return hashcode.String(s)
-}
-
-func route() *schema.Resource {
-	return &schema.Resource{
-		Schema: map[string]*schema.Schema{
-			"target": &schema.Schema{
-				Type:             schema.TypeString,
-				Required:         true,
-				DiffSuppressFunc: diffSuppress,
-			},
-			"via": &schema.Schema{
-				Type:             schema.TypeString,
-				Optional:         true,
-				DiffSuppressFunc: diffSuppress,
-			},
-		},
-	}
-}
-
-func diffSuppress(k, old, new string, d *schema.ResourceData) bool {
-	return old == new
 }
