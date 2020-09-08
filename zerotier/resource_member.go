@@ -1,8 +1,8 @@
 package zerotier
 
 import (
-	"fmt"
-	//	"strconv"
+	// "fmt"
+	// "strconv"
 	"context"
 	"strings"
 
@@ -42,38 +42,16 @@ func resourceMember() *schema.Resource {
 				Optional: true,
 				Default:  false,
 			},
-			"offline_notify_delay": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Default:  0,
-			},
 			"authorized": {
 				Type:     schema.TypeBool,
 				Optional: true,
 				Default:  true,
-			},
-			"allow_ethernet_bridging": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  false,
-			},
-			"no_auto_assign_ips": {
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  false,
 			},
 			"ip_assignments": {
 				Type:     schema.TypeList,
 				Optional: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
-				},
-			},
-			"capabilities": {
-				Type:     schema.TypeList,
-				Optional: true,
-				Elem: &schema.Schema{
-					Type: schema.TypeInt,
 				},
 			},
 		},
@@ -99,7 +77,6 @@ func memberCreate(ctx context.Context, d *schema.ResourceData, m interface{}) di
 	}
 
 	d.SetId(cm.Id)
-	setTags(d, cm)
 	return diags
 }
 
@@ -125,13 +102,8 @@ func memberRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag
 	d.Set("node_id", zerotier_node_id)
 	d.Set("network_id", zerotier_network_id)
 	d.Set("hidden", member.Hidden)
-	d.Set("offline_notify_delay", member.OfflineNotifyDelay)
 	d.Set("authorized", member.Config.Authorized)
-	d.Set("allow_ethernet_bridging", member.Config.ActiveBridge)
-	d.Set("no_auto_assign_ips", member.Config.NoAutoAssignIps)
 	d.Set("ip_assignments", member.Config.IpAssignments)
-	d.Set("capabilities", member.Config.Capabilities)
-	setTags(d, member)
 
 	return diags
 }
@@ -139,7 +111,6 @@ func memberRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag
 func memberUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := m.(*zt.Client)
 
-	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
 	stored, err := memberInit(d)
@@ -152,7 +123,7 @@ func memberUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) di
 		return diag.FromErr(err)
 	}
 
-	setTags(d, updated)
+	d.SetId(updated.Id)
 	return diags
 }
 
@@ -195,15 +166,6 @@ func memberInit(d *schema.ResourceData) (*zt.Member, error) {
 	return n, nil
 }
 
-func setTags(d *schema.ResourceData, member *zt.Member) {
-	rawTags := map[string]int{}
-	for _, tuple := range member.Config.Tags {
-		key := fmt.Sprintf("%d", tuple[0])
-		val := tuple[1]
-		rawTags[key] = val
-	}
-}
-
 func resourceNetworkAndNodeIdentifiers(d *schema.ResourceData) (string, string) {
 	zerotier_network_id := d.Get("network_id").(string)
 	nodeID := d.Get("node_id").(string)
@@ -219,7 +181,7 @@ func resourceNetworkAndNodeIdentifiers(d *schema.ResourceData) (string, string) 
 // coerce things
 //
 
-func toStringList(d *schema.ResourceData, attr string) []string {	
+func toStringList(d *schema.ResourceData, attr string) []string {
 	raw := d.Get(attr).([]interface{})
 	ray := make([]string, len(raw))
 	for i := range raw {

@@ -44,40 +44,40 @@ type V4AssignModeConfig struct {
 }
 
 type Member struct {
-        Id                 string        `json:"id"`
-        NetworkId          string        `json:"networkId"`
-        NodeId             string        `json:"nodeId"`
-        OfflineNotifyDelay int           `json:"offlineNotifyDelay"` // milliseconds
-        Name               string        `json:"name"`
-        Description        string        `json:"description"`
-        Hidden             bool          `json:"hidden"`
-        Config             *MemberConfig `json:"config"`
+	Id                 string        `json:"id"`
+	NetworkId          string        `json:"networkId"`
+	NodeId             string        `json:"nodeId"`
+	OfflineNotifyDelay int           `json:"offlineNotifyDelay"` // milliseconds
+	Name               string        `json:"name"`
+	Description        string        `json:"description"`
+	Hidden             bool          `json:"hidden"`
+	Config             *MemberConfig `json:"config"`
 }
 
 type MemberConfig struct {
-        Authorized      bool     `json:"authorized"`
-        Capabilities    []int    `json:"capabilities"`
-        Tags            [][]int  `json:"tags"` // array of [tag id, value] tuples
-        ActiveBridge    bool     `json:"activeBridge"`
-        NoAutoAssignIps bool     `json:"noAutoAssignIps"`
-        IpAssignments   []string `json:"ipAssignments"`
+	Authorized      bool     `json:"authorized"`
+	Capabilities    []int    `json:"capabilities"`
+	Tags            [][]int  `json:"tags"` // array of [tag id, value] tuples
+	ActiveBridge    bool     `json:"activeBridge"`
+	NoAutoAssignIps bool     `json:"noAutoAssignIps"`
+	IpAssignments   []string `json:"ipAssignments"`
 }
 
 type MemberConfigReadOnly struct {
-        CreationTime       int `json:"creationTime"`
-        LastAuthorizedTime int `json:"lastAuthorizedTime"`
-        VMajor             int `json:"vMajor"`
-        VMinor             int `json:"vMinor"`
-        VRev               int `json:"vRev"`
-        VProto             int `json:"vProto"`
+	CreationTime       int `json:"creationTime"`
+	LastAuthorizedTime int `json:"lastAuthorizedTime"`
+	VMajor             int `json:"vMajor"`
+	VMinor             int `json:"vMinor"`
+	VRev               int `json:"vRev"`
+	VProto             int `json:"vProto"`
 }
 
 type NetworkConfig struct {
-        Name              string             `json:"name"`
-        Private           bool               `json:"private"`
-        Routes            []Route            `json:"routes"`
-        IpAssignmentPools []IpRange          `json:"ipAssignmentPools"`
-        V4AssignMode      V4AssignModeConfig `json:"v4AssignMode"`
+	Name              string             `json:"name"`
+	Private           bool               `json:"private"`
+	Routes            []Route            `json:"routes"`
+	IpAssignmentPools []IpRange          `json:"ipAssignmentPools"`
+	V4AssignMode      V4AssignModeConfig `json:"v4AssignMode"`
 }
 
 type NetworkConfigReadOnly struct {
@@ -123,9 +123,9 @@ type Network struct {
 }
 
 type Capability struct {
-        Id      int     `json:"id"`
-        Default bool    `json:"default"`
-        Rules   []IRule `json:"rules"`
+	Id      int     `json:"id"`
+	Default bool    `json:"default"`
+	Rules   []IRule `json:"rules"`
 }
 
 type Tag struct {
@@ -227,70 +227,70 @@ func (c *Client) DeleteNetwork(networkID string) error {
 }
 
 func (c *Client) UpdateNetwork(id string, network *Network) (*Network, error) {
-        return c.postNetwork(id, network)
+	return c.postNetwork(id, network)
 }
 
 func (c *Client) postNetwork(id string, network *Network) (*Network, error) {
-        url := strings.TrimSuffix(fmt.Sprintf(c.HostURL+"/network/%s", id), "/")
+	url := strings.TrimSuffix(fmt.Sprintf(c.HostURL+"/network/%s", id), "/")
 
-        // strip carriage returns?
-        // network.RulesSource = strings.Replace(network.RulesSource, "\r", "", -1)
-        j, err := json.Marshal(network)
-        if err != nil {
-                return nil, err
-        }
+	// strip carriage returns?
+	// network.RulesSource = strings.Replace(network.RulesSource, "\r", "", -1)
+	j, err := json.Marshal(network)
+	if err != nil {
+		return nil, err
+	}
 
-        req, err := http.NewRequest("POST", url, bytes.NewBuffer(j))
-        if err != nil {
-                return nil, err
-        }
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(j))
+	if err != nil {
+		return nil, err
+	}
 
-        bytes, err := c.doRequest(req)
-        if err != nil {
-                return nil, err
-        }
+	bytes, err := c.doRequest(req)
+	if err != nil {
+		return nil, err
+	}
 
-        var data Network
-        err = json.Unmarshal(bytes, &data)
-        if err != nil {
-                return nil, err
-        }
-        return &data, nil
+	var data Network
+	err = json.Unmarshal(bytes, &data)
+	if err != nil {
+		return nil, err
+	}
+	return &data, nil
 }
 
 func CIDRToRange(cidr string) (net.IP, net.IP, error) {
-        ip, ipnet, err := net.ParseCIDR(cidr)
-        if err != nil {
-                return nil, nil, err
-        }
-        first := ip.Mask(ipnet.Mask)
-        last := make(net.IP, 4)
-        for ip := ip.Mask(ipnet.Mask); ipnet.Contains(ip); inc(ip) {
-                copy(last, ip)
-        }
-        // mirror what ZT console does
-        // there must be a reason
-        if first[3] == 0 {
-                first[3] = 1
-        }
-        if last[3] == 255 {
-                last[3] = 254
-        }
-        return first, last, nil
+	ip, ipnet, err := net.ParseCIDR(cidr)
+	if err != nil {
+		return nil, nil, err
+	}
+	first := ip.Mask(ipnet.Mask)
+	last := make(net.IP, 4)
+	for ip := ip.Mask(ipnet.Mask); ipnet.Contains(ip); inc(ip) {
+		copy(last, ip)
+	}
+	// mirror what ZT console does
+	// there must be a reason
+	if first[3] == 0 {
+		first[3] = 1
+	}
+	if last[3] == 255 {
+		last[3] = 254
+	}
+	return first, last, nil
 
 }
 
 func inc(ip net.IP) {
-        for j := len(ip) - 1; j >= 0; j-- {
-                ip[j]++
-                if ip[j] > 0 {
-                        break
-                }
-        }
+	for j := len(ip) - 1; j >= 0; j-- {
+		ip[j]++
+		if ip[j] > 0 {
+			break
+		}
+	}
 }
 
 func (c *Client) CreateNetwork(network *Network) (*Network, error) {
-        return c.postNetwork("", network)
+	return c.postNetwork("", network)
 }
 
 //
@@ -298,26 +298,26 @@ func (c *Client) CreateNetwork(network *Network) (*Network, error) {
 //
 
 func (c *Client) GetMember(nwid string, nodeId string) (*Member, error) {
-        url := fmt.Sprintf(c.HostURL+"/network/%s/member/%s", nwid, nodeId)
+	url := fmt.Sprintf(c.HostURL+"/network/%s/member/%s", nwid, nodeId)
 
-        req, err := http.NewRequest("GET", url, nil)
-        if err != nil {
-                return nil, err
-        }
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
 
-        bytes, err := c.doRequest(req)
-        if err != nil {
-                return nil, err
-        }
+	bytes, err := c.doRequest(req)
+	if err != nil {
+		return nil, err
+	}
 
-        var data Member
+	var data Member
 
-        err = json.Unmarshal(bytes, &data)
-        if err != nil {
-                return nil, err
-        }
+	err = json.Unmarshal(bytes, &data)
+	if err != nil {
+		return nil, err
+	}
 
-        return &data, nil
+	return &data, nil
 }
 
 func (c *Client) PollMember(nwid string, nodeId string) (*Member, error) {
@@ -329,49 +329,49 @@ func (c *Client) PollMember(nwid string, nodeId string) (*Member, error) {
 }
 
 func (c *Client) postMember(member *Member, reqName string) (*Member, error) {
-        url := fmt.Sprintf(c.HostURL+"/network/%s/member/%s", member.NetworkId, member.NodeId)
+	url := fmt.Sprintf(c.HostURL+"/network/%s/member/%s", member.NetworkId, member.NodeId)
 
-        j, err := json.Marshal(member)
-        if err != nil {
-                return nil, err
-        }
+	j, err := json.Marshal(member)
+	if err != nil {
+		return nil, err
+	}
 
-        req, err := http.NewRequest("POST", url, bytes.NewBuffer(j))
-        if err != nil {
-                return nil, err
-        }
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(j))
+	if err != nil {
+		return nil, err
+	}
 
-        bytes, err := c.doRequest(req)
-        if err != nil {
-                return nil, err
-        }
+	bytes, err := c.doRequest(req)
+	if err != nil {
+		return nil, err
+	}
 
-        var data Member
+	var data Member
 
-        err = json.Unmarshal(bytes, &data)
-        if err != nil {
-                return nil, err
-        }
+	err = json.Unmarshal(bytes, &data)
+	if err != nil {
+		return nil, err
+	}
 
-        return &data, nil
+	return &data, nil
 }
 
 func (c *Client) CreateMember(member *Member) (*Member, error) {
-        return c.postMember(member, "CreateMember")
+	return c.postMember(member, "CreateMember")
 }
 
 func (c *Client) UpdateMember(member *Member) (*Member, error) {
-        return c.postMember(member, "UpdateMember")
+	return c.postMember(member, "UpdateMember")
 }
 
 func (c *Client) DeleteMember(member *Member) error {
-        url := fmt.Sprintf(c.HostURL+"/network/%s/member/%s", member.NetworkId, member.NodeId)
+	url := fmt.Sprintf(c.HostURL+"/network/%s/member/%s", member.NetworkId, member.NodeId)
 
-        req, err := http.NewRequest("DELETE", url, nil)
-        if err != nil {
-                return err
-        }
+	req, err := http.NewRequest("DELETE", url, nil)
+	if err != nil {
+		return err
+	}
 
-        _, err = c.doRequest(req)
-        return err
+	_, err = c.doRequest(req)
+	return err
 }
