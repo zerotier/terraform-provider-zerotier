@@ -103,63 +103,13 @@ func memberCreate(ctx context.Context, d *schema.ResourceData, m interface{}) di
 	return diags
 }
 
-func memberInit(d *schema.ResourceData) (*zt.Member, error) {
-	n := &zt.Member{
-		Id:                 d.Id(),
-		NetworkId:          toString(d, "network_id"),
-		NodeId:             toString(d, "node_id"),
-		Hidden:             toBool(d, "hidden"),
-		OfflineNotifyDelay: toInt(d, "offline_notify_delay"),
-		Name:               toString(d, "name"),
-		Description:        toString(d, "description"),
-		Config: &zt.MemberConfig{
-			Authorized:      toBool(d, "authorized"),
-			ActiveBridge:    toBool(d, "allow_ethernet_bridging"),
-			NoAutoAssignIps: toBool(d, "no_auto_assign_ips"),
-			Capabilities:    toIntList(d, "capabilities"),
-			IpAssignments:   toStringList(d, "ip_assignments"),
-		},
-	}
-	return n, nil
-}
-
-func toStringList(d *schema.ResourceData, attr string) []string {	
-	raw := d.Get(attr).([]interface{})
-	ray := make([]string, len(raw))
-	for i := range raw {
-		ray[i] = raw[i].(string)
-	}
-	return ray
-}
-
-func toIntList(d *schema.ResourceData, attr string) []int {
-	raw := d.Get(attr).([]interface{})
-	ray := make([]int, len(raw))
-	for i := range raw {
-		ray[i] = raw[i].(int)
-	}
-	return ray
-}
-
-func toString(d *schema.ResourceData, attr string) string {
-	return d.Get(attr).(string)
-}
-
-func toInt(d *schema.ResourceData, attr string) int {
-	return d.Get(attr).(int)
-}
-
-func toBool(d *schema.ResourceData, attr string) bool {
-	return d.Get(attr).(bool)
-}
-
 func memberRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := m.(*zt.Client)
 	var diags diag.Diagnostics
 
 	zerotier_network_id, zerotier_node_id := resourceNetworkAndNodeIdentifiers(d)
 
-	member, err := c.PollMember(zerotier_network_id, zerotier_node_id)
+	member, err := c.GetMember(zerotier_network_id, zerotier_node_id)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -221,6 +171,30 @@ func memberDelete(ctx context.Context, d *schema.ResourceData, m interface{}) di
 	return diags
 }
 
+//
+// helpers
+//
+
+func memberInit(d *schema.ResourceData) (*zt.Member, error) {
+	n := &zt.Member{
+		Id:                 d.Id(),
+		NetworkId:          toString(d, "network_id"),
+		NodeId:             toString(d, "node_id"),
+		Hidden:             toBool(d, "hidden"),
+		OfflineNotifyDelay: toInt(d, "offline_notify_delay"),
+		Name:               toString(d, "name"),
+		Description:        toString(d, "description"),
+		Config: &zt.MemberConfig{
+			Authorized:      toBool(d, "authorized"),
+			ActiveBridge:    toBool(d, "allow_ethernet_bridging"),
+			NoAutoAssignIps: toBool(d, "no_auto_assign_ips"),
+			Capabilities:    toIntList(d, "capabilities"),
+			IpAssignments:   toStringList(d, "ip_assignments"),
+		},
+	}
+	return n, nil
+}
+
 func setTags(d *schema.ResourceData, member *zt.Member) {
 	rawTags := map[string]int{}
 	for _, tuple := range member.Config.Tags {
@@ -230,11 +204,6 @@ func setTags(d *schema.ResourceData, member *zt.Member) {
 	}
 }
 
-// Extracts the Network ID and Node ID from the resource definition, or from the id during import
-//
-// When importing a resource, both the network id and node id writen on the definition will be ignored
-// and we could retrieve the network id and node id from parts of the id
-// which is formated as <network-id>-<node-id> on zerotier
 func resourceNetworkAndNodeIdentifiers(d *schema.ResourceData) (string, string) {
 	zerotier_network_id := d.Get("network_id").(string)
 	nodeID := d.Get("node_id").(string)
@@ -244,4 +213,38 @@ func resourceNetworkAndNodeIdentifiers(d *schema.ResourceData) (string, string) 
 		zerotier_network_id, nodeID = parts[0], parts[1]
 	}
 	return zerotier_network_id, nodeID
+}
+
+//
+// coerce things
+//
+
+func toStringList(d *schema.ResourceData, attr string) []string {	
+	raw := d.Get(attr).([]interface{})
+	ray := make([]string, len(raw))
+	for i := range raw {
+		ray[i] = raw[i].(string)
+	}
+	return ray
+}
+
+func toIntList(d *schema.ResourceData, attr string) []int {
+	raw := d.Get(attr).([]interface{})
+	ray := make([]int, len(raw))
+	for i := range raw {
+		ray[i] = raw[i].(int)
+	}
+	return ray
+}
+
+func toString(d *schema.ResourceData, attr string) string {
+	return d.Get(attr).(string)
+}
+
+func toInt(d *schema.ResourceData, attr string) int {
+	return d.Get(attr).(int)
+}
+
+func toBool(d *schema.ResourceData, attr string) bool {
+	return d.Get(attr).(bool)
 }
