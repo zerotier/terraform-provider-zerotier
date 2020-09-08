@@ -164,11 +164,8 @@ func resourceNetworkRead(ctx context.Context, d *schema.ResourceData, m interfac
 	d.Set("auto_assign_v4", zerotier_network.Config.V4AssignMode.ZT)
 	d.Set("rules_source", zerotier_network.RulesSource)
 
-	// do I need these in 13?
-	// setRoutes(d, zerotier_network)
-        // setAssignmentPools(d, zerotier_network)
-	d.Set("route", zerotier_network.Config.Routes)
-	d.Set("assignment_pool", zerotier_network.Config.IpAssignmentPools)
+	setRoutes(d, zerotier_network)
+	setAssignmentPools(d, zerotier_network)
 	return diags
 }
 
@@ -239,7 +236,7 @@ func resourceNetworkDelete(ctx context.Context, d *schema.ResourceData, m interf
 
 func fromResourceData(d *schema.ResourceData) (*zt.Network, error) {
 
-	
+
         routesRaw := d.Get("route").([]interface{})
         var routes []zt.Route
         for _, raw := range routesRaw {
@@ -250,7 +247,7 @@ func fromResourceData(d *schema.ResourceData) (*zt.Network, error) {
                         Via:    &via,
                 })
         }
-	
+
         var pools []zt.IpRange
         for _, raw := range d.Get("assignment_pool").(*schema.Set).List() {
                 r := raw.(map[string]interface{})
@@ -265,7 +262,7 @@ func fromResourceData(d *schema.ResourceData) (*zt.Network, error) {
                         Last:  last.String(),
                 })
         }
-	
+
         n := &zt.Network{
                 Id:          d.Id(),
                 RulesSource: d.Get("rules_source").(string),
