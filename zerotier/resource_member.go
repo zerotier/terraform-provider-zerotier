@@ -31,6 +31,7 @@ func resourceMember() *schema.Resource {
 			"name": {
 				Type:     schema.TypeString,
 				Optional: true,
+				Computed: true,
 			},
 			"description": {
 				Type:     schema.TypeString,
@@ -64,6 +65,7 @@ func resourceMember() *schema.Resource {
 			},
 			"ip_assignments": {
 				Type:     schema.TypeList,
+				Computed: true,
 				Optional: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
@@ -71,6 +73,7 @@ func resourceMember() *schema.Resource {
 			},
 			"capabilities": {
 				Type:     schema.TypeList,
+				Computed: true,
 				Optional: true,
 				Elem: &schema.Schema{
 					Type: schema.TypeInt,
