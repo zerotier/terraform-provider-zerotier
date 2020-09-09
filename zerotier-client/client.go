@@ -12,40 +12,127 @@ import (
 	"time"
 )
 
-// HostURL - Default Zerotier URL
 const HostURL string = "https://my.zerotier.com/api"
 const Token string = "D34DB33F"
 
-// Client -
+//
+// Client
+//
+
 type Client struct {
 	HostURL    string
 	HTTPClient *http.Client
 	Token      string
 }
 
-type Route struct {
-	Target string  `json:"target"`
-	Via    *string `json:"via"`
+func NewClient(zerotier_controller_url, zerotier_controller_token *string) (*Client, error) {
+	c := Client{
+		HTTPClient: &http.Client{Timeout: 10 * time.Second},
+		HostURL:    HostURL,
+		Token:      Token,
+	}
+
+	if zerotier_controller_url != nil {
+		c.HostURL = *zerotier_controller_url
+	}
+
+	if zerotier_controller_token != nil {
+		c.Token = *zerotier_controller_token
+	}
+
+	return &c, nil
 }
+
+//
+// Routes
+//
+
+type Route struct {
+	Target string `json:"target"`
+	Via    string `json:"via"`
+}
+
+func NewRoute(target, via string) Route {
+	return Route{
+		Target: target,
+		Via:    via,
+	}
+}
+
+//
+// IpRange
+//
 
 type IpRange struct {
 	Start string `json:"ipRangeStart"`
 	End   string `json:"ipRangeEnd"`
 }
 
-type V4AssignModeConfig struct {
+func NewIpRange(start, end string) IpRange {
+	return IpRange{
+		Start: start,
+		End:   end,
+	}
+}
+
+//
+// V4AssignMode
+//
+
+type V4AssignMode struct {
 	ZT bool `json:"zt"`
 }
 
+func NewV4AssignMode(zt bool) V4AssignMode {
+	return V4AssignMode{
+		ZT: zt,
+	}
+}
+
+//
+// V6AssignMode
+//
+
+type V6AssignMode struct {
+	ZT       bool `json:"zt"`
+	SixPlane bool `json:"6plane"`
+	Rfc4193  bool `json:"rfc4193"`
+}
+
+func NewV6AssignMode(zt, sixplane, rfc4193 bool) V6AssignMode {
+	return V6AssignMode{
+		ZT:       zt,
+		SixPlane: sixplane,
+		Rfc4193:  rfc4193,
+	}
+}
+
+//
+// Member
+//
+
 type Member struct {
+	Config             MemberConfig  `json:"config"`
+	Description        string        `json:"description"`
+	Hidden             bool          `json:"hidden"`
 	Id                 string        `json:"id"`
+	Name               string        `json:"name"`
 	NetworkId          string        `json:"networkId"`
 	NodeId             string        `json:"nodeId"`
 	OfflineNotifyDelay int           `json:"offlineNotifyDelay"`
-	Name               string        `json:"name"`
-	Description        string        `json:"description"`
-	Hidden             bool          `json:"hidden"`
-	Config             *MemberConfig `json:"config"`
+}
+
+func NewMember(description, id, name, network_id, node_id string, hidden bool, offline_notify_delay int, config MemberConfig) Member {
+	return Member{
+		Config: config,
+		Description: description,
+		Hidden: hidden,
+		Id: id,
+		Name: name,
+		NetworkId: network_id,
+		NodeId: node_id,
+		OfflineNotifyDelay: offline_notify_delay,
+	}
 }
 
 type MemberConfig struct {
@@ -92,7 +179,8 @@ type NetworkConfig struct {
 	Routes            []Route            `json:"routes"`
 	Rules             []IRule            `json:"rules"`
 	Tags              []Tag              `json:"tags"`
-	V4AssignMode      V4AssignModeConfig `json:"v4AssignMode"`
+	V4AssignMode      V4AssignMode       `json:"v4AssignMode"`
+	V6AssignMode      V6AssignMode       `json:"v6AssignMode"`
 }
 
 type Capability struct {
@@ -117,23 +205,6 @@ type TagByName struct {
 	Flags map[string]int `json:"flags"`
 }
 
-func NewClient(zerotier_controller_url, zerotier_controller_token *string) (*Client, error) {
-	c := Client{
-		HTTPClient: &http.Client{Timeout: 10 * time.Second},
-		HostURL:    HostURL,
-		Token:      Token,
-	}
-
-	if zerotier_controller_url != nil {
-		c.HostURL = *zerotier_controller_url
-	}
-
-	if zerotier_controller_token != nil {
-		c.Token = *zerotier_controller_token
-	}
-
-	return &c, nil
-}
 
 func (c *Client) doRequest(req *http.Request) ([]byte, error) {
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.Token))

@@ -13,10 +13,10 @@ import (
 
 func resourceMember() *schema.Resource {
 	return &schema.Resource{
-		CreateContext: memberCreate,
-		ReadContext:   memberRead,
-		UpdateContext: memberUpdate,
-		DeleteContext: memberDelete,
+		CreateContext: resourceMemberCreate,
+		ReadContext:   resourceMemberRead,
+		UpdateContext: resourceMemberUpdate,
+		DeleteContext: resourceMemberDelete,
 		Schema: map[string]*schema.Schema{
 			"network_id": {
 				Type:     schema.TypeString,
@@ -87,26 +87,7 @@ func resourceMember() *schema.Resource {
 // CRUD
 //
 
-func memberCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c := m.(*zt.Client)
-	var diags diag.Diagnostics
-
-	member, err := memberInit(d)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	cm, err := c.CreateMember(member)
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	d.SetId(cm.Id)
-	setTags(d, cm)
-	return diags
-}
-
-func memberRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceMemberRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := m.(*zt.Client)
 	var diags diag.Diagnostics
 
@@ -139,7 +120,26 @@ func memberRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag
 	return diags
 }
 
-func memberUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceMemberCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	c := m.(*zt.Client)
+	var diags diag.Diagnostics
+
+	member, err := memberInit(d)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	cm, err := c.CreateMember(member)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	d.SetId(cm.Id)
+	setTags(d, cm)
+	return diags
+}
+
+func resourceMemberUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := m.(*zt.Client)
 
 	// Warning or errors can be collected in a slice type
@@ -159,7 +159,7 @@ func memberUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) di
 	return diags
 }
 
-func memberDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceMemberDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := m.(*zt.Client)
 
 	// Warning or errors can be collected in a slice type
@@ -179,7 +179,7 @@ func memberDelete(ctx context.Context, d *schema.ResourceData, m interface{}) di
 //
 
 func memberInit(d *schema.ResourceData) (*zt.Member, error) {
-	n := &zt.Member{
+	m := &zt.Member{
 		Id:                 d.Id(),
 		NetworkId:          toString(d, "network_id"),
 		NodeId:             toString(d, "node_id"),
@@ -187,7 +187,7 @@ func memberInit(d *schema.ResourceData) (*zt.Member, error) {
 		OfflineNotifyDelay: toInt(d, "offline_notify_delay"),
 		Name:               toString(d, "name"),
 		Description:        toString(d, "description"),
-		Config: &zt.MemberConfig{
+		Config: zt.MemberConfig{
 			Authorized:      toBool(d, "authorized"),
 			ActiveBridge:    toBool(d, "allow_ethernet_bridging"),
 			NoAutoAssignIps: toBool(d, "no_auto_assign_ips"),
@@ -195,7 +195,7 @@ func memberInit(d *schema.ResourceData) (*zt.Member, error) {
 			IpAssignments:   toStringList(d, "ip_assignments"),
 		},
 	}
-	return n, nil
+	return m, nil
 }
 
 func setTags(d *schema.ResourceData, member *zt.Member) {
@@ -216,38 +216,4 @@ func resourceNetworkAndNodeIdentifiers(d *schema.ResourceData) (string, string) 
 		zerotier_network_id, nodeID = parts[0], parts[1]
 	}
 	return zerotier_network_id, nodeID
-}
-
-//
-// coerce things
-//
-
-func toStringList(d *schema.ResourceData, attr string) []string {
-	raw := d.Get(attr).([]interface{})
-	ray := make([]string, len(raw))
-	for i := range raw {
-		ray[i] = raw[i].(string)
-	}
-	return ray
-}
-
-func toIntList(d *schema.ResourceData, attr string) []int {
-	raw := d.Get(attr).([]interface{})
-	ray := make([]int, len(raw))
-	for i := range raw {
-		ray[i] = raw[i].(int)
-	}
-	return ray
-}
-
-func toString(d *schema.ResourceData, attr string) string {
-	return d.Get(attr).(string)
-}
-
-func toInt(d *schema.ResourceData, attr string) int {
-	return d.Get(attr).(int)
-}
-
-func toBool(d *schema.ResourceData, attr string) bool {
-	return d.Get(attr).(bool)
 }

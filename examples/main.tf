@@ -58,11 +58,11 @@ provider "zerotier" {}
 resource "zerotier_network" "bob" {
   name = "bobs_garage"
   rules_source = "accept;"
-  assignment_pool {
-    ip_range_start = "192.168.1.1"
-    ip_range_end = "192.168.1.254"
+  ip_assignment_pools {
+      ip_range_start = "192.168.1.1"
+      ip_range_end = "192.168.1.254"
   }
-  route { target = "192.168.1.0/24" }
+  routes { target = "192.168.1.0/24" }
 }
 
 resource "zerotier_identity" "bob" {}
