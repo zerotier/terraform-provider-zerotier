@@ -257,10 +257,10 @@ func networkInit(d *schema.ResourceData) (*zt.Network, error) {
 	name := d.Get("name").(string)
 	private := d.Get("private").(bool)
 
-	v4_assign_mode := d.Get("v4_assign_mode")
-	v6_assign_mode := d.Get("v6_assign_mode")
+	v4_assign_mode := d.Get("v4_assign_mode").(zt.V4AssignMode)
+	v6_assign_mode := d.Get("v6_assign_mode").(zt.V6AssignMode)
 
-	routes := d.Get("routes").([]interface{})
+	routes := d.Get("routes").([]zt.Route)
 	ip_assignment_pools := d.Get("ip_assignment_pools").([]interface{})
 
 	n := &zt.Network{
