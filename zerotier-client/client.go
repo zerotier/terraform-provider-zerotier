@@ -128,25 +128,25 @@ func NewV6AssignMode(zt, sixplane, rfc4193 bool) V6AssignMode {
 //
 
 type Member struct {
-	Config             MemberConfig  `json:"config"`
-	Description        string        `json:"description"`
-	Hidden             bool          `json:"hidden"`
-	Id                 string        `json:"id"`
-	Name               string        `json:"name"`
-	NetworkId          string        `json:"networkId"`
-	NodeId             string        `json:"nodeId"`
-	OfflineNotifyDelay int           `json:"offlineNotifyDelay"`
+	Config             MemberConfig `json:"config"`
+	Description        string       `json:"description"`
+	Hidden             bool         `json:"hidden"`
+	Id                 string       `json:"id"`
+	Name               string       `json:"name"`
+	NetworkId          string       `json:"networkId"`
+	NodeId             string       `json:"nodeId"`
+	OfflineNotifyDelay int          `json:"offlineNotifyDelay"`
 }
 
 func NewMember(description, id, name, network_id, node_id string, hidden bool, offline_notify_delay int, config MemberConfig) Member {
 	return Member{
-		Config: config,
-		Description: description,
-		Hidden: hidden,
-		Id: id,
-		Name: name,
-		NetworkId: network_id,
-		NodeId: node_id,
+		Config:             config,
+		Description:        description,
+		Hidden:             hidden,
+		Id:                 id,
+		Name:               name,
+		NetworkId:          network_id,
+		NodeId:             node_id,
 		OfflineNotifyDelay: offline_notify_delay,
 	}
 }
@@ -185,18 +185,18 @@ type Network struct {
 }
 
 type NetworkConfig struct {
-	Capabilities      []Capability       `json:"capabilities"`
-	CreationTime      int64              `json:"creationTime"`
-	IpAssignmentPools []IpRange          `json:"ipAssignmentPools"`
-	LastModified      int64              `json:"lastModified"`
-	Name              string             `json:"name"`
-	Private           bool               `json:"private"`
-	Revision          int                `json:"revision"`
-	Routes            []Route            `json:"routes"`
-	Rules             []IRule            `json:"rules"`
-	Tags              []Tag              `json:"tags"`
-	V4AssignMode      V4AssignMode       `json:"v4AssignMode"`
-	V6AssignMode      V6AssignMode       `json:"v6AssignMode"`
+	Capabilities      []Capability `json:"capabilities"`
+	CreationTime      int64        `json:"creationTime"`
+	IpAssignmentPools []IpRange    `json:"ipAssignmentPools"`
+	LastModified      int64        `json:"lastModified"`
+	Name              string       `json:"name"`
+	Private           bool         `json:"private"`
+	Revision          int          `json:"revision"`
+	Routes            []Route      `json:"routes"`
+	Rules             []IRule      `json:"rules"`
+	Tags              []Tag        `json:"tags"`
+	V4AssignMode      V4AssignMode `json:"v4AssignMode"`
+	V6AssignMode      V6AssignMode `json:"v6AssignMode"`
 }
 
 type Capability struct {
@@ -220,7 +220,6 @@ type TagByName struct {
 	Enums map[string]int `json:"enums"`
 	Flags map[string]int `json:"flags"`
 }
-
 
 func (c *Client) doRequest(req *http.Request) ([]byte, error) {
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.Token))

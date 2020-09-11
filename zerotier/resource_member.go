@@ -251,4 +251,3 @@ func toInt(d *schema.ResourceData, attr string) int {
 func toBool(d *schema.ResourceData, attr string) bool {
 	return d.Get(attr).(bool)
 }
-
