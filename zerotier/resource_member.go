@@ -217,3 +217,38 @@ func resourceNetworkAndNodeIdentifiers(d *schema.ResourceData) (string, string) 
 	}
 	return zerotier_network_id, nodeID
 }
+
+//
+// helpers
+//
+
+func toStringList(d *schema.ResourceData, attr string) []string {
+	raw := d.Get(attr).([]interface{})
+	ray := make([]string, len(raw))
+	for i := range raw {
+		ray[i] = raw[i].(string)
+	}
+	return ray
+}
+
+func toIntList(d *schema.ResourceData, attr string) []int {
+	raw := d.Get(attr).([]interface{})
+	ray := make([]int, len(raw))
+	for i := range raw {
+		ray[i] = raw[i].(int)
+	}
+	return ray
+}
+
+func toString(d *schema.ResourceData, attr string) string {
+	return d.Get(attr).(string)
+}
+
+func toInt(d *schema.ResourceData, attr string) int {
+	return d.Get(attr).(int)
+}
+
+func toBool(d *schema.ResourceData, attr string) bool {
+	return d.Get(attr).(bool)
+}
+

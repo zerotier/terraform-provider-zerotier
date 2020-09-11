@@ -56,12 +56,6 @@ func resourceNetwork() *schema.Resource {
 					},
 				},
 			},
-			"tags": &schema.Schema{
-				Type:     schema.TypeList,
-				Optional: true,
-				Computed: true,
-				Elem:     &schema.Schema{},
-			},
 			"ip_assignment_pools": &schema.Schema{
 				Type:     schema.TypeList,
 				Optional: true,
@@ -173,7 +167,6 @@ func resourceNetworkRead(ctx context.Context, d *schema.ResourceData, m interfac
 	d.Set("private", zerotier_network.Config.Private)
 	d.Set("routes", zerotier_network.Config.Routes)
 	d.Set("rules_source", zerotier_network.RulesSource)
-	d.Set("tags", zerotier_network.Config.Tags)
 	d.Set("ui", zerotier_network.Ui)
 	d.Set("v4_assign_mode", zerotier_network.Config.V4AssignMode)
 	d.Set("v6_assign_mode", zerotier_network.Config.V6AssignMode)
@@ -233,20 +226,6 @@ func resourceNetworkDelete(ctx context.Context, d *schema.ResourceData, m interf
 	return diags
 }
 
-// func fromResourceData(d *schema.ResourceData) (*zt.Network, error) {
-// 	routesRaw := d.Get("route").([]interface{})
-// 	var routes []zt.Route
-// 	for _, raw := range routesRaw {
-// 		r := raw.(map[string]interface{})
-// 		via := r["via"].(string)
-// 		routes = append(routes, zt.Route{
-// 			Target: r["target"].(string),
-// 			Via:    &via,
-// 		})
-// 	}
-
-// }
-
 //
 // helpers
 //
@@ -256,28 +235,20 @@ func networkInit(d *schema.ResourceData) (*zt.Network, error) {
 	description := d.Get("description").(string)
 	name := d.Get("name").(string)
 	private := d.Get("private").(bool)
-
-	v4_assign_mode := d.Get("v4_assign_mode").(zt.V4AssignMode)
-	v6_assign_mode := d.Get("v6_assign_mode").(zt.V6AssignMode)
-
-	routes := d.Get("routes").([]zt.Route)
-	ip_assignment_pools := d.Get("ip_assignment_pools").([]interface{})
+	v4_assign_mode := parseV4AssignMode(d.Get("v4_assign_mode").([]interface{}))
+	v6_assign_mode := parseV6AssignMode(d.Get("v6_assign_mode").([]interface{}))
+	ip_assignment_pools := parseIpAssignmentPools(d.Get("ip_assignment_pools").([]interface{}))
+	routes := parseRoutes(d.Get("routes").([]interface{}))
 
 	n := &zt.Network{
 		Id:          d.Id(),
 		RulesSource: rules_source,
 		Description: description,
 		Config: &zt.NetworkConfig{
-			Name:    name,
-			Private: private,
-			V4AssignMode: zt.V4AssignMode{
-				ZT: v4_assign_mode.zt,
-			},
-			V6AssignMode: zt.V6AssignMode{
-				ZT:       v6_assign_mode.zt,
-				SixPlane: v6_assign_mode.six_plane,
-				Rfc4193:  v6_assign_mode.rfc_4193,
-			},
+			Name:              name,
+			Private:           private,
+			V4AssignMode:      v4_assign_mode,
+			V6AssignMode:      v6_assign_mode,
 			Routes:            routes,
 			IpAssignmentPools: ip_assignment_pools,
 		},
@@ -286,35 +257,51 @@ func networkInit(d *schema.ResourceData) (*zt.Network, error) {
 }
 
 //
-// coerce things
+// helpers
 //
 
-func toStringList(d *schema.ResourceData, attr string) []string {
-	raw := d.Get(attr).([]interface{})
-	ray := make([]string, len(raw))
-	for i := range raw {
-		ray[i] = raw[i].(string)
+func parseV4AssignMode(data interface{}) zt.V4AssignMode {
+	d := data.(map[string]interface{})
+	return zt.V4AssignMode{
+		ZT: d["ZT"].(bool),
 	}
-	return ray
 }
 
-func toIntList(d *schema.ResourceData, attr string) []int {
-	raw := d.Get(attr).([]interface{})
-	ray := make([]int, len(raw))
-	for i := range raw {
-		ray[i] = raw[i].(int)
+func parseV6AssignMode(data interface{}) zt.V6AssignMode {
+	d := data.(map[string]interface{})
+	return zt.V6AssignMode{
+		ZT:       d["ZT"].(bool),
+		SixPlane: d["six_plane"].(bool),
+		Rfc4193:  d["rfc_4193"].(bool),
 	}
-	return ray
 }
 
-func toString(d *schema.ResourceData, attr string) string {
-	return d.Get(attr).(string)
+func parseIpAssignmentPools(data []interface{}) []zt.IpRange {
+	var ip_range_list []zt.IpRange
+	for _, ip_range := range data {
+		r := ip_range.(map[string]interface{})
+		ip_range_start := r["ip_range_start"].(string)
+		ip_range_end := r["ip_range_end"].(string)
+
+		ip_range_list = append(ip_range_list, zt.IpRange{
+			Start: ip_range_start,
+			End:   ip_range_end,
+		})
+	}
+	return ip_range_list
 }
 
-func toInt(d *schema.ResourceData, attr string) int {
-	return d.Get(attr).(int)
-}
+func parseRoutes(data []interface{}) []zt.Route {
+	var route_list []zt.Route
+	for _, route := range data {
+		r := route.(map[string]interface{})
+		via := r["via"].(string)
+		target := r["target"].(string)
 
-func toBool(d *schema.ResourceData, attr string) bool {
-	return d.Get(attr).(bool)
+		route_list = append(route_list, zt.Route{
+			Target: target,
+			Via:    via,
+		})
+	}
+	return route_list
 }

@@ -89,9 +89,9 @@ func NewV4AssignMode(zt bool) V4AssignMode {
 	}
 }
 
-func (m *V4AssignMode) zt() bool {
-	return m.ZT
-}
+// func (m V4AssignMode) Zt() bool {
+// 	return m.ZT
+// }
 
 //
 // V6AssignMode
@@ -111,17 +111,17 @@ func NewV6AssignMode(zt, sixplane, rfc4193 bool) V6AssignMode {
 	}
 }
 
-func (m *V6AssignMode) zt() bool {
-	return m.ZT
-}
+// func (m V6AssignMode) Zt() bool {
+// 	return m.ZT
+// }
 
-func (m *V6AssignMode) six_plane() bool {
-	return m.SixPlane
-}
+// func (m V6AssignMode) SixPlane() bool {
+// 	return m.SixPlane
+// }
 
-func (m *V6AssignMode) rfc_4193() bool {
-	return m.Rfc4193
-}
+// func (m V6AssignMode) Rfc4193() bool {
+// 	return m.Rfc4193
+// }
 
 //
 // Member
