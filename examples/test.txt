@@ -1,0 +1,46 @@
+&{0 map[] 1600356492173 {[] 1600355708965 [] 0 bobs_garage false 0 [] [map[etherType:2048 not:true or:false type:MATCH_ETHERTYPE] map[etherType:2054 not:true or:false type:MATCH_ETHERTYPE] map[etherType:34525 not:true or:false type:MATCH_ETHERTYPE] map[type:ACTION_DROP] map[type:ACTION_ACCEPT]] [] {false} {false false false}} so say we bob e5cd7a9e1c4d03d5 0 ac0d40f6-b590-43a7-8899-ef347f396983 #
+# This is a default rule set that allows IPv4 and IPv6 traffic but otherwise
+# behaves like a standard Ethernet switch.
+#
+# Please keep in mind that ZeroTier versions prior to 1.2.0 do NOT support advanced
+# network rules.
+#
+# Since both senders and receivers enforce rules, you will get the following
+# behavior in a network with both old and new versions:
+#
+# (old: 1.1.14 and older, new: 1.2.0 and newer)
+#
+# old <--> old: No rules are honored.
+# old <--> new: Rules work but are only enforced by new side. Tags will NOT work, and
+#               capabilities will only work if assigned to the new side.
+# new <--> new: Full rules engine support including tags and capabilities.
+#
+# We recommend upgrading all your devices to 1.2.0 as soon as convenient. Version
+# 1.2.0 also includes a significantly improved software update mechanism that is
+# turned on by default on Mac and Windows. (Linux and mobile are typically kept up
+# to date using package/app management.)
+#
+
+#
+# Allow only IPv4, IPv4 ARP, and IPv6 Ethernet frames.
+#
+drop
+	not ethertype ipv4
+	and not ethertype arp
+	and not ethertype ipv6
+;
+
+#
+# Uncomment to drop non-ZeroTier issued and managed IP addresses.
+#
+# This prevents IP spoofing but also blocks manual IP management at the OS level and
+# bridging unless special rules to exempt certain hosts or traffic are added before
+# this rule.
+#
+#drop
+#	not chr ipauth
+#;
+
+# Accept anything else. This is required since default is 'drop'.
+accept;
+ map[] map[] 0 Network map[membersHelpCollapsed:true rulesHelpCollapsed:true settingsHelpCollapsed:true v4EasyMode:false]}
