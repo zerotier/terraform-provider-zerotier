@@ -5,6 +5,7 @@ NAME=zerotier
 BINARY=terraform-provider-${NAME}
 VERSION=0.2
 OS_ARCH=darwin_amd64
+GOLANGCI_LINT_VERSION := 1.34.1
 
 default: install
 
@@ -35,3 +36,10 @@ test:
 
 testacc: 
 	TF_ACC=1 go test $(TEST) -v $(TESTARGS) -timeout 120m   
+
+lint: bin/golangci-lint
+	bin/golangci-lint run -v
+
+bin/golangci-lint:
+	mkdir -p bin
+	wget -O- https://github.com/golangci/golangci-lint/releases/download/v$(GOLANGCI_LINT_VERSION)/golangci-lint-$(GOLANGCI_LINT_VERSION)-linux-amd64.tar.gz | tar vxz --strip-components=1 -C bin golangci-lint-$(GOLANGCI_LINT_VERSION)-linux-amd64/golangci-lint
