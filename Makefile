@@ -37,6 +37,10 @@ test:
 testacc: 
 	TF_ACC=1 go test $(TEST) -v $(TESTARGS) -timeout 120m   
 
+fmt:
+	go fmt ./...
+	terraform fmt -recursive .
+
 lint: bin/golangci-lint
 	bin/golangci-lint run -v
 

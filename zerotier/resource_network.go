@@ -70,7 +70,7 @@ func resourceNetworkRead(ctx context.Context, d *schema.ResourceData, m interfac
 
 	zerotier_network_id := d.Id()
 	zerotier_network, err := c.GetNetwork(zerotier_network_id)
-	
+
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
@@ -93,13 +93,13 @@ func resourceNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interf
 
 	zerotier_network_id := d.Id()
 	zerotier_network, err := c.GetNetwork(zerotier_network_id)
-	
+
 	if d.HasChange("description") {
 		zerotier_network.Description = d.Get("description").(string)
 
 		f, _ := os.Create("test.txt")
-		f.WriteString( fmt.Sprintf("%v", zerotier_network) )
-		
+		f.WriteString(fmt.Sprintf("%v", zerotier_network))
+
 		_, err = c.UpdateNetwork(zerotier_network_id, zerotier_network)
 		if err != nil {
 			diags = append(diags, diag.Diagnostic{
