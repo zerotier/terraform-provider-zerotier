@@ -33,3 +33,4 @@ override.tf.json
 terraform-provider-zerotier
 
 dist
+/bin
