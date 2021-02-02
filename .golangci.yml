@@ -1,20 +1,24 @@
-linters:                                                                                                                                                                                                                                       
-  enable:                                                                                                                                                                                                                                      
+linters:
+  enable:
     - golint
-    - goimports                                                                                                                                                                                                                                
-    - scopelint                                                                                                                                                                                                                                
-    - gocyclo                                                                                                                                                                                                                                  
-    - deadcode                                                                                                                                                                                                                                 
-    - gosimple                                                                                                                                                                                                                                 
-    - govet                                                                                                                                                                                                                                    
-    - ineffassign                                                                                                                                                                                                                              
-    - staticcheck                                                                                                                                                                                                                              
-    - structcheck                                                                                                                                                                                                                              
-    - typecheck                                                                                                                                                                                                                                
-    - unused                                                                                                                                                                                                                                   
-    - varcheck                                                                                                                                                                                                                                 
-    - bodyclose                                                                                                                                                                                                                                
+    - goimports
+    - scopelint
+    - gocyclo
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - structcheck
+    - typecheck
+    - varcheck
+    - bodyclose
     - golint
-    - misspell                                                                                                                                                                                                                                 
+    - misspell
+  disable:
+    - errcheck # errcheck is too noisy for now
+    - deadcode # got some code in here I'll reuse soon
+    - unused   # same FPs as deadcode rn
 run:
   deadline: 5m
+  skip-dirs:
+    - zerotier-client # we won't need this soon

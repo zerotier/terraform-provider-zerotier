@@ -2,6 +2,7 @@ package zerotier
 
 import (
 	"context"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	zt "github.com/someara/terraform-provider-zerotier/zerotier-client"
@@ -32,14 +33,14 @@ func Provider() *schema.Provider {
 }
 
 func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
-	zerotier_controller_url := d.Get("zerotier_controller_url").(string)
-	zerotier_controller_token := d.Get("zerotier_controller_token").(string)
+	ztControllerURL := d.Get("zerotier_controller_url").(string)
+	ztControllerToken := d.Get("zerotier_controller_token").(string)
 
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
-	if (zerotier_controller_url != "") && (zerotier_controller_token != "") {
-		c, err := zt.NewClient(&zerotier_controller_url, &zerotier_controller_token)
+	if (ztControllerURL != "") && (ztControllerToken != "") {
+		c, err := zt.NewClient(&ztControllerURL, &ztControllerToken)
 		if err != nil {
 			return nil, diag.FromErr(err)
 		}
