@@ -53,9 +53,9 @@ func resourceNetworkCreate(ctx context.Context, d *schema.ResourceData, m interf
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
 			Summary:  "Unable to create ZeroTier Network",
-			Detail:   "CreateNetwork returned error",
+			Detail:   fmt.Sprintf("CreateNetwork returned error: %v", err),
 		})
-		return diag.FromErr(err)
+		return diags
 	}
 
 	d.SetId(n.Id)
@@ -68,21 +68,21 @@ func resourceNetworkRead(ctx context.Context, d *schema.ResourceData, m interfac
 	c := m.(*zt.Client)
 	var diags diag.Diagnostics
 
-	zerotier_network_id := d.Id()
-	zerotier_network, err := c.GetNetwork(zerotier_network_id)
+	ztNetworkID := d.Id()
+	ztNetwork, err := c.GetNetwork(ztNetworkID)
 
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
 			Summary:  "Unable to read ZeroTier Network",
-			Detail:   "GetNetwork returned error",
+			Detail:   fmt.Sprintf("GetNetwork returned error: %v", err),
 		})
-		return diag.FromErr(err)
+		return diags
 	}
 
-	d.SetId(zerotier_network_id)
-	d.Set("name", zerotier_network.Config.Name)
-	d.Set("description", zerotier_network.Description)
+	d.SetId(ztNetworkID)
+	d.Set("name", ztNetwork.Config.Name)
+	d.Set("description", ztNetwork.Description)
 
 	return diags
 }
@@ -91,23 +91,32 @@ func resourceNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interf
 	c := m.(*zt.Client)
 	var diags diag.Diagnostics
 
-	zerotier_network_id := d.Id()
-	zerotier_network, err := c.GetNetwork(zerotier_network_id)
+	ztNetworkID := d.Id()
+	ztNetwork, err := c.GetNetwork(ztNetworkID)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	if d.HasChange("description") {
-		zerotier_network.Description = d.Get("description").(string)
+		ztNetwork.Description = d.Get("description").(string)
 
-		f, _ := os.Create("test.txt")
-		f.WriteString(fmt.Sprintf("%v", zerotier_network))
+		f, err := os.Create("test.txt")
+		if err != nil {
+			return diag.FromErr(err)
+		}
 
-		_, err = c.UpdateNetwork(zerotier_network_id, zerotier_network)
+		if _, err := f.WriteString(fmt.Sprintf("%v", ztNetwork)); err != nil {
+			return diag.FromErr(err)
+		}
+
+		_, err = c.UpdateNetwork(ztNetworkID, ztNetwork)
 		if err != nil {
 			diags = append(diags, diag.Diagnostic{
 				Severity: diag.Error,
 				Summary:  "Unable to update ZeroTier Network description",
-				Detail:   "UpdateNetwork returned error",
+				Detail:   fmt.Sprintf("UpdateNetwork returned error: %v", err),
 			})
-			return diag.FromErr(err)
+			return diags
 		}
 		d.Set("last_updated", time.Now().Format(time.RFC850))
 	}
@@ -152,32 +161,32 @@ func parseV6AssignMode(m interface{}) zt.V6AssignMode {
 	}
 }
 
-func parseIpAssignmentPools(m []interface{}) []zt.IpRange {
-	var ip_range_list []zt.IpRange
-	for _, ip_range := range m {
-		r := ip_range.(map[string]interface{})
-		ip_range_start := r["ip_range_start"].(string)
-		ip_range_end := r["ip_range_end"].(string)
+func parseIPAssignmentPools(m []interface{}) []zt.IpRange {
+	var ipRangeList []zt.IpRange
+	for _, ipRange := range m {
+		r := ipRange.(map[string]interface{})
+		ipRangeStart := r["ipRangeStart"].(string)
+		ipRangeEnd := r["ipRangeEnd"].(string)
 
-		ip_range_list = append(ip_range_list, zt.IpRange{
-			Start: ip_range_start,
-			End:   ip_range_end,
+		ipRangeList = append(ipRangeList, zt.IpRange{
+			Start: ipRangeStart,
+			End:   ipRangeEnd,
 		})
 	}
-	return ip_range_list
+	return ipRangeList
 }
 
 func parseRoutes(data []interface{}) []zt.Route {
-	var route_list []zt.Route
+	var routeList []zt.Route
 	for _, route := range data {
 		r := route.(map[string]interface{})
 		via := r["via"].(string)
 		target := r["target"].(string)
 
-		route_list = append(route_list, zt.Route{
+		routeList = append(routeList, zt.Route{
 			Target: target,
 			Via:    via,
 		})
 	}
-	return route_list
+	return routeList
 }

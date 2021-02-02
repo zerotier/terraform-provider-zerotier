@@ -91,9 +91,9 @@ func resourceMemberRead(ctx context.Context, d *schema.ResourceData, m interface
 	c := m.(*zt.Client)
 	var diags diag.Diagnostics
 
-	zerotier_network_id, zerotier_node_id := resourceNetworkAndNodeIdentifiers(d)
+	ztNetworkID, ztNodeID := resourceNetworkAndNodeIdentifiers(d)
 
-	member, err := c.GetMember(zerotier_network_id, zerotier_node_id)
+	member, err := c.GetMember(ztNetworkID, ztNodeID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -106,8 +106,8 @@ func resourceMemberRead(ctx context.Context, d *schema.ResourceData, m interface
 	d.SetId(member.Id)
 	d.Set("name", member.Name)
 	d.Set("description", member.Description)
-	d.Set("node_id", zerotier_node_id)
-	d.Set("network_id", zerotier_network_id)
+	d.Set("node_id", ztNodeID)
+	d.Set("network_id", ztNetworkID)
 	d.Set("hidden", member.Hidden)
 	d.Set("offline_notify_delay", member.OfflineNotifyDelay)
 	d.Set("authorized", member.Config.Authorized)
@@ -170,7 +170,10 @@ func resourceMemberDelete(ctx context.Context, d *schema.ResourceData, m interfa
 		return diag.FromErr(err)
 	}
 
-	err = c.DeleteMember(member)
+	if err := c.DeleteMember(member); err != nil {
+		return diag.FromErr(err)
+	}
+
 	return diags
 }
 
@@ -208,14 +211,14 @@ func setTags(d *schema.ResourceData, member *zt.Member) {
 }
 
 func resourceNetworkAndNodeIdentifiers(d *schema.ResourceData) (string, string) {
-	zerotier_network_id := d.Get("network_id").(string)
+	ztNetworkID := d.Get("network_id").(string)
 	nodeID := d.Get("node_id").(string)
 
-	if zerotier_network_id == "" && nodeID == "" {
+	if ztNetworkID == "" && nodeID == "" {
 		parts := strings.Split(d.Id(), "-")
-		zerotier_network_id, nodeID = parts[0], parts[1]
+		ztNetworkID, nodeID = parts[0], parts[1]
 	}
-	return zerotier_network_id, nodeID
+	return ztNetworkID, nodeID
 }
 
 //
