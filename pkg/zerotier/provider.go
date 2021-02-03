@@ -5,7 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	zt "github.com/someara/terraform-provider-zerotier/zerotier-client"
+	zt "github.com/someara/terraform-provider-zerotier/pkg/zerotier-client"
 )
 
 // Provider -
