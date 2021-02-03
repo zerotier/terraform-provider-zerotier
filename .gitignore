@@ -34,3 +34,4 @@ terraform-provider-zerotier
 
 dist
 /bin
+/test-token.txt

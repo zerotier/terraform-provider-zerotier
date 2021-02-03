@@ -11,7 +11,7 @@ ifeq ($(QUIET_TESTS),)
 TEST_VERBOSE = -v
 endif
 
-ifneq ($(FORCE_TEST),)
+ifneq ($(FORCE_TESTS),)
 TEST_COUNT = -count 1
 else 
 TEST_COUNT = 
