@@ -7,6 +7,16 @@ VERSION=0.2
 OS_ARCH=darwin_amd64
 GOLANGCI_LINT_VERSION := 1.34.1
 
+ifeq ($(QUIET_TESTS),)
+TEST_VERBOSE = -v
+endif
+
+ifneq ($(FORCE_TEST),)
+TEST_COUNT = -count 1
+else 
+TEST_COUNT = 
+endif
+
 default: install
 
 build:
@@ -30,16 +40,12 @@ install: build
 	mkdir -p ~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/${OS_ARCH}
 	mv ${BINARY} ~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/${OS_ARCH}
 
-test: 
-	go test -i $(TEST) || exit 1												   
-	echo $(TEST) | xargs -t -n4 go test $(TESTARGS) -timeout=30s -parallel=4					
-
-testacc: 
-	TF_ACC=1 go test $(TEST) -v $(TESTARGS) -timeout 120m   
-
 fmt:
 	go fmt ./...
 	terraform fmt -recursive .
+
+test:
+	go test ${TEST_VERBOSE} ./... ${TEST_COUNT}
 
 lint: bin/golangci-lint
 	bin/golangci-lint run -v
