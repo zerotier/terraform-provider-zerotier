@@ -4,6 +4,7 @@ go 1.14
 
 require (
 	github.com/agext/levenshtein v1.2.3 // indirect
+	github.com/erikh/tftest v0.0.0-20210203073404-97d59897f8a4
 	github.com/fatih/color v1.10.0 // indirect
 	github.com/golang/protobuf v1.4.3 // indirect
 	github.com/google/go-cmp v0.5.4 // indirect
