@@ -47,6 +47,9 @@ lint: bin/golangci-lint
 reflex-lint: bin/reflex
 	bin/reflex -r '\.go$$' make lint
 
+reflex-build: bin/reflex
+	bin/reflex -r '\.go$$' -- go build ./...
+
 reflex-test: bin/reflex
 	bin/reflex -r '\.go$$' make test
 
