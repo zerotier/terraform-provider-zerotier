@@ -71,7 +71,6 @@ func TestIdentity(t *testing.T) {
 }
 
 func TestBasicNetworkSetup(t *testing.T) {
-	t.Skip("test fails because we need to upgrade the client")
 	tf := tftest.New(t)
 	tf.Apply("testdata/plans/basic-network.tf")
 }
