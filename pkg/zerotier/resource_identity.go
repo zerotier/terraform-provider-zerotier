@@ -5,7 +5,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	ztutil "github.com/someara/terraform-provider-zerotier/zerotier-client/ztutil"
+	"github.com/zerotier/go-ztidentity"
 )
 
 func resourceIdentity() *schema.Resource {
@@ -33,7 +33,7 @@ func resourceIdentity() *schema.Resource {
 }
 
 func resourceIdentityCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	ident := ztutil.NewZeroTierIdentity()
+	ident := ztidentity.NewZeroTierIdentity()
 
 	d.SetId(ident.IDString())
 

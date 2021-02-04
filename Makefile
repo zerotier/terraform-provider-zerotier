@@ -4,10 +4,24 @@ NAMESPACE=dev
 NAME=zerotier
 BINARY=terraform-provider-${NAME}
 VERSION=0.2
-OS_ARCH=darwin_amd64
-GOLANGCI_LINT_VERSION := 1.34.1
+OS_ARCH=$(shell go env GOOS)_$(shell go env GOARCH)
+GOLANGCI_LINT_VERSION=1.34.1
+
+ifeq ($(QUIET_TESTS),)
+TEST_VERBOSE = -v
+endif
+
+ifneq ($(FORCE_TESTS),)
+TEST_COUNT = -count 1
+else 
+TEST_COUNT = 
+endif
 
 default: install
+
+mktfrc:
+	@echo Creating bootstrap terraform rc file in test.tfrc...
+	sh mktfrc.sh
 
 build:
 	go build -o ${BINARY}
@@ -30,16 +44,13 @@ install: build
 	mkdir -p ~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/${OS_ARCH}
 	mv ${BINARY} ~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/${OS_ARCH}
 
-test: 
-	go test -i $(TEST) || exit 1												   
-	echo $(TEST) | xargs -t -n4 go test $(TESTARGS) -timeout=30s -parallel=4					
-
-testacc: 
-	TF_ACC=1 go test $(TEST) -v $(TESTARGS) -timeout 120m   
-
 fmt:
 	go fmt ./...
 	terraform fmt -recursive .
+
+test: mktfrc
+	go build -o .tfdata/registry.terraform.io/hashicorp/zerotier/1.0.0/${OS_ARCH}/${BINARY}
+	go test ${TEST_VERBOSE} ./... ${TEST_COUNT}
 
 lint: bin/golangci-lint
 	bin/golangci-lint run -v
@@ -47,8 +58,11 @@ lint: bin/golangci-lint
 reflex-lint: bin/reflex
 	bin/reflex -r '\.go$$' make lint
 
+reflex-build: bin/reflex
+	bin/reflex -r '\.go$$' -- go build ./...
+
 reflex-test: bin/reflex
-	bin/reflex -r '\.go$$' make test
+	bin/reflex -r '\.(go|tf)$$' make test
 
 bin/golangci-lint:
 	mkdir -p bin

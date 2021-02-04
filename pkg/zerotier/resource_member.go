@@ -8,7 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	zt "github.com/someara/terraform-provider-zerotier/zerotier-client"
+	"github.com/zerotier/go-ztcentral"
 )
 
 func resourceMember() *schema.Resource {
@@ -88,12 +88,12 @@ func resourceMember() *schema.Resource {
 //
 
 func resourceMemberRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c := m.(*zt.Client)
+	c := m.(*ztcentral.Client)
 	var diags diag.Diagnostics
 
 	ztNetworkID, ztNodeID := resourceNetworkAndNodeIdentifiers(d)
 
-	member, err := c.GetMember(ztNetworkID, ztNodeID)
+	member, err := c.GetMember(ctx, ztNetworkID, ztNodeID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -103,17 +103,17 @@ func resourceMemberRead(ctx context.Context, d *schema.ResourceData, m interface
 		return nil
 	}
 
-	d.SetId(member.Id)
+	d.SetId(member.ID)
 	d.Set("name", member.Name)
 	d.Set("description", member.Description)
 	d.Set("node_id", ztNodeID)
 	d.Set("network_id", ztNetworkID)
 	d.Set("hidden", member.Hidden)
-	d.Set("offline_notify_delay", member.OfflineNotifyDelay)
+	//d.Set("offline_notify_delay", member.OfflineNotifyDelay)
 	d.Set("authorized", member.Config.Authorized)
 	d.Set("allow_ethernet_bridging", member.Config.ActiveBridge)
-	d.Set("no_auto_assign_ips", member.Config.NoAutoAssignIps)
-	d.Set("ip_assignments", member.Config.IpAssignments)
+	d.Set("no_auto_assign_ips", member.Config.NoAutoAssignIPs)
+	d.Set("ip_assignments", member.Config.IPAssignments)
 	d.Set("capabilities", member.Config.Capabilities)
 	setTags(d, member)
 
@@ -121,7 +121,7 @@ func resourceMemberRead(ctx context.Context, d *schema.ResourceData, m interface
 }
 
 func resourceMemberCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c := m.(*zt.Client)
+	c := m.(*ztcentral.Client)
 	var diags diag.Diagnostics
 
 	member, err := memberInit(d)
@@ -129,18 +129,18 @@ func resourceMemberCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		return diag.FromErr(err)
 	}
 
-	cm, err := c.CreateMember(member)
+	cm, err := c.CreateAuthorizedMember(ctx, member.NetworkID, member.NodeID, member.Name)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(cm.Id)
+	d.SetId(cm.ID)
 	setTags(d, cm)
 	return diags
 }
 
 func resourceMemberUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c := m.(*zt.Client)
+	c := m.(*ztcentral.Client)
 
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
@@ -150,7 +150,7 @@ func resourceMemberUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 		return diag.FromErr(err)
 	}
 
-	updated, err := c.UpdateMember(stored)
+	updated, err := c.UpdateMember(ctx, stored)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -160,7 +160,7 @@ func resourceMemberUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 }
 
 func resourceMemberDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c := m.(*zt.Client)
+	c := m.(*ztcentral.Client)
 
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
@@ -170,7 +170,7 @@ func resourceMemberDelete(ctx context.Context, d *schema.ResourceData, m interfa
 		return diag.FromErr(err)
 	}
 
-	if err := c.DeleteMember(member); err != nil {
+	if err := c.DeleteMember(ctx, member); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -181,28 +181,28 @@ func resourceMemberDelete(ctx context.Context, d *schema.ResourceData, m interfa
 // helpers
 //
 
-func memberInit(d *schema.ResourceData) (*zt.Member, error) {
-	m := &zt.Member{
-		Id:                 d.Id(),
-		NetworkId:          toString(d, "network_id"),
-		NodeId:             toString(d, "node_id"),
-		Hidden:             toBool(d, "hidden"),
-		OfflineNotifyDelay: toInt(d, "offline_notify_delay"),
-		Name:               toString(d, "name"),
-		Description:        toString(d, "description"),
-		Config: zt.MemberConfig{
+func memberInit(d *schema.ResourceData) (*ztcentral.Member, error) {
+	m := &ztcentral.Member{
+		ID:        d.Id(),
+		NetworkID: toString(d, "network_id"),
+		NodeID:    toString(d, "node_id"),
+		Hidden:    toBool(d, "hidden"),
+		//OfflineNotifyDelay: toInt(d, "offline_notify_delay"),
+		Name:        toString(d, "name"),
+		Description: toString(d, "description"),
+		Config: ztcentral.MemberConfig{
 			Authorized:      toBool(d, "authorized"),
 			ActiveBridge:    toBool(d, "allow_ethernet_bridging"),
-			NoAutoAssignIps: toBool(d, "no_auto_assign_ips"),
-			Capabilities:    toIntList(d, "capabilities"),
-			IpAssignments:   toStringList(d, "ip_assignments"),
+			NoAutoAssignIPs: toBool(d, "no_auto_assign_ips"),
+			//Capabilities:    toIntList(d, "capabilities"),
+			IPAssignments: toStringList(d, "ip_assignments"),
 		},
 	}
 	return m, nil
 }
 
-func setTags(d *schema.ResourceData, member *zt.Member) {
-	rawTags := map[string]int{}
+func setTags(d *schema.ResourceData, member *ztcentral.Member) {
+	rawTags := map[string]uint{}
 	for _, tuple := range member.Config.Tags {
 		key := fmt.Sprintf("%d", tuple[0])
 		val := tuple[1]

@@ -34,3 +34,6 @@ terraform-provider-zerotier
 
 dist
 /bin
+/test-token.txt
+/test.tfrc
+/.tfdata

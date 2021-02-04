@@ -21,4 +21,4 @@ linters:
 run:
   deadline: 5m
   skip-dirs:
-    - zerotier-client # we won't need this soon
+    - pkg/zerotier-client # we won't need this soon

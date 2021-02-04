@@ -5,7 +5,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	zt "github.com/someara/terraform-provider-zerotier/zerotier-client"
+	zt "github.com/someara/terraform-provider-zerotier/pkg/zerotier-client"
+	"github.com/zerotier/go-ztcentral"
 )
 
 // Provider -
@@ -15,7 +16,7 @@ func Provider() *schema.Provider {
 			"zerotier_controller_url": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				DefaultFunc: schema.EnvDefaultFunc("ZEROTIER_CONTROLLER_URL", nil),
+				DefaultFunc: schema.EnvDefaultFunc("ZEROTIER_CONTROLLER_URL", zt.HostURL),
 			},
 			"zerotier_controller_token": &schema.Schema{
 				Type:        schema.TypeString,
@@ -40,18 +41,9 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 	var diags diag.Diagnostics
 
 	if (ztControllerURL != "") && (ztControllerToken != "") {
-		c, err := zt.NewClient(&ztControllerURL, &ztControllerToken)
-		if err != nil {
-			return nil, diag.FromErr(err)
-		}
-
+		c := ztcentral.NewClient(ztControllerToken)
 		return c, diags
 	}
 
-	c, err := zt.NewClient(nil, nil)
-	if err != nil {
-		return nil, diag.FromErr(err)
-	}
-
-	return c, diags
+	return nil, diag.Errorf("zerotier_controller_token must be specified, or ZEROTIER_CONTROLLER_TOKEN must be specified in environment")
 }
