@@ -4,8 +4,8 @@ NAMESPACE=dev
 NAME=zerotier
 BINARY=terraform-provider-${NAME}
 VERSION=0.2
-OS_ARCH=darwin_amd64
-GOLANGCI_LINT_VERSION := 1.34.1
+OS_ARCH=$(shell go env GOOS)_$(shell go env GOARCH)
+GOLANGCI_LINT_VERSION=1.34.1
 
 ifeq ($(QUIET_TESTS),)
 TEST_VERBOSE = -v
@@ -18,6 +18,10 @@ TEST_COUNT =
 endif
 
 default: install
+
+mktfrc:
+	@echo Creating bootstrap terraform rc file in test.tfrc...
+	sh mktfrc.sh
 
 build:
 	go build -o ${BINARY}
@@ -44,7 +48,8 @@ fmt:
 	go fmt ./...
 	terraform fmt -recursive .
 
-test:
+test: mktfrc
+	go build -o .tfdata/registry.terraform.io/hashicorp/zerotier/1.0.0/${OS_ARCH}/${BINARY}
 	go test ${TEST_VERBOSE} ./... ${TEST_COUNT}
 
 lint: bin/golangci-lint

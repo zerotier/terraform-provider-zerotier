@@ -14,3 +14,11 @@ func Test00Sanity(t *testing.T) {
 	tf := tftest.New(t)
 	tf.Apply("testdata/plans/sanity-test.tf")
 }
+
+func Test01Plugin(t *testing.T) {
+	// this test just tests that the plugin exists and terraform is not mad about
+	// where is. Other places install it, we just want to make sure it'll work.
+
+	tf := tftest.New(t)
+	tf.Apply("testdata/plans/plugin-sanity-test.tf")
+}

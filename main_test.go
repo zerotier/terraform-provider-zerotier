@@ -4,10 +4,16 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"testing"
+
+	"github.com/someara/terraform-provider-zerotier/pkg/zerotier-client"
 )
 
-var controllerToken = os.Getenv("ZEROTIER_CONTROLLER_TOKEN")
+var (
+	controllerToken = os.Getenv("ZEROTIER_CONTROLLER_TOKEN")
+	controllerURL   = os.Getenv("ZEROTIER_CONTROLLER_URL")
+)
 
 func TestMain(m *testing.M) {
 	if controllerToken == "" {
@@ -24,7 +30,18 @@ func TestMain(m *testing.M) {
 			controllerToken = string(content)
 		}
 	}
+	rc, err := filepath.Abs("test.tfrc")
+	if err != nil {
+		panic(err)
+	}
 
+	os.Setenv("TF_CLI_CONFIG_FILE", rc)
 	os.Setenv("ZEROTIER_CONTROLLER_TOKEN", controllerToken)
+
+	if controllerURL == "" {
+		controllerURL = zerotier.HostURL
+		os.Setenv("ZEROTIER_CONTROLLER_URL", zerotier.HostURL)
+	}
+
 	os.Exit(m.Run())
 }

@@ -15,7 +15,7 @@ func Provider() *schema.Provider {
 			"zerotier_controller_url": &schema.Schema{
 				Type:        schema.TypeString,
 				Required:    true,
-				DefaultFunc: schema.EnvDefaultFunc("ZEROTIER_CONTROLLER_URL", nil),
+				DefaultFunc: schema.EnvDefaultFunc("ZEROTIER_CONTROLLER_URL", zt.HostURL),
 			},
 			"zerotier_controller_token": &schema.Schema{
 				Type:        schema.TypeString,
