@@ -73,8 +73,8 @@ github.com/envoyproxy/go-control-plane v0.9.1-0.20191026205805-5f8ba28d4473/go.m
 github.com/envoyproxy/go-control-plane v0.9.4/go.mod h1:6rpuAdCZL397s3pYoYcLgu1mIlRU8Am5FuJP05cCM98=
 github.com/envoyproxy/go-control-plane v0.9.9-0.20201210154907-fd9021fe5dad/go.mod h1:cXg6YxExXjJnVBQHBLXeUAgxn2UodCpnH306RInaBQk=
 github.com/envoyproxy/protoc-gen-validate v0.1.0/go.mod h1:iSmxcyjqTsJpI2R4NaDN7+kN2VEUnK/pcBlmesArF7c=
-github.com/erikh/tftest v0.0.0-20210203073404-97d59897f8a4 h1:MrPyZMheQMi0oktFx86WQ+3CM2y1/K6s/RFAUaIDi6g=
-github.com/erikh/tftest v0.0.0-20210203073404-97d59897f8a4/go.mod h1:Jd94uBfq6b9i+kDYQTp6mdnh9fg+WHNcG3P5LwXonGg=
+github.com/erikh/tftest v0.0.0-20210204230340-5267aaa9c572 h1:WRAysPPLjxVj6qWFc+mNQJFsKtZEBdn3NisCwCphS3M=
+github.com/erikh/tftest v0.0.0-20210204230340-5267aaa9c572/go.mod h1:Jd94uBfq6b9i+kDYQTp6mdnh9fg+WHNcG3P5LwXonGg=
 github.com/fatih/color v1.7.0 h1:DkWD4oS2D8LGGgTQ6IvwJJXSL5Vp2ffcQg58nFV38Ys=
 github.com/fatih/color v1.7.0/go.mod h1:Zm6kSWBoL9eyXnKyktHP6abPY2pDugNf5KwzbycvMj4=
 github.com/fatih/color v1.10.0 h1:s36xzo75JdqLaaWoiEHk767eHiwo0598uUxyfiPkDsg=
@@ -152,6 +152,8 @@ github.com/hashicorp/go-checkpoint v0.5.0/go.mod h1:7nfLNL10NsxqO4iWuW6tWW0HjZuD
 github.com/hashicorp/go-cleanhttp v0.5.0/go.mod h1:JpRdi6/HCYpAwUzNwuwqhbovhLtngrth3wmdIIUrZ80=
 github.com/hashicorp/go-cleanhttp v0.5.1 h1:dH3aiDG9Jvb5r5+bYHsikaOUIpcM0xvgMXVoDkXMzJM=
 github.com/hashicorp/go-cleanhttp v0.5.1/go.mod h1:JpRdi6/HCYpAwUzNwuwqhbovhLtngrth3wmdIIUrZ80=
+github.com/hashicorp/go-cleanhttp v0.5.2 h1:035FKYIWjmULyFRBKPs8TBQoi0x6d9G4xc9neXJWAZQ=
+github.com/hashicorp/go-cleanhttp v0.5.2/go.mod h1:kO/YDlP8L1346E6Sodw+PrpBSV4/SoxCXGY6BqNFT48=
 github.com/hashicorp/go-cty v1.4.1-0.20200414143053-d3edf31b6320 h1:1/D3zfFHttUKaCaGKZ/dR2roBXv0vKbSCnssIldfQdI=
 github.com/hashicorp/go-cty v1.4.1-0.20200414143053-d3edf31b6320/go.mod h1:EiZBMaudVLy8fmjf9Npq1dq9RalhveqZG5w/yz3mHWs=
 github.com/hashicorp/go-getter v1.4.0/go.mod h1:7qxyCd8rBfcShwsvxgIguu4KbS3l8bUCwg2Umn7RjeY=
@@ -305,8 +307,8 @@ github.com/zclconf/go-cty v1.2.1/go.mod h1:hOPWgoHbaTUnI5k4D2ld+GRpFJSCe6bCM7m1q
 github.com/zclconf/go-cty v1.7.1 h1:AvsC01GMhMLFL8CgEYdHGM+yLnnDOwhPAYcgTkeF0Gw=
 github.com/zclconf/go-cty v1.7.1/go.mod h1:VDR4+I79ubFBGm1uJac1226K5yANQFHeauxPBoP54+o=
 github.com/zclconf/go-cty-debug v0.0.0-20191215020915-b22d67c1ba0b/go.mod h1:ZRKQfBXbGkpdV6QMzT3rU1kSTAnfu1dO8dPKjYprgj8=
-github.com/zerotier/go-ztcentral v0.1.0 h1:MWDUjO0M6JJfiAun/ZdZ8QyXyP1Us9yOu1NByM2zPDc=
-github.com/zerotier/go-ztcentral v0.1.0/go.mod h1:4zqJ53Jw0OjiEYfci1pCY4fZh5wA52yguCdMZKtmUXA=
+github.com/zerotier/go-ztcentral v0.1.1-0.20210204073201-74c2a0fc8d55 h1:u+kxbdqnZHBJFcR2usKuOcg/q/+/Zut02zSmFryoT/4=
+github.com/zerotier/go-ztcentral v0.1.1-0.20210204073201-74c2a0fc8d55/go.mod h1:4zqJ53Jw0OjiEYfci1pCY4fZh5wA52yguCdMZKtmUXA=
 github.com/zerotier/go-ztidentity v1.0.0 h1:dgm1ChTxw1TXMrSJQ6VWK2RmHKVYqRd69h/Co/RG+xo=
 github.com/zerotier/go-ztidentity v1.0.0/go.mod h1:zcOy+qXl5A01QhR6dfqOTPiHFMBEjgPlPpDPAO+2jg4=
 go.opencensus.io v0.21.0/go.mod h1:mSImk1erAIZhrmZN+AvHh14ztQfjbGwt4TtuofqLduU=

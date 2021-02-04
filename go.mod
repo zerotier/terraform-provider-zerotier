@@ -2,15 +2,14 @@ module github.com/someara/terraform-provider-zerotier
 
 go 1.14
 
-replace github.com/zerotier/go-ztcentral => /home/erikh/src/github.com/zerotier/go-ztcentral
-
 require (
 	github.com/agext/levenshtein v1.2.3 // indirect
-	github.com/erikh/tftest v0.0.0-20210203073404-97d59897f8a4
+	github.com/erikh/tftest v0.0.0-20210204230340-5267aaa9c572
 	github.com/fatih/color v1.10.0 // indirect
 	github.com/golang/protobuf v1.4.3 // indirect
 	github.com/google/go-cmp v0.5.4 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
+	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-multierror v1.1.0 // indirect
 	github.com/hashicorp/go-uuid v1.0.2 // indirect
 	github.com/hashicorp/hcl/v2 v2.8.2 // indirect
@@ -21,7 +20,7 @@ require (
 	github.com/mitchellh/mapstructure v1.4.1 // indirect
 	github.com/oklog/run v1.1.0 // indirect
 	github.com/zclconf/go-cty v1.7.1 // indirect
-	github.com/zerotier/go-ztcentral v0.1.0
+	github.com/zerotier/go-ztcentral v0.1.1-0.20210204073201-74c2a0fc8d55
 	github.com/zerotier/go-ztidentity v1.0.0
 	golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad
 	golang.org/x/net v0.0.0-20210119194325-5f4716e94777 // indirect
