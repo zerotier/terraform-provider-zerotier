@@ -62,7 +62,7 @@ reflex-build: bin/reflex
 	bin/reflex -r '\.go$$' -- go build ./...
 
 reflex-test: bin/reflex
-	bin/reflex -r '\.go$$' make test
+	bin/reflex -r '\.(go|tf)$$' make test
 
 bin/golangci-lint:
 	mkdir -p bin

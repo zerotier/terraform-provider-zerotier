@@ -20,15 +20,13 @@ func s(m interface{}) string {
 	return m.(string)
 }
 
-func TestIdentity(t *testing.T) {
-	type identity struct {
-		name    string
-		pubkey  string
-		privkey string
-	}
+type identity struct {
+	name    string
+	pubkey  string
+	privkey string
+}
 
-	tf := tftest.New(t)
-	tf.Apply("testdata/plans/basic-identity.tf")
+func extractIdentities(tf tftest.Harness) map[string]identity {
 	resources := a(tf.State()["resources"])
 
 	ids := map[string]identity{}
@@ -43,6 +41,15 @@ func TestIdentity(t *testing.T) {
 			privkey: s(h(h(a(res["instances"])[0])["attributes"])["private_key"]),
 		}
 	}
+
+	return ids
+}
+
+func TestIdentity(t *testing.T) {
+	tf := tftest.New(t)
+	tf.Apply("testdata/plans/basic-identity.tf")
+
+	ids := extractIdentities(tf)
 
 	if len(ids) != 2 {
 		t.Fatalf("invalid count of identities created")
@@ -61,4 +68,10 @@ func TestIdentity(t *testing.T) {
 			t.Fatalf("%q: pubkey empty", name)
 		}
 	}
+}
+
+func TestBasicNetworkSetup(t *testing.T) {
+	t.Skip("test fails because we need to upgrade the client")
+	tf := tftest.New(t)
+	tf.Apply("testdata/plans/basic-network.tf")
 }
