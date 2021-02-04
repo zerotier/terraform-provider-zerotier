@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/someara/terraform-provider-zerotier/pkg/zerotier-client"
@@ -27,7 +28,7 @@ func TestMain(m *testing.M) {
 				panic(err)
 			}
 
-			controllerToken = string(content)
+			controllerToken = strings.TrimSpace(string(content))
 		}
 	}
 	rc, err := filepath.Abs("test.tfrc")
