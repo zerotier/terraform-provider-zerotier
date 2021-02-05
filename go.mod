@@ -2,6 +2,8 @@ module github.com/someara/terraform-provider-zerotier
 
 go 1.14
 
+replace github.com/zerotier/go-ztcentral => /home/erikh/src/github.com/zerotier/go-ztcentral
+
 require (
 	github.com/agext/levenshtein v1.2.3 // indirect
 	github.com/erikh/tftest v0.0.0-20210204230340-5267aaa9c572

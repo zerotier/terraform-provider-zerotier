@@ -3,7 +3,7 @@ HOSTNAME=zerotier.com
 NAMESPACE=dev
 NAME=zerotier
 BINARY=terraform-provider-${NAME}
-VERSION=0.2
+VERSION=0.2.0
 OS_ARCH=$(shell go env GOOS)_$(shell go env GOARCH)
 GOLANGCI_LINT_VERSION=1.34.1
 
