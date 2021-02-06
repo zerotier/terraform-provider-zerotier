@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math/big"
+	"net"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -54,6 +56,50 @@ func resourceNetwork() *schema.Resource {
 			},
 		},
 	}
+}
+
+// FIXME use this. we'll use it later.
+func mkIPRangeFromCIDR(cidr interface{}) (ztcentral.IPRange, error) {
+	iprange := ztcentral.IPRange{}
+
+	first, nw, err := net.ParseCIDR(cidr.(string))
+	if err != nil {
+		return iprange, err
+	}
+
+	var last net.IP
+
+	prefixLen, bits := nw.Mask.Size()
+
+	if prefixLen == bits {
+		last = first
+	} else {
+		val := big.NewInt(0)
+		val.SetBytes(first)
+		lastVal := big.NewInt(1)
+		lastVal.Lsh(lastVal, uint(bits-prefixLen))
+		lastVal.Sub(lastVal, big.NewInt(1))
+		lastVal.Or(lastVal, val)
+
+		last = net.IP(make([]byte, len(first)))
+		b := lastVal.Bytes()
+		for i := 1; i <= len(b); i++ {
+			last[len(last)-i] = b[len(b)-i]
+		}
+
+		first = net.IP(make([]byte, len(first)))
+		b = val.Bytes()
+		for i := 1; i <= len(b); i++ {
+			first[len(first)-i] = b[len(b)-i]
+		}
+	}
+
+	iprange = ztcentral.IPRange{
+		Start: first.String(),
+		End:   last.String(),
+	}
+
+	return iprange, nil
 }
 
 func mkIPRange(ranges interface{}) ([]ztcentral.IPRange, error) {
