@@ -58,7 +58,7 @@ func resourceNetwork() *schema.Resource {
 	}
 }
 
-// FIXME use this. we'll use it later.
+// FIXME keep this. we'll use it later.
 func mkIPRangeFromCIDR(cidr interface{}) (ztcentral.IPRange, error) {
 	iprange := ztcentral.IPRange{}
 
@@ -183,7 +183,7 @@ func mktfRanges(ranges []ztcentral.IPRange) interface{} {
 	for _, r := range ranges {
 		ret = append(ret, map[string]interface{}{
 			"start": r.Start,
-			"via":   r.End,
+			"end":   r.End,
 		})
 	}
 
@@ -315,46 +315,4 @@ func resourceNetworkDelete(ctx context.Context, d *schema.ResourceData, m interf
 	d.SetId("")
 
 	return diags
-}
-
-//
-// helpers
-//
-
-func parseV4AssignMode(m interface{}) map[string]interface{} {
-	return m.(map[string]interface{})
-}
-
-func parseV6AssignMode(m interface{}) map[string]interface{} {
-	return m.(map[string]interface{})
-}
-
-func parseIPAssignmentPools(m []interface{}) []ztcentral.IPRange {
-	var ipRangeList []ztcentral.IPRange
-	for _, ipRange := range m {
-		r := ipRange.(map[string]interface{})
-		ipRangeStart := r["ipRangeStart"].(string)
-		ipRangeEnd := r["ipRangeEnd"].(string)
-
-		ipRangeList = append(ipRangeList, ztcentral.IPRange{
-			Start: ipRangeStart,
-			End:   ipRangeEnd,
-		})
-	}
-	return ipRangeList
-}
-
-func parseRoutes(data []interface{}) []ztcentral.Route {
-	var routeList []ztcentral.Route
-	for _, route := range data {
-		r := route.(map[string]interface{})
-		via := r["via"].(string)
-		target := r["target"].(string)
-
-		routeList = append(routeList, ztcentral.Route{
-			Target: target,
-			Via:    via,
-		})
-	}
-	return routeList
 }
