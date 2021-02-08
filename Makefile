@@ -3,7 +3,7 @@ HOSTNAME=zerotier.com
 NAMESPACE=dev
 NAME=zerotier
 BINARY=terraform-provider-${NAME}
-VERSION=0.2
+VERSION=0.2.0
 OS_ARCH=$(shell go env GOOS)_$(shell go env GOARCH)
 GOLANGCI_LINT_VERSION=1.34.1
 
@@ -48,7 +48,7 @@ fmt:
 	go fmt ./...
 	terraform fmt -recursive .
 
-test: mktfrc
+test: test-image mktfrc 
 	go build -o .tfdata/registry.terraform.io/hashicorp/zerotier/1.0.0/${OS_ARCH}/${BINARY}
 	go test ${TEST_VERBOSE} ./... ${TEST_COUNT}
 
@@ -70,3 +70,12 @@ bin/golangci-lint:
 
 bin/reflex:
 	GO111MODULE=off GOBIN=${PWD}/bin go get -u github.com/cespare/reflex
+
+ifdef NOCACHE
+NOCACHE_FLAG=--no-cache
+else
+NOCACHE_FLAG=
+endif
+
+test-image:
+	docker build ${NOCACHE_FLAG} --pull -t zerotier/terraform-test .

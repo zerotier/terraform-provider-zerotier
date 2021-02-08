@@ -2,8 +2,10 @@ package zerotier
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"os"
+	"math/big"
+	"net"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -32,15 +34,181 @@ func resourceNetwork() *schema.Resource {
 				Optional: true,
 				Default:  "Managed by Terraform",
 			},
+			"routes": &schema.Schema{
+				Type: schema.TypeList,
+				Elem: &schema.Schema{
+					Type: schema.TypeMap,
+					Elem: &schema.Schema{
+						Type: schema.TypeString,
+					},
+				},
+				Optional: true,
+			},
+			"assignment_pool": &schema.Schema{
+				Type: schema.TypeList,
+				Elem: &schema.Schema{
+					Type: schema.TypeMap,
+					Elem: &schema.Schema{
+						Type: schema.TypeString,
+					},
+				},
+				Optional: true,
+			},
 		},
 	}
+}
+
+// FIXME keep this. we'll use it later.
+func mkIPRangeFromCIDR(cidr interface{}) (ztcentral.IPRange, error) {
+	iprange := ztcentral.IPRange{}
+
+	first, nw, err := net.ParseCIDR(cidr.(string))
+	if err != nil {
+		return iprange, err
+	}
+
+	var last net.IP
+
+	prefixLen, bits := nw.Mask.Size()
+
+	if prefixLen == bits {
+		last = first
+	} else {
+		val := big.NewInt(0)
+		val.SetBytes(first)
+		lastVal := big.NewInt(1)
+		lastVal.Lsh(lastVal, uint(bits-prefixLen))
+		lastVal.Sub(lastVal, big.NewInt(1))
+		lastVal.Or(lastVal, val)
+
+		last = net.IP(make([]byte, len(first)))
+		b := lastVal.Bytes()
+		for i := 1; i <= len(b); i++ {
+			last[len(last)-i] = b[len(b)-i]
+		}
+
+		first = net.IP(make([]byte, len(first)))
+		b = val.Bytes()
+		for i := 1; i <= len(b); i++ {
+			first[len(first)-i] = b[len(b)-i]
+		}
+	}
+
+	iprange = ztcentral.IPRange{
+		Start: first.String(),
+		End:   last.String(),
+	}
+
+	return iprange, nil
+}
+
+func mkIPRange(ranges interface{}) ([]ztcentral.IPRange, error) {
+	if ranges == nil {
+		return []ztcentral.IPRange{}, nil
+	}
+
+	ret := []ztcentral.IPRange{}
+
+	for _, r := range ranges.([]interface{}) {
+		var start, end string
+		m := r.(map[string]interface{})
+		if s, ok := m["start"]; ok {
+			start = s.(string)
+		} else {
+			return ret, errors.New("start does not exist")
+		}
+
+		if e, ok := m["end"]; ok {
+			end = e.(string)
+		} else {
+			return ret, errors.New("end does not exist")
+		}
+
+		ret = append(ret, ztcentral.IPRange{
+			Start: start,
+			End:   end,
+		})
+	}
+
+	return ret, nil
+}
+
+func mkRoutes(routes interface{}) ([]ztcentral.Route, error) {
+	if routes == nil {
+		return []ztcentral.Route{}, nil
+	}
+
+	ret := []ztcentral.Route{}
+
+	for _, route := range routes.([]interface{}) {
+		var target, via string
+		m := route.(map[string]interface{})
+		if t, ok := m["target"]; ok {
+			target = t.(string)
+		} else {
+			return ret, errors.New("target does not exist")
+		}
+
+		if v, ok := m["via"]; ok {
+			via = v.(string)
+		} else {
+			return ret, errors.New("target does not exist")
+		}
+
+		ret = append(ret, ztcentral.Route{
+			Target: target,
+			Via:    via,
+		})
+	}
+
+	return ret, nil
+}
+
+func mktfRoutes(routes []ztcentral.Route) interface{} {
+	ret := []map[string]interface{}{}
+
+	for _, route := range routes {
+		ret = append(ret, map[string]interface{}{
+			"target": route.Target,
+			"via":    route.Via,
+		})
+	}
+
+	return ret
+}
+
+func mktfRanges(ranges []ztcentral.IPRange) interface{} {
+	ret := []map[string]interface{}{}
+
+	for _, r := range ranges {
+		ret = append(ret, map[string]interface{}{
+			"start": r.Start,
+			"end":   r.End,
+		})
+	}
+
+	return ret
 }
 
 func resourceNetworkCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := m.(*ztcentral.Client)
 	var diags diag.Diagnostics
 
-	n, err := c.NewNetwork(ctx, d.Get("name").(string))
+	routes, err := mkRoutes(d.Get("routes"))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	ipranges, err := mkIPRange(d.Get("assignment_pool"))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	n, err := c.NewNetwork(ctx, d.Get("name").(string), &ztcentral.NetworkConfig{
+		IPAssignmentPool: ipranges,
+		Routes:           routes,
+	})
+
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
@@ -76,6 +244,8 @@ func resourceNetworkRead(ctx context.Context, d *schema.ResourceData, m interfac
 
 	d.Set("name", ztNetwork.Config.Name)
 	d.Set("description", ztNetwork.Description)
+	d.Set("routes", mktfRoutes(ztNetwork.Config.Routes))
+	d.Set("assignment_pool", mktfRanges(ztNetwork.Config.IPAssignmentPool))
 
 	return diags
 }
@@ -90,20 +260,33 @@ func resourceNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interf
 		return diag.FromErr(err)
 	}
 
+	var changed bool
+
 	if d.HasChange("description") {
+		changed = true
 		ztNetwork.Description = d.Get("description").(string)
+	}
 
-		f, err := os.Create("test.txt")
+	if d.HasChange("routes") {
+		changed = true
+		var err error
+		ztNetwork.Config.Routes, err = mkRoutes(d.Get("routes"))
 		if err != nil {
-			return diag.FromErr(err)
+			diags = append(diags, diag.FromErr(err)...)
 		}
+	}
 
-		if _, err := f.WriteString(fmt.Sprintf("%v", ztNetwork)); err != nil {
-			return diag.FromErr(err)
-		}
-
-		_, err = c.UpdateNetwork(ctx, ztNetwork)
+	if d.HasChange("assignment_pool") {
+		changed = true
+		var err error
+		ztNetwork.Config.IPAssignmentPool, err = mkIPRange(d.Get("assignment_pool"))
 		if err != nil {
+			diags = append(diags, diag.FromErr(err)...)
+		}
+	}
+
+	if changed {
+		if _, err := c.UpdateNetwork(ctx, ztNetwork); err != nil {
 			diags = append(diags, diag.Diagnostic{
 				Severity: diag.Error,
 				Summary:  "Unable to update ZeroTier Network description",
@@ -132,46 +315,4 @@ func resourceNetworkDelete(ctx context.Context, d *schema.ResourceData, m interf
 	d.SetId("")
 
 	return diags
-}
-
-//
-// helpers
-//
-
-func parseV4AssignMode(m interface{}) map[string]interface{} {
-	return m.(map[string]interface{})
-}
-
-func parseV6AssignMode(m interface{}) map[string]interface{} {
-	return m.(map[string]interface{})
-}
-
-func parseIPAssignmentPools(m []interface{}) []ztcentral.IPRange {
-	var ipRangeList []ztcentral.IPRange
-	for _, ipRange := range m {
-		r := ipRange.(map[string]interface{})
-		ipRangeStart := r["ipRangeStart"].(string)
-		ipRangeEnd := r["ipRangeEnd"].(string)
-
-		ipRangeList = append(ipRangeList, ztcentral.IPRange{
-			Start: ipRangeStart,
-			End:   ipRangeEnd,
-		})
-	}
-	return ipRangeList
-}
-
-func parseRoutes(data []interface{}) []ztcentral.Route {
-	var routeList []ztcentral.Route
-	for _, route := range data {
-		r := route.(map[string]interface{})
-		via := r["via"].(string)
-		target := r["target"].(string)
-
-		routeList = append(routeList, ztcentral.Route{
-			Target: target,
-			Via:    via,
-		})
-	}
-	return routeList
 }
