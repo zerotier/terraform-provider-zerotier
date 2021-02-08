@@ -13,7 +13,7 @@ resource "docker_network" "private_network" {
 }
 
 resource "docker_image" "zerotier" {
-  name         = "bltavares/zerotier"
+  name         = "zerotier/terraform-test"
   keep_locally = true
 }
 
