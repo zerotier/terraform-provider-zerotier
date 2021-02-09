@@ -26,7 +26,7 @@ type identity struct {
 	privkey string
 }
 
-func extractIdentities(tf tftest.Harness) map[string]identity {
+func extractIdentities(tf *tftest.Harness) map[string]identity {
 	resources := a(tf.State()["resources"])
 
 	ids := map[string]identity{}
@@ -46,7 +46,7 @@ func extractIdentities(tf tftest.Harness) map[string]identity {
 }
 
 func TestIdentity(t *testing.T) {
-	tf := tftest.New(t)
+	tf := getTFTest(t)
 	tf.Apply("testdata/plans/basic-identity.tf")
 
 	ids := extractIdentities(tf)
@@ -71,6 +71,6 @@ func TestIdentity(t *testing.T) {
 }
 
 func TestBasicNetworkSetup(t *testing.T) {
-	tf := tftest.New(t)
+	tf := getTFTest(t)
 	tf.Apply("testdata/plans/basic-network.tf")
 }
