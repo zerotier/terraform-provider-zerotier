@@ -129,7 +129,7 @@ func resourceMemberCreate(ctx context.Context, d *schema.ResourceData, m interfa
 		return diag.FromErr(err)
 	}
 
-	cm, err := c.CreateAuthorizedMember(ctx, member.NetworkID, member.NodeID, member.Name)
+	cm, err := c.CreateAuthorizedMember(ctx, member.NetworkID, member.MemberID, member.Name)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -185,7 +185,7 @@ func memberInit(d *schema.ResourceData) (*ztcentral.Member, error) {
 	m := &ztcentral.Member{
 		ID:        d.Id(),
 		NetworkID: toString(d, "network_id"),
-		NodeID:    toString(d, "node_id"),
+		MemberID:  toString(d, "node_id"),
 		Hidden:    toBool(d, "hidden"),
 		//OfflineNotifyDelay: toInt(d, "offline_notify_delay"),
 		Name:        toString(d, "name"),

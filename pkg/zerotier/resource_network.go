@@ -213,6 +213,8 @@ func resourceNetworkCreate(ctx context.Context, d *schema.ResourceData, m interf
 	n, err := c.NewNetwork(ctx, d.Get("name").(string), &ztcentral.NetworkConfig{
 		IPAssignmentPool: ipranges,
 		Routes:           routes,
+		IPV4AssignMode:   ztcentral.IPV4AssignMode{ZeroTier: true},
+		IPV6AssignMode:   ztcentral.IPV6AssignMode{ZeroTier: true},
 	})
 
 	if err != nil {

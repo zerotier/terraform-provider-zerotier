@@ -36,7 +36,7 @@ require (
 	github.com/opencontainers/image-spec v1.0.1 // indirect
 	github.com/sirupsen/logrus v1.7.0 // indirect
 	github.com/zclconf/go-cty v1.7.1 // indirect
-	github.com/zerotier/go-ztcentral v0.1.1-0.20210205131135-71acc816c175
+	github.com/zerotier/go-ztcentral v0.2.0
 	github.com/zerotier/go-ztidentity v1.0.0
 	golang.org/x/net v0.0.0-20210119194325-5f4716e94777 // indirect
 	golang.org/x/text v0.3.5 // indirect
