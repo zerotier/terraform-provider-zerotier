@@ -50,7 +50,7 @@ fmt:
 
 test: test-image mktfrc 
 	go build -o .tfdata/registry.terraform.io/hashicorp/zerotier/1.0.0/${OS_ARCH}/${BINARY}
-	go test ${TEST_VERBOSE} ./... ${TEST_COUNT}
+	go test ${TEST_VERBOSE} ./... ${TEST_COUNT} -p 1 # one test at at time
 
 lint: bin/golangci-lint
 	bin/golangci-lint run -v

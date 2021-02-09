@@ -13,7 +13,6 @@ import (
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/stdcopy"
-	"github.com/erikh/tftest"
 )
 
 var (
@@ -114,7 +113,7 @@ func execContainer(ctx context.Context, docker *client.Client, containerID strin
 }
 
 func TestDockerPing(t *testing.T) {
-	tf := tftest.New(t)
+	tf := getTFTest(t)
 	tf.Apply("testdata/plans/docker-integration.tf")
 
 	var aliceCID, bobCID string

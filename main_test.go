@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/erikh/tftest"
 	"github.com/someara/terraform-provider-zerotier/pkg/zerotier-client"
 )
 
@@ -45,4 +46,10 @@ func TestMain(m *testing.M) {
 	}
 
 	os.Exit(m.Run())
+}
+
+func getTFTest(t *testing.T) *tftest.Harness {
+	tf := tftest.New(t)
+	tf.HandleSignals(true)
+	return tf
 }
