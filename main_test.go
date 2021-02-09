@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/erikh/tftest"
-	"github.com/someara/terraform-provider-zerotier/pkg/zerotier-client"
+	"github.com/someara/terraform-provider-zerotier/pkg/zerotier"
 )
 
 var (
