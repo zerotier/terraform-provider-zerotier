@@ -20,31 +20,38 @@ func resourceNetwork() *schema.Resource {
 		UpdateContext: resourceNetworkUpdate,
 		DeleteContext: resourceNetworkDelete,
 		Schema: map[string]*schema.Schema{
-			"last_updated": &schema.Schema{
+			"last_updated": {
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
 			},
-			"name": &schema.Schema{
+			"name": {
 				Type:     schema.TypeString,
 				Required: true,
 			},
-			"description": &schema.Schema{
+			"description": {
 				Type:     schema.TypeString,
 				Optional: true,
 				Default:  "Managed by Terraform",
 			},
-			"routes": &schema.Schema{
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeMap,
-					Elem: &schema.Schema{
-						Type: schema.TypeString,
+			"route": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				ForceNew: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"via": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"target": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
 					},
 				},
-				Optional: true,
 			},
-			"assignment_pool": &schema.Schema{
+			"assignment_pool": {
 				Type: schema.TypeList,
 				Elem: &schema.Schema{
 					Type: schema.TypeMap,
@@ -134,15 +141,11 @@ func mkIPRange(ranges interface{}) ([]ztcentral.IPRange, error) {
 }
 
 func mkRoutes(routes interface{}) ([]ztcentral.Route, error) {
-	if routes == nil {
-		return []ztcentral.Route{}, nil
-	}
-
 	ret := []ztcentral.Route{}
 
-	for _, route := range routes.([]interface{}) {
+	for _, r := range routes.(*schema.Set).List() {
+		m := r.(map[string]interface{})
 		var target, via string
-		m := route.(map[string]interface{})
 		if t, ok := m["target"]; ok {
 			target = t.(string)
 		} else {
@@ -194,7 +197,7 @@ func resourceNetworkCreate(ctx context.Context, d *schema.ResourceData, m interf
 	c := m.(*ztcentral.Client)
 	var diags diag.Diagnostics
 
-	routes, err := mkRoutes(d.Get("routes"))
+	routes, err := mkRoutes(d.Get("route"))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -217,8 +220,6 @@ func resourceNetworkCreate(ctx context.Context, d *schema.ResourceData, m interf
 		})
 		return diags
 	}
-
-	fmt.Println(n.ID)
 
 	d.SetId(n.ID)
 
@@ -244,7 +245,7 @@ func resourceNetworkRead(ctx context.Context, d *schema.ResourceData, m interfac
 
 	d.Set("name", ztNetwork.Config.Name)
 	d.Set("description", ztNetwork.Description)
-	d.Set("routes", mktfRoutes(ztNetwork.Config.Routes))
+	d.Set("route", mktfRoutes(ztNetwork.Config.Routes))
 	d.Set("assignment_pool", mktfRanges(ztNetwork.Config.IPAssignmentPool))
 
 	return diags
@@ -267,10 +268,10 @@ func resourceNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interf
 		ztNetwork.Description = d.Get("description").(string)
 	}
 
-	if d.HasChange("routes") {
+	if d.HasChange("route") {
 		changed = true
 		var err error
-		ztNetwork.Config.Routes, err = mkRoutes(d.Get("routes"))
+		ztNetwork.Config.Routes, err = mkRoutes(d.Get("route"))
 		if err != nil {
 			diags = append(diags, diag.FromErr(err)...)
 		}

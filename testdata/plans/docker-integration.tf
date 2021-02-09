@@ -80,10 +80,10 @@ resource "zerotier_network" "docker_network" {
     end   = "10.0.1.253"
   }]
 
-  routes = [{
+  route {
     target = var.ipv4_cidr
     via    = "10.0.0.1"
-  }]
+  }
 }
 
 resource "zerotier_identity" "alice" {}
