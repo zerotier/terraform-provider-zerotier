@@ -42,24 +42,31 @@ func resourceNetwork() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"via": {
 							Type:     schema.TypeString,
-							Optional: true,
+							Required: true,
 						},
 						"target": {
 							Type:     schema.TypeString,
-							Optional: true,
+							Required: true,
 						},
 					},
 				},
 			},
 			"assignment_pool": {
-				Type: schema.TypeList,
-				Elem: &schema.Schema{
-					Type: schema.TypeMap,
-					Elem: &schema.Schema{
-						Type: schema.TypeString,
+				Type:     schema.TypeSet,
+				Optional: true,
+				ForceNew: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"start": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
+						"end": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
 					},
 				},
-				Optional: true,
 			},
 		},
 	}
@@ -110,15 +117,11 @@ func mkIPRangeFromCIDR(cidr interface{}) (ztcentral.IPRange, error) {
 }
 
 func mkIPRange(ranges interface{}) ([]ztcentral.IPRange, error) {
-	if ranges == nil {
-		return []ztcentral.IPRange{}, nil
-	}
-
 	ret := []ztcentral.IPRange{}
 
-	for _, r := range ranges.([]interface{}) {
-		var start, end string
+	for _, r := range ranges.(*schema.Set).List() {
 		m := r.(map[string]interface{})
+		var start, end string
 		if s, ok := m["start"]; ok {
 			start = s.(string)
 		} else {

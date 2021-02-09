@@ -75,10 +75,11 @@ variable "ipv4_cidr" {
 
 resource "zerotier_network" "docker_network" {
   name = "docker"
-  assignment_pool = [{
+
+  assignment_pool {
     start = "10.0.1.2"
     end   = "10.0.1.253"
-  }]
+  }
 
   route {
     target = var.ipv4_cidr
