@@ -17,6 +17,12 @@ else
 TEST_COUNT = 
 endif
 
+ifneq ($(TEST),)
+RUN_TEST=-run "$(TEST)"
+else
+RUN_TEST=
+endif
+
 default: install
 
 mktfrc:
@@ -48,9 +54,11 @@ fmt:
 	go fmt ./...
 	terraform fmt -recursive .
 
-test: test-image mktfrc 
-	go build -o .tfdata/registry.terraform.io/hashicorp/zerotier/1.0.0/${OS_ARCH}/${BINARY}
-	go test ${TEST_VERBOSE} ./... ${TEST_COUNT} -p 1 # one test at at time
+test-build:
+	go build -o .tfdata/registry.terraform.io/hashicorp/zerotier/${VERSION}/${OS_ARCH}/${BINARY}
+
+test: test-image mktfrc test-build
+	go test ${TEST_VERBOSE} ./... ${TEST_COUNT} ${RUN_TEST} -p 1 # one test at at time
 
 lint: bin/golangci-lint
 	bin/golangci-lint run -v
