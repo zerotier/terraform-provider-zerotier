@@ -17,9 +17,12 @@ func resourceNetwork() *schema.Resource {
 		UpdateContext: resourceNetworkUpdate,
 		DeleteContext: resourceNetworkDelete,
 		Schema: map[string]*schema.Schema{
-			"last_updated": {
-				Type:     schema.TypeString,
-				Optional: true,
+			"creation_time": {
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
+			"tf_last_updated": {
+				Type:     schema.TypeInt,
 				Computed: true,
 			},
 			"name": {
@@ -30,6 +33,26 @@ func resourceNetwork() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 				Default:  "Managed by Terraform",
+			},
+			"enable_broadcast": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  true,
+			},
+			"mtu": {
+				Type:     schema.TypeInt,
+				Optional: true,
+				Default:  2800,
+			},
+			"multicast_limit": {
+				Type:     schema.TypeInt,
+				Optional: true,
+				Default:  32,
+			},
+			"private": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
 			},
 			"route": {
 				Type:     schema.TypeSet,
@@ -88,6 +111,10 @@ func resourceNetworkCreate(ctx context.Context, d *schema.ResourceData, m interf
 		Routes:           routes,
 		IPV4AssignMode:   ztcentral.IPV4AssignMode{ZeroTier: true},
 		IPV6AssignMode:   ztcentral.IPV6AssignMode{ZeroTier: true},
+		EnableBroadcast:  d.Get("enable_broadcast").(bool),
+		// MTU:              d.Get("mtu").(int),
+		MulticastLimit: d.Get("multicast_limit").(int),
+		Private:        d.Get("private").(bool),
 	})
 
 	if err != nil {
@@ -100,6 +127,7 @@ func resourceNetworkCreate(ctx context.Context, d *schema.ResourceData, m interf
 	}
 
 	d.SetId(n.ID)
+	d.Set("tf_last_updated", time.Now().Unix())
 
 	resourceNetworkRead(ctx, d, m)
 	return diags
@@ -122,9 +150,16 @@ func resourceNetworkRead(ctx context.Context, d *schema.ResourceData, m interfac
 	}
 
 	d.Set("name", ztNetwork.Config.Name)
+	// FIXME needs patch to ztcentral
+	// d.Set("last_modified", ztNetwork.Config.LastModified)
+	// d.Set("mtu", ztNetwork.Config.MTU)
+	d.Set("creation_time", ztNetwork.Config.CreationTime)
 	d.Set("description", ztNetwork.Description)
 	d.Set("route", mktfRoutes(ztNetwork.Config.Routes))
 	d.Set("assignment_pool", mktfRanges(ztNetwork.Config.IPAssignmentPool))
+	d.Set("enable_broadcast", ztNetwork.Config.EnableBroadcast)
+	d.Set("multicast_limit", ztNetwork.Config.MulticastLimit)
+	d.Set("private", ztNetwork.Config.Private)
 
 	return diags
 }
@@ -173,7 +208,9 @@ func resourceNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interf
 			})
 			return diags
 		}
-		d.Set("last_updated", time.Now().Format(time.RFC850))
+		// FIXME needs patch to ztcentral
+		// d.Set("last_modified", ztNetwork.Config.LastModified)
+		d.Set("tf_last_updated", time.Now().Unix())
 	}
 
 	// return diags

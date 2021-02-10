@@ -21,8 +21,6 @@ variable "networks" {
 resource "zerotier_network" "alice" {
   for_each = var.networks
   name     = each.key
-  #  assignment_pool { cidr = each.value.ipv4_cidr }
-  #  route { target = each.value.ipv4_cidr }
 }
 
 resource "zerotier_identity" "alice" {}
@@ -35,19 +33,34 @@ resource "zerotier_member" "alice" {
 }
 
 
-#
-# Bob
-#
-
 resource "zerotier_network" "bobs_garage" {
   name        = "bobs_garage"
   description = "so say we bob"
-  //  rules_source = "accept;"
-  //  ip_assignment_pools {
-  //      ip_range_start = "192.168.1.1"
-  //      ip_range_end = "192.168.1.254"
-  //  }
-  //  routes { target = "192.168.1.0/24" }
+}
+
+resource "zerotier_network" "description" {
+  name        = "description"
+  description = "My description is changed!"
+}
+
+resource "zerotier_network" "no_broadcast" {
+  name             = "no_broadcast"
+  enable_broadcast = false
+}
+
+resource "zerotier_network" "mtu" {
+  name = "mtu"
+  mtu  = 1500
+}
+
+resource "zerotier_network" "multicast_limit" {
+  name            = "multicast_limit"
+  multicast_limit = 50
+}
+
+resource "zerotier_network" "private" {
+  name    = "private"
+  private = true
 }
 
 resource "zerotier_identity" "bob" {}
@@ -57,10 +70,3 @@ resource "zerotier_member" "bob" {
   node_id    = zerotier_identity.bob.id
   network_id = zerotier_network.bobs_garage.id
 }
-
-#resource "zerotier_member" "sean" {
-#  name           = "sean"
-#  node_id        = "eff05def90"
-#  network_id     = zerotier_network.bob.id
-#  ip_assignments = ["192.168.1.42", "192.168.1.69"]
-#}
