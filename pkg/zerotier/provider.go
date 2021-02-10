@@ -8,9 +8,6 @@ import (
 	"github.com/zerotier/go-ztcentral"
 )
 
-// HostURL is the URL of the standard ZeroTier client API endpoint.
-const HostURL = "https://my.zerotier.com/api"
-
 // Provider -
 func Provider() *schema.Provider {
 	return &schema.Provider{
@@ -18,7 +15,7 @@ func Provider() *schema.Provider {
 			"zerotier_controller_url": {
 				Type:        schema.TypeString,
 				Required:    true,
-				DefaultFunc: schema.EnvDefaultFunc("ZEROTIER_CONTROLLER_URL", HostURL),
+				DefaultFunc: schema.EnvDefaultFunc("ZEROTIER_CONTROLLER_URL", ztcentral.BaseURLV1),
 			},
 			"zerotier_controller_token": {
 				Type:        schema.TypeString,
@@ -39,12 +36,13 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 	ztControllerURL := d.Get("zerotier_controller_url").(string)
 	ztControllerToken := d.Get("zerotier_controller_token").(string)
 
-	// Warning or errors can be collected in a slice type
-	var diags diag.Diagnostics
-
-	if (ztControllerURL != "") && (ztControllerToken != "") {
+	if ztControllerToken != "" {
 		c := ztcentral.NewClient(ztControllerToken)
-		return c, diags
+		if ztControllerURL != "" {
+			c.BaseURL = ztControllerURL
+		}
+
+		return c, nil
 	}
 
 	return nil, diag.Errorf("zerotier_controller_token must be specified, or ZEROTIER_CONTROLLER_TOKEN must be specified in environment")
