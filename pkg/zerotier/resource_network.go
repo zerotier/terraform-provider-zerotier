@@ -112,9 +112,9 @@ func resourceNetworkCreate(ctx context.Context, d *schema.ResourceData, m interf
 		IPV4AssignMode:   ztcentral.IPV4AssignMode{ZeroTier: true},
 		IPV6AssignMode:   ztcentral.IPV6AssignMode{ZeroTier: true},
 		EnableBroadcast:  d.Get("enable_broadcast").(bool),
-		// MTU:              d.Get("mtu").(int),
-		MulticastLimit: d.Get("multicast_limit").(int),
-		Private:        d.Get("private").(bool),
+		MTU:              d.Get("mtu").(int),
+		MulticastLimit:   d.Get("multicast_limit").(int),
+		Private:          d.Get("private").(bool),
 	})
 
 	if err != nil {
@@ -150,9 +150,8 @@ func resourceNetworkRead(ctx context.Context, d *schema.ResourceData, m interfac
 	}
 
 	d.Set("name", ztNetwork.Config.Name)
-	// FIXME needs patch to ztcentral
-	// d.Set("last_modified", ztNetwork.Config.LastModified)
-	// d.Set("mtu", ztNetwork.Config.MTU)
+	d.Set("last_modified", ztNetwork.Config.LastModified)
+	d.Set("mtu", ztNetwork.Config.MTU)
 	d.Set("creation_time", ztNetwork.Config.CreationTime)
 	d.Set("description", ztNetwork.Description)
 	d.Set("route", mktfRoutes(ztNetwork.Config.Routes))
@@ -208,8 +207,7 @@ func resourceNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interf
 			})
 			return diags
 		}
-		// FIXME needs patch to ztcentral
-		// d.Set("last_modified", ztNetwork.Config.LastModified)
+		d.Set("last_modified", ztNetwork.Config.LastModified)
 		d.Set("tf_last_updated", time.Now().Unix())
 	}
 
