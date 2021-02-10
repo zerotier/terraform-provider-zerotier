@@ -15,12 +15,12 @@ const HostURL = "https://my.zerotier.com/api"
 func Provider() *schema.Provider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
-			"zerotier_controller_url": &schema.Schema{
+			"zerotier_controller_url": {
 				Type:        schema.TypeString,
 				Required:    true,
 				DefaultFunc: schema.EnvDefaultFunc("ZEROTIER_CONTROLLER_URL", HostURL),
 			},
-			"zerotier_controller_token": &schema.Schema{
+			"zerotier_controller_token": {
 				Type:        schema.TypeString,
 				Required:    true,
 				DefaultFunc: schema.EnvDefaultFunc("ZEROTIER_CONTROLLER_TOKEN", nil),

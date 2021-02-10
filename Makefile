@@ -1,4 +1,3 @@
-TEST?=$$(go list ./... | grep -v 'vendor')
 HOSTNAME=zerotier.com
 NAMESPACE=dev
 NAME=zerotier
