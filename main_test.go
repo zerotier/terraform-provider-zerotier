@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/erikh/tftest"
-	"github.com/someara/terraform-provider-zerotier/pkg/zerotier"
+	"github.com/zerotier/go-ztcentral"
 )
 
 var (
@@ -41,8 +41,8 @@ func TestMain(m *testing.M) {
 	os.Setenv("ZEROTIER_CONTROLLER_TOKEN", controllerToken)
 
 	if controllerURL == "" {
-		controllerURL = zerotier.HostURL
-		os.Setenv("ZEROTIER_CONTROLLER_URL", zerotier.HostURL)
+		controllerURL = ztcentral.BaseURLV1
+		os.Setenv("ZEROTIER_CONTROLLER_URL", controllerURL)
 	}
 
 	os.Exit(m.Run())
