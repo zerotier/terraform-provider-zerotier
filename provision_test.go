@@ -20,6 +20,24 @@ func s(m interface{}) string {
 	return m.(string)
 }
 
+func isBool(t *testing.T, i interface{}, val bool, name string) {
+	if b, ok := i.(bool); !ok || b != val {
+		t.Fatalf("%q was not set to %v", name, val)
+	}
+}
+
+func isNum(t *testing.T, i interface{}, val float64, name string) {
+	if f, ok := i.(float64); !ok || f != val {
+		t.Fatalf("%q was not set to %v", name, val)
+	}
+}
+
+func isNonZeroNum(t *testing.T, i interface{}, name string) {
+	if f, ok := i.(float64); !ok || f == 0 {
+		t.Fatalf("%q was not set", name)
+	}
+}
+
 type identity struct {
 	name    string
 	pubkey  string
@@ -120,90 +138,49 @@ func TestBasicNetworkSetup(t *testing.T) {
 				// 	t.Fatalf("description was improperly set")
 				// }
 			case "assign_off":
-				m, ok := attrs["assign_ipv4"]
-				if !ok {
-					t.Fatal("assign_ipv4 key was missing")
+				isBool(t, h(attrs["assign_ipv4"])["zerotier"], false, "assign_ipv4/zerotier")
+
+				table := map[string]bool{
+					"zerotier": false,
+					"sixplane": true,
+					"rfc4193":  true,
 				}
 
-				if b, ok := h(m)["zerotier"].(bool); !ok || b {
-					t.Fatal("assign_ipv4/zerotier was not set to false")
-				}
-
-				m, ok = attrs["assign_ipv6"]
-				if !ok {
-					t.Fatal("assign_ipv6 key was missing")
-				}
-
-				if b, ok := h(m)["zerotier"].(bool); !ok || b {
-					t.Fatal("assign_ipv6/zerotier was not set to false")
-				}
-
-				if b, ok := h(m)["sixplane"].(bool); !ok || !b {
-					t.Fatal("assign_ipv6/sixplane was not set to true")
-				}
-
-				if b, ok := h(m)["rfc4193"].(bool); !ok || !b {
-					t.Fatal("assign_ipv6/rfc4193 was not set to true")
+				for name, val := range table {
+					isBool(t, h(attrs["assign_ipv6"])[name], val, "assign_ipv6/"+name)
 				}
 			case "private":
-				b, ok := attrs["private"].(bool)
-				if !ok {
-					t.Fatal("private was not set")
-				}
-
-				if !b {
-					t.Fatalf("private was improperly set")
-				}
+				isBool(t, attrs["private"], true, "private")
 			case "no_broadcast":
-				b, ok := attrs["enable_broadcast"].(bool)
-				if !ok {
-					t.Fatal("enable_broadcast was not set")
-				}
-
-				if b {
-					t.Fatal("enable_broadcast was improperly set")
-				}
+				isBool(t, attrs["enable_broadcast"], false, "enable_broadcast")
 			case "alice", "bobs_garage":
-				if f, ok := attrs["creation_time"].(float64); !ok || f == 0 {
-					t.Fatal("creation time for alice network was 0")
+				for _, name := range []string{"creation_time", "tf_last_updated"} {
+					isNonZeroNum(t, attrs[name], name)
 				}
 
-				if f, ok := attrs["tf_last_updated"].(float64); !ok || f == 0 {
-					t.Fatal("tf_last_updated (in terraform) for alice network was 0")
-				}
-
-				if b, ok := attrs["enable_broadcast"].(bool); !ok || !b {
-					t.Fatal("enable_broadcast should be defaulted to true")
-				}
-
-				if b, ok := attrs["private"].(bool); !ok || b {
-					t.Fatal("private should be defaulted to false")
-				}
+				isBool(t, attrs["enable_broadcast"], true, "enable_broadcast")
+				isBool(t, attrs["private"], false, "private")
 
 				m, ok := attrs["assign_ipv4"]
 				if !ok {
 					t.Fatal("assign_ipv4 key was missing")
 				}
 
-				if b, ok := h(m)["zerotier"].(bool); !ok || !b {
-					t.Fatal("assign_ipv4/zerotier was not set to true")
-				}
+				isBool(t, h(m)["zerotier"], true, "assign_ipv4/zerotier")
 
 				m, ok = attrs["assign_ipv6"]
 				if !ok {
 					t.Fatal("assign_ipv6 key was missing")
 				}
 
-				if b, ok := h(m)["zerotier"].(bool); !ok || !b {
-					t.Fatal("assign_ipv6/zerotier was not set to true")
+				table := map[string]bool{
+					"zerotier": true,
+					"sixplane": false,
+					"rfc4193":  false,
 				}
 
-				if b, ok := h(m)["sixplane"].(bool); !ok || b {
-					t.Fatal("assign_ipv6/sixplane was not set to false")
-				}
-
-				if b, ok := h(m)["rfc4193"].(bool); !ok || b {
-					t.Fatal("assign_ipv6/rfc4193 was not set to false")
+				for name, val := range table {
+					isBool(t, h(m)[name], val, "assign_ipv6/"+name)
 				}
 
 				// FIXME needs patch to ztcentral
