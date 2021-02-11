@@ -5,6 +5,7 @@ import (
 	"math/big"
 	"net"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/zerotier/go-ztcentral"
 )
@@ -53,7 +54,7 @@ func mkIPRangeFromCIDR(cidr interface{}) (ztcentral.IPRange, error) {
 	return iprange, nil
 }
 
-func mkIPRange(ranges interface{}) ([]ztcentral.IPRange, error) {
+func mkIPRange(ranges interface{}) (interface{}, diag.Diagnostics) {
 	ret := []ztcentral.IPRange{}
 
 	for _, r := range ranges.(*schema.Set).List() {
@@ -62,13 +63,13 @@ func mkIPRange(ranges interface{}) ([]ztcentral.IPRange, error) {
 		if s, ok := m["start"]; ok {
 			start = s.(string)
 		} else {
-			return ret, errors.New("start does not exist")
+			return ret, diag.FromErr(errors.New("start does not exist"))
 		}
 
 		if e, ok := m["end"]; ok {
 			end = e.(string)
 		} else {
-			return ret, errors.New("end does not exist")
+			return ret, diag.FromErr(errors.New("end does not exist"))
 		}
 
 		ret = append(ret, ztcentral.IPRange{
@@ -80,7 +81,7 @@ func mkIPRange(ranges interface{}) ([]ztcentral.IPRange, error) {
 	return ret, nil
 }
 
-func mkRoutes(routes interface{}) ([]ztcentral.Route, error) {
+func mkRoutes(routes interface{}) (interface{}, diag.Diagnostics) {
 	ret := []ztcentral.Route{}
 
 	for _, r := range routes.(*schema.Set).List() {
@@ -89,13 +90,13 @@ func mkRoutes(routes interface{}) ([]ztcentral.Route, error) {
 		if t, ok := m["target"]; ok {
 			target = t.(string)
 		} else {
-			return ret, errors.New("target does not exist")
+			return ret, diag.FromErr(errors.New("target does not exist"))
 		}
 
 		if v, ok := m["via"]; ok {
 			via = v.(string)
 		} else {
-			return ret, errors.New("target does not exist")
+			return ret, diag.FromErr(errors.New("target does not exist"))
 		}
 
 		ret = append(ret, ztcentral.Route{
@@ -107,10 +108,10 @@ func mkRoutes(routes interface{}) ([]ztcentral.Route, error) {
 	return ret, nil
 }
 
-func mktfRoutes(routes []ztcentral.Route) interface{} {
+func mktfRoutes(routes interface{}) interface{} {
 	ret := []map[string]interface{}{}
 
-	for _, route := range routes {
+	for _, route := range routes.([]ztcentral.Route) {
 		ret = append(ret, map[string]interface{}{
 			"target": route.Target,
 			"via":    route.Via,
@@ -120,10 +121,10 @@ func mktfRoutes(routes []ztcentral.Route) interface{} {
 	return ret
 }
 
-func mktfRanges(ranges []ztcentral.IPRange) interface{} {
+func mktfRanges(ranges interface{}) interface{} {
 	ret := []map[string]interface{}{}
 
-	for _, r := range ranges {
+	for _, r := range ranges.([]ztcentral.IPRange) {
 		ret = append(ret, map[string]interface{}{
 			"start": r.Start,
 			"end":   r.End,
@@ -133,7 +134,8 @@ func mktfRanges(ranges []ztcentral.IPRange) interface{} {
 	return ret
 }
 
-func mktfipv6assign(ipv6 ztcentral.IPV6AssignMode) map[string]interface{} {
+func mktfipv6assign(i interface{}) interface{} {
+	ipv6 := i.(ztcentral.IPV6AssignMode)
 	return map[string]interface{}{
 		"zerotier": ipv6.ZeroTier,
 		"sixplane": ipv6.ZT6Plane,
@@ -141,13 +143,14 @@ func mktfipv6assign(ipv6 ztcentral.IPV6AssignMode) map[string]interface{} {
 	}
 }
 
-func mktfipv4assign(ipv4 ztcentral.IPV4AssignMode) map[string]interface{} {
+func mktfipv4assign(i interface{}) interface{} {
+	ipv4 := i.(ztcentral.IPV4AssignMode)
 	return map[string]interface{}{
 		"zerotier": ipv4.ZeroTier,
 	}
 }
 
-func mkipv4assign(assignments interface{}) ztcentral.IPV4AssignMode {
+func mkipv4assign(assignments interface{}) (interface{}, diag.Diagnostics) {
 	m := assignments.(map[string]interface{})
 	var zt bool
 	if z, ok := m["zerotier"]; ok {
@@ -156,10 +159,10 @@ func mkipv4assign(assignments interface{}) ztcentral.IPV4AssignMode {
 		zt = true // default
 	}
 
-	return ztcentral.IPV4AssignMode{ZeroTier: zt}
+	return ztcentral.IPV4AssignMode{ZeroTier: zt}, nil
 }
 
-func mkipv6assign(assignments interface{}) ztcentral.IPV6AssignMode {
+func mkipv6assign(assignments interface{}) (interface{}, diag.Diagnostics) {
 	m := assignments.(map[string]interface{})
 	var zt bool
 	if z, ok := m["zerotier"]; ok {
@@ -178,5 +181,5 @@ func mkipv6assign(assignments interface{}) ztcentral.IPV6AssignMode {
 		rfc4193 = r.(bool)
 	}
 
-	return ztcentral.IPV6AssignMode{ZeroTier: zt, ZT6Plane: sixPlane, RFC4193: rfc4193}
+	return ztcentral.IPV6AssignMode{ZeroTier: zt, ZT6Plane: sixPlane, RFC4193: rfc4193}, nil
 }
