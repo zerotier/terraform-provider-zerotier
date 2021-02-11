@@ -20,11 +20,6 @@ func resourceNetwork() *schema.Resource {
 	}
 }
 
-const (
-	ipv4AssignMode = "ipv4"
-	ipv6AssignMode = "ipv6"
-)
-
 func resourceNetworkCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	if err := ZTNetwork.CollectFromTerraform(d); err != nil {
 		return err
@@ -64,6 +59,24 @@ func resourceNetworkRead(ctx context.Context, d *schema.ResourceData, m interfac
 	}
 
 	return ZTNetwork.CollectFromObject(d, &ztNetwork.Config)
+}
+
+func resourceNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	if err := resourceNetworkRead(ctx, d, m); err != nil {
+		return err
+	}
+
+	c := m.(*ztcentral.Client)
+	ZTNetwork.CollectFromTerraform(d)
+
+	updated, err := c.UpdateNetwork(ctx, ZTNetwork.Yield().(*ztcentral.Network))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	ZTNetwork.CollectFromObject(d, updated)
+
+	return nil
 }
 
 func resourceNetworkDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {

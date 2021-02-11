@@ -4,11 +4,44 @@ import (
 	"errors"
 	"math/big"
 	"net"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/zerotier/go-ztcentral"
 )
+
+func getMemberIDs(d *schema.ResourceData) (string, string) {
+	ztNetworkID := d.Get("network_id").(string)
+	memberID := d.Get("member_id").(string)
+
+	if ztNetworkID == "" && memberID == "" {
+		parts := strings.Split(d.Id(), "-")
+		ztNetworkID, memberID = parts[0], parts[1]
+	}
+	return ztNetworkID, memberID
+}
+
+func fetchStringList(vs ValidatedSchema, attr string) []string {
+	return toStringList(vs.Get(attr).([]interface{})).([]string)
+}
+
+func toStringList(i interface{}) interface{} {
+	ray := []string{}
+	for _, x := range i.([]interface{}) {
+		ray = append(ray, x.(string))
+	}
+	return ray
+}
+
+func fetchIntList(d *schema.ResourceData, attr string) []int {
+	raw := d.Get(attr).([]interface{})
+	ray := make([]int, len(raw))
+	for i := range raw {
+		ray[i] = raw[i].(int)
+	}
+	return ray
+}
 
 // FIXME keep this. we'll use it later.
 func mkIPRangeFromCIDR(cidr interface{}) (ztcentral.IPRange, error) {

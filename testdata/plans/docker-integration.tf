@@ -91,7 +91,7 @@ resource "zerotier_identity" "alice" {}
 
 resource "zerotier_member" "alice" {
   name       = "docker-alice"
-  node_id    = zerotier_identity.alice.id
+  member_id  = zerotier_identity.alice.id
   network_id = zerotier_network.docker_network.id
 }
 
@@ -99,6 +99,6 @@ resource "zerotier_identity" "bob" {}
 
 resource "zerotier_member" "bob" {
   name       = "docker-bob"
-  node_id    = zerotier_identity.bob.id
+  member_id  = zerotier_identity.bob.id
   network_id = zerotier_network.docker_network.id
 }

@@ -98,7 +98,9 @@ func execContainer(ctx context.Context, docker *client.Client, containerID strin
 		return nil, err
 	}
 
-	err = <-errChan
+	if err := <-errChan; err != nil {
+		return nil, err
+	}
 
 	res, err := docker.ContainerExecInspect(ctx, exec.ID)
 	if err != nil {

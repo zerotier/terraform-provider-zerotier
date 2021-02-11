@@ -28,7 +28,7 @@ resource "zerotier_identity" "alice" {}
 resource "zerotier_member" "alice" {
   for_each   = zerotier_network.alice
   name       = "${each.key}-alice"
-  node_id    = zerotier_identity.alice.id
+  member_id  = zerotier_identity.alice.id
   network_id = each.value.id
 }
 
@@ -80,6 +80,6 @@ resource "zerotier_identity" "bob" {}
 
 resource "zerotier_member" "bob" {
   name       = "bob"
-  node_id    = zerotier_identity.bob.id
+  member_id  = zerotier_identity.bob.id
   network_id = zerotier_network.bobs_garage.id
 }
