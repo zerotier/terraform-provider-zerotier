@@ -62,13 +62,34 @@ func resourceNetwork() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"via": {
 							Type:     schema.TypeString,
-							Optional: true,
+							Required: true,
 						},
 						"target": {
 							Type:     schema.TypeString,
 							Required: true,
 						},
 					},
+				},
+			},
+			"assign_ipv4": {
+				Type:     schema.TypeMap,
+				Optional: true,
+				ForceNew: true,
+				Elem: &schema.Schema{
+					Type:     schema.TypeBool,
+					Optional: true,
+					ForceNew: true,
+					Default:  true,
+				},
+			},
+			"assign_ipv6": {
+				Type:     schema.TypeMap,
+				Optional: true,
+				ForceNew: true,
+				Elem: &schema.Schema{
+					Type:     schema.TypeBool,
+					Optional: true,
+					ForceNew: true,
 				},
 			},
 			"assignment_pool": {
@@ -92,6 +113,11 @@ func resourceNetwork() *schema.Resource {
 	}
 }
 
+const (
+	ipv4AssignMode = "ipv4"
+	ipv6AssignMode = "ipv6"
+)
+
 func resourceNetworkCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := m.(*ztcentral.Client)
 	var diags diag.Diagnostics
@@ -109,8 +135,8 @@ func resourceNetworkCreate(ctx context.Context, d *schema.ResourceData, m interf
 	n, err := c.NewNetwork(ctx, d.Get("name").(string), &ztcentral.NetworkConfig{
 		IPAssignmentPool: ipranges,
 		Routes:           routes,
-		IPV4AssignMode:   ztcentral.IPV4AssignMode{ZeroTier: true},
-		IPV6AssignMode:   ztcentral.IPV6AssignMode{ZeroTier: true},
+		IPV4AssignMode:   mkipv4assign(d.Get("assign_ipv4")),
+		IPV6AssignMode:   mkipv6assign(d.Get("assign_ipv6")),
 		EnableBroadcast:  d.Get("enable_broadcast").(bool),
 		MTU:              d.Get("mtu").(int),
 		MulticastLimit:   d.Get("multicast_limit").(int),
@@ -159,6 +185,8 @@ func resourceNetworkRead(ctx context.Context, d *schema.ResourceData, m interfac
 	d.Set("enable_broadcast", ztNetwork.Config.EnableBroadcast)
 	d.Set("multicast_limit", ztNetwork.Config.MulticastLimit)
 	d.Set("private", ztNetwork.Config.Private)
+	d.Set("assign_ipv4", mktfipv4assign(ztNetwork.Config.IPV4AssignMode))
+	d.Set("assign_ipv6", mktfipv6assign(ztNetwork.Config.IPV6AssignMode))
 
 	return diags
 }

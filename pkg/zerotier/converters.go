@@ -132,3 +132,51 @@ func mktfRanges(ranges []ztcentral.IPRange) interface{} {
 
 	return ret
 }
+
+func mktfipv6assign(ipv6 ztcentral.IPV6AssignMode) map[string]interface{} {
+	return map[string]interface{}{
+		"zerotier": ipv6.ZeroTier,
+		"sixplane": ipv6.ZT6Plane,
+		"rfc4193":  ipv6.RFC4193,
+	}
+}
+
+func mktfipv4assign(ipv4 ztcentral.IPV4AssignMode) map[string]interface{} {
+	return map[string]interface{}{
+		"zerotier": ipv4.ZeroTier,
+	}
+}
+
+func mkipv4assign(assignments interface{}) ztcentral.IPV4AssignMode {
+	m := assignments.(map[string]interface{})
+	var zt bool
+	if z, ok := m["zerotier"]; ok {
+		zt = z.(bool)
+	} else {
+		zt = true // default
+	}
+
+	return ztcentral.IPV4AssignMode{ZeroTier: zt}
+}
+
+func mkipv6assign(assignments interface{}) ztcentral.IPV6AssignMode {
+	m := assignments.(map[string]interface{})
+	var zt bool
+	if z, ok := m["zerotier"]; ok {
+		zt = z.(bool)
+	} else {
+		zt = true // default
+	}
+
+	var sixPlane bool
+	if s, ok := m["sixplane"]; ok {
+		sixPlane = s.(bool)
+	}
+
+	var rfc4193 bool
+	if r, ok := m["rfc4193"]; ok {
+		rfc4193 = r.(bool)
+	}
+
+	return ztcentral.IPV6AssignMode{ZeroTier: zt, ZT6Plane: sixPlane, RFC4193: rfc4193}
+}

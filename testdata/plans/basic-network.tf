@@ -38,6 +38,19 @@ resource "zerotier_network" "bobs_garage" {
   description = "so say we bob"
 }
 
+resource "zerotier_network" "assign_off" {
+  name = "assign_off"
+  assign_ipv4 = {
+    zerotier = false
+  }
+
+  assign_ipv6 = {
+    zerotier = false
+    sixplane = true
+    rfc4193  = true
+  }
+}
+
 resource "zerotier_network" "description" {
   name        = "description"
   description = "My description is changed!"

@@ -81,15 +81,17 @@ func TestBasicNetworkSetup(t *testing.T) {
 		switch m["type"] {
 		case "zerotier_network":
 			switch m["name"] {
-			case "no_broadcast":
-				b, ok := attrs["enable_broadcast"].(bool)
-				if !ok {
-					t.Fatal("enable_broadcast was not set")
-				}
-
-				if b {
-					t.Fatal("enable_broadcast was improperly set")
-				}
+			// FIXME: missing/failing support for these test cases in the Client API
+			//
+			// What should happen when the API is updated so that these items can
+			// be modified, is that these tests can be uncommented and that they
+			// will automagically pass, because all the plumbing is already done
+			// for you, presuming nothing moves, etc.
+			//
+			// PLEASE NOTE that the case statements /themselves/ must be left
+			// available so they are exhausted in before the default statement, which
+			// will fail the test for unknown networks. This is a safeguard to keep
+			// extraneous stuff from landing in the test plan.
 			case "mtu":
 				// i, ok := attrs["mtu"].(float64)
 				// if !ok {
@@ -117,6 +119,32 @@ func TestBasicNetworkSetup(t *testing.T) {
 				// if s != "My description is changed!" {
 				// 	t.Fatalf("description was improperly set")
 				// }
+			case "assign_off":
+				m, ok := attrs["assign_ipv4"]
+				if !ok {
+					t.Fatal("assign_ipv4 key was missing")
+				}
+
+				if b, ok := h(m)["zerotier"].(bool); !ok || b {
+					t.Fatal("assign_ipv4/zerotier was not set to false")
+				}
+
+				m, ok = attrs["assign_ipv6"]
+				if !ok {
+					t.Fatal("assign_ipv6 key was missing")
+				}
+
+				if b, ok := h(m)["zerotier"].(bool); !ok || b {
+					t.Fatal("assign_ipv6/zerotier was not set to false")
+				}
+
+				if b, ok := h(m)["sixplane"].(bool); !ok || !b {
+					t.Fatal("assign_ipv6/sixplane was not set to true")
+				}
+
+				if b, ok := h(m)["rfc4193"].(bool); !ok || !b {
+					t.Fatal("assign_ipv6/rfc4193 was not set to true")
+				}
 			case "private":
 				b, ok := attrs["private"].(bool)
 				if !ok {
@@ -125,6 +153,15 @@ func TestBasicNetworkSetup(t *testing.T) {
 
 				if !b {
 					t.Fatalf("private was improperly set")
+				}
+			case "no_broadcast":
+				b, ok := attrs["enable_broadcast"].(bool)
+				if !ok {
+					t.Fatal("enable_broadcast was not set")
+				}
+
+				if b {
+					t.Fatal("enable_broadcast was improperly set")
 				}
 			case "alice", "bobs_garage":
 				if f, ok := attrs["creation_time"].(float64); !ok || f == 0 {
@@ -143,12 +180,38 @@ func TestBasicNetworkSetup(t *testing.T) {
 					t.Fatal("private should be defaulted to false")
 				}
 
+				m, ok := attrs["assign_ipv4"]
+				if !ok {
+					t.Fatal("assign_ipv4 key was missing")
+				}
+
+				if b, ok := h(m)["zerotier"].(bool); !ok || !b {
+					t.Fatal("assign_ipv4/zerotier was not set to true")
+				}
+
+				m, ok = attrs["assign_ipv6"]
+				if !ok {
+					t.Fatal("assign_ipv6 key was missing")
+				}
+
+				if b, ok := h(m)["zerotier"].(bool); !ok || !b {
+					t.Fatal("assign_ipv6/zerotier was not set to true")
+				}
+
+				if b, ok := h(m)["sixplane"].(bool); !ok || b {
+					t.Fatal("assign_ipv6/sixplane was not set to false")
+				}
+
+				if b, ok := h(m)["rfc4193"].(bool); !ok || b {
+					t.Fatal("assign_ipv6/rfc4193 was not set to false")
+				}
+
 				// FIXME needs patch to ztcentral
 				// if f, ok := attrs["last_modified"].(float64); !ok || f == 0 {
 				// 	t.Fatal("last modified (on zerotier) for alice network was 0")
 				// }
 			default:
-				t.Fatalf("Unexpected network %q", m["name"])
+				t.Fatalf("Unexpected network %q in plan", m["name"])
 			}
 		}
 	}
