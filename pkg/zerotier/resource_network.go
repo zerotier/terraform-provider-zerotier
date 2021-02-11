@@ -42,7 +42,7 @@ func resourceNetwork() *schema.Resource {
 					Schema: map[string]*schema.Schema{
 						"via": {
 							Type:     schema.TypeString,
-							Required: true,
+							Optional: true,
 						},
 						"target": {
 							Type:     schema.TypeString,
