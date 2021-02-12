@@ -43,7 +43,6 @@ func fetchIntList(d *schema.ResourceData, attr string) []int {
 	return ray
 }
 
-// FIXME keep this. we'll use it later.
 func mkIPRangeFromCIDR(cidr interface{}) (ztcentral.IPRange, error) {
 	iprange := ztcentral.IPRange{}
 
@@ -92,23 +91,34 @@ func mkIPRange(ranges interface{}) (interface{}, diag.Diagnostics) {
 
 	for _, r := range ranges.(*schema.Set).List() {
 		m := r.(map[string]interface{})
-		var start, end string
-		if s, ok := m["start"]; ok {
-			start = s.(string)
-		} else {
-			return ret, diag.FromErr(errors.New("start does not exist"))
-		}
+		// FIXME: if cidr is supplied, start/end simply are not considered. may want
+		//			  to hard-validate this later.
+		if cidr, ok := m["cidr"]; ok && cidr.(string) != "" {
+			ipRange, err := mkIPRangeFromCIDR(cidr)
+			if err != nil {
+				return ret, diag.FromErr(err)
+			}
 
-		if e, ok := m["end"]; ok {
-			end = e.(string)
+			ret = append(ret, ipRange)
 		} else {
-			return ret, diag.FromErr(errors.New("end does not exist"))
-		}
+			var start, end string
+			if s, ok := m["start"]; ok && s.(string) != "" {
+				start = s.(string)
+			} else {
+				return ret, diag.FromErr(errors.New("start does not exist"))
+			}
 
-		ret = append(ret, ztcentral.IPRange{
-			Start: start,
-			End:   end,
-		})
+			if e, ok := m["end"]; ok && e.(string) != "" {
+				end = e.(string)
+			} else {
+				return ret, diag.FromErr(errors.New("end does not exist"))
+			}
+
+			ret = append(ret, ztcentral.IPRange{
+				Start: start,
+				End:   end,
+			})
+		}
 	}
 
 	return ret, nil
@@ -120,16 +130,16 @@ func mkRoutes(routes interface{}) (interface{}, diag.Diagnostics) {
 	for _, r := range routes.(*schema.Set).List() {
 		m := r.(map[string]interface{})
 		var target, via string
-		if t, ok := m["target"]; ok {
+		if t, ok := m["target"]; ok && t.(string) != "" {
 			target = t.(string)
 		} else {
 			return ret, diag.FromErr(errors.New("target does not exist"))
 		}
 
-		if v, ok := m["via"]; ok {
+		if v, ok := m["via"]; ok && v.(string) != "" {
 			via = v.(string)
 		} else {
-			return ret, diag.FromErr(errors.New("target does not exist"))
+			return ret, diag.FromErr(errors.New("via does not exist"))
 		}
 
 		ret = append(ret, ztcentral.Route{
