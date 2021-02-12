@@ -8,8 +8,10 @@ import (
 )
 
 // ValidatedSchema is an internal schema for validating and managing lots of
-// schema parameters.
+// schema parameters. It is intended to be a more-or-less write-through cache
+// of terraform information with validation and conversion along the way.
 type ValidatedSchema struct {
+	// Schema is our schema. The key is the name. See SchemaWrap for more information.
 	Schema map[string]*SchemaWrap
 	// Should be programmed to yield the type at Yield time.
 	YieldFunc func(ValidatedSchema) interface{}
@@ -19,12 +21,25 @@ type ValidatedSchema struct {
 
 // SchemaWrap wraps the terraform schema with validators and converters.
 type SchemaWrap struct {
-	Schema            *schema.Schema
-	ValidatorFunc     func(interface{}) diag.Diagnostics
+	// Schema is the terraform schema.
+	Schema *schema.Schema
+	// ValidatorFunc is a function, that if supplied, validates the data and
+	// yields an error if the function returns one.
+	ValidatorFunc func(interface{}) diag.Diagnostics
+	// FromTerraformFunc converts data from terraform plans to the Value (see
+	// below). It returns an error if it had trouble.
 	FromTerraformFunc func(interface{}) (interface{}, diag.Diagnostics)
-	ToTerraformFunc   func(interface{}) interface{}
-	EqualFunc         func(interface{}, interface{}) bool
-	Value             interface{}
+	// ToTerraformFunc converts data from the Value to the terraform
+	// representation. This must *always* succeed (in practice, this has not been
+	// an issue at this time)
+	ToTerraformFunc func(interface{}) interface{}
+	// EqualFunc is used in comparisons, which are used in determining if changes
+	// need to be pushed to our API.
+	EqualFunc func(interface{}, interface{}) bool
+	// Value is the internal value; this is a representation suitable for using
+	// in both ValidatedSchema.YieldFunc() and ValidatedSchema.CollectFunc
+	// interchangeably, as in, they can be type asserted without panicking.
+	Value interface{}
 }
 
 // TerraformSchema returns the unadulterated schema for use by terraform.
@@ -111,6 +126,7 @@ func (vs ValidatedSchema) Set(d *schema.ResourceData, key string, value interfac
 }
 
 // RemoteChanged reports if our data source has changed.
+// FIXME probably doesn't work yet; coming soon! :D
 func (vs ValidatedSchema) RemoteChanged(d *schema.ResourceData) bool {
 	for key, sw := range vs.Schema {
 		if !sw.EqualFunc(sw.Value, d.Get(key)) {
