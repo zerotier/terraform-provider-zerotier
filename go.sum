@@ -91,6 +91,8 @@ github.com/envoyproxy/go-control-plane v0.9.9-0.20201210154907-fd9021fe5dad/go.m
 github.com/envoyproxy/protoc-gen-validate v0.1.0/go.mod h1:iSmxcyjqTsJpI2R4NaDN7+kN2VEUnK/pcBlmesArF7c=
 github.com/erikh/tftest v0.0.0-20210209001423-da33e4a905df h1:sOpMMrPFPkRE4nhgGLU/IR+FY+rh9Rr0rHveLKhf9pE=
 github.com/erikh/tftest v0.0.0-20210209001423-da33e4a905df/go.mod h1:vx3mrhx5Lwgi9I28A5NrKYN11h2y2gk0OT1xiKR2lhE=
+github.com/erikh/tftest v0.0.0-20210212053512-4f753b4416aa h1:7bn69JrOe39mBUy+/2LeKFamLz98rfz5Y5QRlI9i2Mk=
+github.com/erikh/tftest v0.0.0-20210212053512-4f753b4416aa/go.mod h1:vx3mrhx5Lwgi9I28A5NrKYN11h2y2gk0OT1xiKR2lhE=
 github.com/fatih/color v1.7.0 h1:DkWD4oS2D8LGGgTQ6IvwJJXSL5Vp2ffcQg58nFV38Ys=
 github.com/fatih/color v1.7.0/go.mod h1:Zm6kSWBoL9eyXnKyktHP6abPY2pDugNf5KwzbycvMj4=
 github.com/fatih/color v1.10.0 h1:s36xzo75JdqLaaWoiEHk767eHiwo0598uUxyfiPkDsg=

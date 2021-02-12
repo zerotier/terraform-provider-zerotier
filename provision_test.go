@@ -88,6 +88,36 @@ func TestIdentity(t *testing.T) {
 	}
 }
 
+func TestBasicMembers(t *testing.T) {
+	tf := getTFTest(t)
+	tf.Apply("testdata/plans/basic-member.tf")
+	for _, resource := range a(tf.State()["resources"]) {
+		m := h(resource)
+		attrs := h(h(a(m["instances"])[0])["attributes"])
+
+		switch m["type"] {
+		case "zerotier_member":
+			switch m["name"] {
+			// see TestBasicNetworkSetup for examples on how this loop works.
+			case "alice":
+				if attrs["description"].(string) != "Hello, world" {
+					t.Fatal("description was not set")
+				}
+
+				isBool(t, attrs["hidden"], true, "hidden")
+				isBool(t, attrs["allow_ethernet_bridging"], true, "allow_ethernet_bridging")
+				isBool(t, attrs["no_auto_assign_ips"], true, "no_auto_assign_ips")
+
+				if a(attrs["ip_assignments"])[0].(string) != "10.0.0.1" {
+					t.Fatal("ip_assignments was improperly set")
+				}
+			default:
+				t.Fatalf("Unexpected network member %q in plan", m["name"])
+			}
+		}
+	}
+}
+
 func TestBasicNetworkSetup(t *testing.T) {
 	tf := getTFTest(t)
 	tf.Apply("testdata/plans/basic-network.tf")
