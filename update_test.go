@@ -8,6 +8,84 @@ import (
 	"github.com/zerotier/go-ztcentral"
 )
 
+func modifyMember(ctx context.Context, networkID string, memberID string, updateFunc func(*ztcentral.Member)) error {
+	c := ztcentral.NewClient(controllerToken)
+	member, err := c.GetMember(ctx, networkID, memberID)
+	if err != nil {
+		return err
+	}
+
+	updateFunc(member)
+
+	if _, err := c.UpdateMember(ctx, member); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func TestMemberUpdate(t *testing.T) {
+	// see TestNetworkUpdate for the flow of this test.
+	tf := getTFTest(t)
+	tf.Apply("testdata/plans/basic-member.tf")
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	t.Cleanup(cancel)
+
+	// for each network, perform a set of transformations with the client.
+	for _, resource := range a(tf.State()["resources"]) {
+		m := h(resource)
+		attrs := h(h(a(m["instances"])[0])["attributes"])
+
+		switch m["type"] {
+		case "zerotier_member":
+			switch m["name"] {
+			case "alice":
+				err := modifyMember(ctx, attrs["network_id"].(string), attrs["member_id"].(string), func(member *ztcentral.Member) {
+					member.Description = "This is a new description"
+					member.Hidden = false
+					member.Config.ActiveBridge = false
+					member.Config.NoAutoAssignIPs = false
+					member.Config.IPAssignments = []string{"10.0.0.2"}
+				})
+				if err != nil {
+					t.Fatal(err)
+				}
+			default:
+				t.Fatalf("invalid member %q encountered", m["name"])
+			}
+		}
+	}
+
+	tf.Refresh()
+
+	// for each network, validate the transformations were applied.
+	for _, resource := range a(tf.State()["resources"]) {
+		m := h(resource)
+		attrs := h(h(a(m["instances"])[0])["attributes"])
+
+		switch m["type"] {
+		case "zerotier_member":
+			switch m["name"] {
+			case "alice":
+				if attrs["description"].(string) != "This is a new description" {
+					t.Fatal("description was not set")
+				}
+
+				isBool(t, attrs["hidden"], false, "hidden")
+				isBool(t, attrs["allow_ethernet_bridging"], false, "allow_ethernet_bridging")
+				isBool(t, attrs["no_auto_assign_ips"], false, "no_auto_assign_ips")
+
+				if a(attrs["ip_assignments"])[0].(string) != "10.0.0.2" {
+					t.Fatal("ip_assignments was improperly set")
+				}
+			default:
+				t.Fatalf("invalid member %q encountered", m["name"])
+			}
+		}
+	}
+}
+
 func modifyNetwork(ctx context.Context, id string, updateFunc func(*ztcentral.Network)) error {
 	c := ztcentral.NewClient(controllerToken)
 	net, err := c.GetNetwork(ctx, id)
