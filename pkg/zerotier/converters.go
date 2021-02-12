@@ -138,8 +138,6 @@ func mkRoutes(routes interface{}) (interface{}, diag.Diagnostics) {
 
 		if v, ok := m["via"]; ok && v.(string) != "" {
 			via = v.(string)
-		} else {
-			return ret, diag.FromErr(errors.New("via does not exist"))
 		}
 
 		ret = append(ret, ztcentral.Route{
