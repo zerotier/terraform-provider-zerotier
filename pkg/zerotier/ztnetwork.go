@@ -165,6 +165,10 @@ var ZTNetwork = ValidatedSchema{
 							Type:     schema.TypeString,
 							Optional: true,
 						},
+						"cidr": {
+							Type:     schema.TypeString,
+							Optional: true,
+						},
 					},
 				},
 			},
