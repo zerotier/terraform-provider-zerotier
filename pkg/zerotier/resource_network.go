@@ -26,9 +26,9 @@ func resourceNetworkCreate(ctx context.Context, d *schema.ResourceData, m interf
 	}
 
 	c := m.(*ztcentral.Client)
-	netConfig := ZTNetwork.Yield().(*ztcentral.NetworkConfig)
+	net := ZTNetwork.Yield().(*ztcentral.Network)
 
-	n, err := c.NewNetwork(ctx, netConfig.Name, netConfig)
+	n, err := c.NewNetwork(ctx, net.Config.Name, net)
 	if err != nil {
 		return []diag.Diagnostic{{
 			Severity: diag.Error,
@@ -58,7 +58,7 @@ func resourceNetworkRead(ctx context.Context, d *schema.ResourceData, m interfac
 		return diags
 	}
 
-	return ZTNetwork.CollectFromObject(d, &ztNetwork.Config)
+	return ZTNetwork.CollectFromObject(d, ztNetwork)
 }
 
 func resourceNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
