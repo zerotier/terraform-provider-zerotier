@@ -21,8 +21,16 @@ func s(m interface{}) string {
 }
 
 func isBool(t *testing.T, i interface{}, val bool, name string) {
-	if b, ok := i.(bool); !ok || b != val {
+	b, ok := i.(bool)
+	if ok && b != val {
 		t.Fatalf("%q was not set to %v", name, val)
+	} else if !ok {
+		b2, ok := i.(*bool)
+		if ok && (b2 == nil || *b2 != val) {
+			t.Fatalf("%q was not set to %v", name, val)
+		} else if !ok {
+			t.Fatalf("%q was not set properly", name)
+		}
 	}
 }
 
@@ -167,6 +175,10 @@ func TestBasicNetworkSetup(t *testing.T) {
 				// if s != "My description is changed!" {
 				// 	t.Fatalf("description was improperly set")
 				// }
+			case "flow_rules":
+				if attrs["flow_rules"].(string) != "drop;" {
+					t.Fatal("flow_rules were not altered")
+				}
 			case "assign_off":
 				isBool(t, h(attrs["assign_ipv4"])["zerotier"], false, "assign_ipv4/zerotier")
 
@@ -211,6 +223,10 @@ func TestBasicNetworkSetup(t *testing.T) {
 
 				for name, val := range table {
 					isBool(t, h(m)[name], val, "assign_ipv6/"+name)
+				}
+
+				if attrs["flow_rules"].(string) != "accept;" {
+					t.Fatal("flow_rules were not accept by default:", attrs["flow_rules"])
 				}
 
 				// FIXME needs patch to ztcentral

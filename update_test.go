@@ -8,6 +8,10 @@ import (
 	"github.com/zerotier/go-ztcentral"
 )
 
+func boolPtr(b bool) *bool {
+	return &b
+}
+
 func modifyMember(ctx context.Context, networkID string, memberID string, updateFunc func(*ztcentral.Member)) error {
 	c := ztcentral.NewClient(controllerToken)
 	member, err := c.GetMember(ctx, networkID, memberID)
@@ -129,8 +133,8 @@ func TestNetworkUpdate(t *testing.T) {
 				// not updateable
 			case "assign_off":
 				err := modifyNetwork(ctx, attrs["id"].(string), func(net *ztcentral.Network) {
-					net.Config.IPV4AssignMode = ztcentral.IPV4AssignMode{ZeroTier: true}
-					net.Config.IPV6AssignMode = ztcentral.IPV6AssignMode{ZeroTier: true, ZT6Plane: false, RFC4193: false}
+					net.Config.IPV4AssignMode = &ztcentral.IPV4AssignMode{ZeroTier: boolPtr(true)}
+					net.Config.IPV6AssignMode = &ztcentral.IPV6AssignMode{ZeroTier: boolPtr(true), ZT6Plane: boolPtr(false), RFC4193: boolPtr(false)}
 				})
 
 				if err != nil {
@@ -138,7 +142,7 @@ func TestNetworkUpdate(t *testing.T) {
 				}
 			case "private":
 				err := modifyNetwork(ctx, attrs["id"].(string), func(net *ztcentral.Network) {
-					net.Config.Private = false
+					net.Config.Private = boolPtr(false)
 				})
 
 				if err != nil {
@@ -146,11 +150,21 @@ func TestNetworkUpdate(t *testing.T) {
 				}
 			case "no_broadcast":
 				err := modifyNetwork(ctx, attrs["id"].(string), func(net *ztcentral.Network) {
-					net.Config.EnableBroadcast = true
+					net.Config.EnableBroadcast = boolPtr(true)
 				})
 
 				if err != nil {
 					t.Fatal(err)
+				}
+			case "flow_rules":
+				c := ztcentral.NewClient(controllerToken)
+				rules, err := c.UpdateNetworkRules(ctx, attrs["id"].(string), "accept;")
+				if err != nil {
+					t.Fatal(err)
+				}
+
+				if rules != "accept;" {
+					t.Fatal("rules were not alterered on set")
 				}
 			case "alice", "bobs_garage":
 				// this is a collection of defaults; not sure testing this is really worth the effort.
@@ -177,6 +191,10 @@ func TestNetworkUpdate(t *testing.T) {
 				// not updateable
 			case "description":
 				// not updateable
+			case "flow_rules":
+				if attrs["flow_rules"].(string) != "accept;" {
+					t.Fatal("flow_rules were not updated")
+				}
 			case "assign_off":
 				isBool(t, h(attrs["assign_ipv4"])["zerotier"], true, "assign_ipv4/zerotier")
 

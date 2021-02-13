@@ -11,6 +11,18 @@ import (
 	"github.com/zerotier/go-ztcentral"
 )
 
+func boolPtr(b bool) *bool {
+	return &b
+}
+
+func ptrBool(p *bool) bool {
+	if p != nil && *p {
+		return true
+	}
+
+	return false
+}
+
 func getMemberIDs(d *schema.ResourceData) (string, string) {
 	ztNetworkID := d.Get("network_id").(string)
 	memberID := d.Get("member_id").(string)
@@ -176,19 +188,33 @@ func mktfRanges(ranges interface{}) interface{} {
 }
 
 func mktfipv6assign(i interface{}) interface{} {
-	ipv6 := i.(ztcentral.IPV6AssignMode)
-	return map[string]interface{}{
+	ipv6 := i.(*ztcentral.IPV6AssignMode)
+
+	m := map[string]interface{}{}
+
+	iter := map[string]*bool{
 		"zerotier": ipv6.ZeroTier,
 		"sixplane": ipv6.ZT6Plane,
 		"rfc4193":  ipv6.RFC4193,
 	}
+
+	for key, b := range iter {
+		if b != nil {
+			m[key] = ptrBool(b)
+		}
+	}
+
+	return m
 }
 
 func mktfipv4assign(i interface{}) interface{} {
-	ipv4 := i.(ztcentral.IPV4AssignMode)
-	return map[string]interface{}{
-		"zerotier": ipv4.ZeroTier,
+	ipv4 := i.(*ztcentral.IPV4AssignMode)
+	m := map[string]interface{}{}
+	if ipv4.ZeroTier != nil {
+		m["zerotier"] = ptrBool(ipv4.ZeroTier)
 	}
+
+	return m
 }
 
 func mkipv4assign(assignments interface{}) (interface{}, diag.Diagnostics) {
@@ -200,7 +226,7 @@ func mkipv4assign(assignments interface{}) (interface{}, diag.Diagnostics) {
 		zt = true // default
 	}
 
-	return ztcentral.IPV4AssignMode{ZeroTier: zt}, nil
+	return &ztcentral.IPV4AssignMode{ZeroTier: boolPtr(zt)}, nil
 }
 
 func mkipv6assign(assignments interface{}) (interface{}, diag.Diagnostics) {
@@ -222,5 +248,9 @@ func mkipv6assign(assignments interface{}) (interface{}, diag.Diagnostics) {
 		rfc4193 = r.(bool)
 	}
 
-	return ztcentral.IPV6AssignMode{ZeroTier: zt, ZT6Plane: sixPlane, RFC4193: rfc4193}, nil
+	return &ztcentral.IPV6AssignMode{
+		ZeroTier: boolPtr(zt),
+		ZT6Plane: boolPtr(sixPlane),
+		RFC4193:  boolPtr(rfc4193),
+	}, nil
 }
