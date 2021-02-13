@@ -89,8 +89,6 @@ github.com/envoyproxy/go-control-plane v0.9.1-0.20191026205805-5f8ba28d4473/go.m
 github.com/envoyproxy/go-control-plane v0.9.4/go.mod h1:6rpuAdCZL397s3pYoYcLgu1mIlRU8Am5FuJP05cCM98=
 github.com/envoyproxy/go-control-plane v0.9.9-0.20201210154907-fd9021fe5dad/go.mod h1:cXg6YxExXjJnVBQHBLXeUAgxn2UodCpnH306RInaBQk=
 github.com/envoyproxy/protoc-gen-validate v0.1.0/go.mod h1:iSmxcyjqTsJpI2R4NaDN7+kN2VEUnK/pcBlmesArF7c=
-github.com/erikh/tftest v0.0.0-20210209001423-da33e4a905df h1:sOpMMrPFPkRE4nhgGLU/IR+FY+rh9Rr0rHveLKhf9pE=
-github.com/erikh/tftest v0.0.0-20210209001423-da33e4a905df/go.mod h1:vx3mrhx5Lwgi9I28A5NrKYN11h2y2gk0OT1xiKR2lhE=
 github.com/erikh/tftest v0.0.0-20210212053512-4f753b4416aa h1:7bn69JrOe39mBUy+/2LeKFamLz98rfz5Y5QRlI9i2Mk=
 github.com/erikh/tftest v0.0.0-20210212053512-4f753b4416aa/go.mod h1:vx3mrhx5Lwgi9I28A5NrKYN11h2y2gk0OT1xiKR2lhE=
 github.com/fatih/color v1.7.0 h1:DkWD4oS2D8LGGgTQ6IvwJJXSL5Vp2ffcQg58nFV38Ys=
@@ -345,8 +343,6 @@ github.com/zclconf/go-cty v1.2.1/go.mod h1:hOPWgoHbaTUnI5k4D2ld+GRpFJSCe6bCM7m1q
 github.com/zclconf/go-cty v1.7.1 h1:AvsC01GMhMLFL8CgEYdHGM+yLnnDOwhPAYcgTkeF0Gw=
 github.com/zclconf/go-cty v1.7.1/go.mod h1:VDR4+I79ubFBGm1uJac1226K5yANQFHeauxPBoP54+o=
 github.com/zclconf/go-cty-debug v0.0.0-20191215020915-b22d67c1ba0b/go.mod h1:ZRKQfBXbGkpdV6QMzT3rU1kSTAnfu1dO8dPKjYprgj8=
-github.com/zerotier/go-ztcentral v0.2.0 h1:/kFGwrDZA2uMQZPNKXhZNidWrai3YydxXW03qd8k4tM=
-github.com/zerotier/go-ztcentral v0.2.0/go.mod h1:90weKZT7Rdq02tdJskc+XR8W93bMgL/9uMCq4Txz0Hk=
 github.com/zerotier/go-ztcentral v0.2.1-0.20210213070016-be6aaad4acde h1:RlNjDsKOiZO25gT2zYaUoxagUPtb7Jx7VPF5fpzW4Es=
 github.com/zerotier/go-ztcentral v0.2.1-0.20210213070016-be6aaad4acde/go.mod h1:90weKZT7Rdq02tdJskc+XR8W93bMgL/9uMCq4Txz0Hk=
 github.com/zerotier/go-ztidentity v1.0.0 h1:dgm1ChTxw1TXMrSJQ6VWK2RmHKVYqRd69h/Co/RG+xo=
