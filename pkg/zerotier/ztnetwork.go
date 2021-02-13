@@ -8,16 +8,17 @@ import (
 
 func ztNetworkYield(vs ValidatedSchema) interface{} {
 	return &ztcentral.Network{
+		RulesSource: vs.Get("flow_rules").(string),
 		Config: ztcentral.NetworkConfig{
 			Name:             vs.Get("name").(string),
 			IPAssignmentPool: vs.Get("assignment_pool").([]ztcentral.IPRange),
 			Routes:           vs.Get("route").([]ztcentral.Route),
-			IPV4AssignMode:   vs.Get("assign_ipv4").(ztcentral.IPV4AssignMode),
-			IPV6AssignMode:   vs.Get("assign_ipv6").(ztcentral.IPV6AssignMode),
-			EnableBroadcast:  vs.Get("enable_broadcast").(bool),
+			IPV4AssignMode:   vs.Get("assign_ipv4").(*ztcentral.IPV4AssignMode),
+			IPV6AssignMode:   vs.Get("assign_ipv6").(*ztcentral.IPV6AssignMode),
+			EnableBroadcast:  boolPtr(vs.Get("enable_broadcast").(bool)),
 			MTU:              vs.Get("mtu").(int),
 			MulticastLimit:   vs.Get("multicast_limit").(int),
-			Private:          vs.Get("private").(bool),
+			Private:          boolPtr(vs.Get("private").(bool)),
 		},
 	}
 }
@@ -27,14 +28,15 @@ func ztNetworkCollect(vs ValidatedSchema, d *schema.ResourceData, i interface{})
 
 	var diags diag.Diagnostics
 
+	diags = append(diags, vs.Set(d, "flow_rules", ztNetwork.RulesSource)...)
 	diags = append(diags, vs.Set(d, "name", ztNetwork.Config.Name)...)
 	diags = append(diags, vs.Set(d, "mtu", ztNetwork.Config.MTU)...)
 	diags = append(diags, vs.Set(d, "creation_time", ztNetwork.Config.CreationTime)...)
 	diags = append(diags, vs.Set(d, "route", ztNetwork.Config.Routes)...)
 	diags = append(diags, vs.Set(d, "assignment_pool", ztNetwork.Config.IPAssignmentPool)...)
-	diags = append(diags, vs.Set(d, "enable_broadcast", ztNetwork.Config.EnableBroadcast)...)
+	diags = append(diags, vs.Set(d, "enable_broadcast", ptrBool(ztNetwork.Config.EnableBroadcast))...)
 	diags = append(diags, vs.Set(d, "multicast_limit", ztNetwork.Config.MulticastLimit)...)
-	diags = append(diags, vs.Set(d, "private", ztNetwork.Config.Private)...)
+	diags = append(diags, vs.Set(d, "private", ptrBool(ztNetwork.Config.Private))...)
 	diags = append(diags, vs.Set(d, "assign_ipv4", ztNetwork.Config.IPV4AssignMode)...)
 	diags = append(diags, vs.Set(d, "assign_ipv6", ztNetwork.Config.IPV6AssignMode)...)
 
@@ -173,6 +175,13 @@ var ZTNetwork = ValidatedSchema{
 						},
 					},
 				},
+			},
+		},
+		"flow_rules": {
+			Schema: &schema.Schema{
+				Type:     schema.TypeString,
+				Optional: true,
+				Default:  "accept;",
 			},
 		},
 	},

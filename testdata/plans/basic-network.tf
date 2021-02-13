@@ -76,6 +76,11 @@ resource "zerotier_network" "private" {
   private = true
 }
 
+resource "zerotier_network" "flow_rules" {
+  name       = "flow_rules"
+  flow_rules = "drop;"
+}
+
 resource "zerotier_identity" "bob" {}
 
 resource "zerotier_member" "bob" {

@@ -21,12 +21,14 @@ func resourceNetwork() *schema.Resource {
 }
 
 func resourceNetworkCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	if err := ZTNetwork.CollectFromTerraform(d); err != nil {
+	ztn := ZTNetwork.Clone()
+	if err := ztn.CollectFromTerraform(d); err != nil {
 		return err
 	}
 
 	c := m.(*ztcentral.Client)
-	net := ZTNetwork.Yield().(*ztcentral.Network)
+	net := ztn.Yield().(*ztcentral.Network)
+	rules := net.RulesSource
 
 	n, err := c.NewNetwork(ctx, net.Config.Name, net)
 	if err != nil {
@@ -35,6 +37,10 @@ func resourceNetworkCreate(ctx context.Context, d *schema.ResourceData, m interf
 			Summary:  "Unable to create ZeroTier Network",
 			Detail:   fmt.Sprintf("CreateNetwork returned error: %v", err),
 		}}
+	}
+
+	if _, err := c.UpdateNetworkRules(ctx, n.ID, rules); err != nil {
+		return diag.FromErr(err)
 	}
 
 	d.SetId(n.ID)
@@ -58,7 +64,7 @@ func resourceNetworkRead(ctx context.Context, d *schema.ResourceData, m interfac
 		return diags
 	}
 
-	return ZTNetwork.CollectFromObject(d, ztNetwork)
+	return ZTNetwork.Clone().CollectFromObject(d, ztNetwork)
 }
 
 func resourceNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
@@ -67,14 +73,25 @@ func resourceNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interf
 	}
 
 	c := m.(*ztcentral.Client)
-	ZTNetwork.CollectFromTerraform(d)
+	ztn := ZTNetwork.Clone()
 
-	updated, err := c.UpdateNetwork(ctx, ZTNetwork.Yield().(*ztcentral.Network))
+	ztn.CollectFromTerraform(d)
+
+	net := ztn.Yield().(*ztcentral.Network)
+	rules := net.RulesSource
+
+	if _, err := c.UpdateNetworkRules(ctx, net.ID, rules); err != nil {
+		return diag.FromErr(err)
+	}
+
+	net.RulesSource = ""
+
+	updated, err := c.UpdateNetwork(ctx, net)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	ZTNetwork.CollectFromObject(d, updated)
+	ztn.CollectFromObject(d, updated)
 
 	return nil
 }

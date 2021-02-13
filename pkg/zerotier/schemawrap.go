@@ -42,6 +42,36 @@ type SchemaWrap struct {
 	Value interface{}
 }
 
+func (sw *SchemaWrap) Clone() *SchemaWrap {
+	val, err := sw.Schema.DefaultValue()
+	if err != nil {
+		panic(err)
+	}
+
+	return &SchemaWrap{
+		Value:             val,
+		Schema:            sw.Schema,
+		ValidatorFunc:     sw.ValidatorFunc,
+		FromTerraformFunc: sw.FromTerraformFunc,
+		ToTerraformFunc:   sw.ToTerraformFunc,
+		EqualFunc:         sw.EqualFunc,
+	}
+}
+
+func (vs ValidatedSchema) Clone() ValidatedSchema {
+	vs2 := ValidatedSchema{
+		Schema:      map[string]*SchemaWrap{},
+		YieldFunc:   vs.YieldFunc,
+		CollectFunc: vs.CollectFunc,
+	}
+
+	for key, sw := range vs.Schema {
+		vs2.Schema[key] = sw.Clone()
+	}
+
+	return vs2
+}
+
 // TerraformSchema returns the unadulterated schema for use by terraform.
 func (vs ValidatedSchema) TerraformSchema() map[string]*schema.Schema {
 	res := map[string]*schema.Schema{}
