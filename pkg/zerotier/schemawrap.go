@@ -90,22 +90,16 @@ func (vs ValidatedSchema) TerraformSchema() map[string]*schema.Schema {
 func (vs ValidatedSchema) CollectFromTerraform(d *schema.ResourceData) diag.Diagnostics {
 	for key, sw := range vs.Schema {
 		var (
+			res interface{}
 			err diag.Diagnostics
 		)
 
-		res, ok := d.GetOk(key)
-		if !ok {
-			if sw.Value == nil {
-				res = d.Get(key)
-			} else {
-				continue
-			}
-		}
-
 		if sw.FromTerraformFunc != nil {
-			if res, err = sw.FromTerraformFunc(res); err != nil {
+			if res, err = sw.FromTerraformFunc(d.Get(key)); err != nil {
 				return err
 			}
+		} else {
+			res = d.Get(key)
 		}
 
 		if sw.ValidatorFunc != nil {
