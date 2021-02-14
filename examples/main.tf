@@ -1,8 +1,8 @@
 terraform {
   required_providers {
     zerotier = {
-      source   = "zerotier.com/dev/zerotier"
-      version  = "0.2.0"
+      source  = "zerotier.com/dev/zerotier"
+      version = "0.2.0"
     }
   }
 }
@@ -40,7 +40,7 @@ resource "zerotier_network" "schrödingers_nat" {
   }
   route {
     target = "0.0.0.0/0"
-    via = "10.2.0.1"
+    via    = "10.2.0.1"
   }
   flow_rules = "accept;"
 }

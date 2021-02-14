@@ -125,11 +125,10 @@ chicken-and-egg problem. We cannot associate a member with a network
 until we know the identity. 
 
 The ```zerotier_identity``` resource lets us pre-generate an identity
-for use with a ```zerotier_member``` resource, but a freshly provision
+for use with a ```zerotier_member``` resource, but a freshly provisioned
 instance or container will not know the secret.
 
-Therefore, the secret part of the identity will need to somehow be
-installed on the node by one of:
+Therefore, the secret part of the identity will need to somehow be installed on the node by one of:
 
 - Injection via userdata / environment
 - Pre-baking of the secret into the booted instance or container
