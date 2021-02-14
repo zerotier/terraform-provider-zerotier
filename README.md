@@ -134,9 +134,10 @@ Therefore, the secret part of the identity will need to somehow be installed on 
 - Pre-baking of the secret into the booted instance or container
 - Mounting of the secret as a volume
 
-In any event, usage of the zerotier_identity resource means the secret
-will be stored in the Terraform State, creating a potential
+In any event, usage of the ```zerotier_identity``` resource means the
+secret will be stored in the Terraform State, creating a potential
 security risk, and should be documented as such.
+
 
 ```hcl
 resource "zerotier_identity" "alice" {}
