@@ -38,6 +38,8 @@ jobs:
           passphrase: ${{ secrets.PASSPHRASE }}
           git-user-signingkey: true
           git-commit-gpgsign: true
+          git-tag-gpgsign: true
+          git-push-gpgsign: true
       -
         name: GPG user IDs
         run: |
@@ -48,7 +50,7 @@ jobs:
           
       -
         name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v2
+        uses: someara/ghaction-goreleaser@v2.4.1
         with:
           version: latest
           args: release --rm-dist
