@@ -54,7 +54,7 @@ resource "zerotier_network" "schrödingers_nat" {
 }
 ```
 
-ZeroTier networks have a robust flow_rules language, allowing you do
+ZeroTier networks have a robust ```flow_rules``` language, allowing you do
 to things like dropping select traffic, or even as advanced as
 Ethernet tapping. Please refer to the [ZeroTier Reference Manual](https://www.zerotier.com/manual/) for
 details.
