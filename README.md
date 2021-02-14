@@ -8,7 +8,7 @@ virtualization and management capabilities on par with an enterprise
 SDN switch, but across both local and wide area networks, connecting
 almost any kind of app or device.
 
-It does not distinquish between on-premise, cloud, desktop, or mobile
+It does not distinguish between on-premise, cloud, desktop, or mobile
 devices. You can even ZeroTier-enable individual programs with the SDK
 socket interface.
 
