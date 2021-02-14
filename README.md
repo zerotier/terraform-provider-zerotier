@@ -20,10 +20,6 @@ ZeroTier Networks can be thought of as encrypted virtual Ethernet
 switches.
 
 ```hcl
-#
-# Occam's Router
-#
-
 resource "zerotier_network" "occams_router" {
   name        = "occams_router"
   description = "The prefix with largest number of bits is usually correct"
@@ -41,10 +37,6 @@ ZeroTier networks can also push routes to network members, if they
 want to receive them.
 
 ```hcl
-#
-# Schrödinger's Nat
-#
-
 resource "zerotier_network" "schrödingers_nat" {
   name        = "schrödingers_nat"
   description = "A packet's destination is simultaneiously Alice and Bob until observed by a NAT table."
@@ -69,10 +61,6 @@ details.
 
 
 ```hcl
-#
-# Silence of the Lan
-#
-
 resource "zerotier_network" "silence_of_the_lan" {
   name        = "silence_of_the_lan"
   description = "It puts the bits in the bucket. It does this whenever it is told."
