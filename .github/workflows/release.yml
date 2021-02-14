@@ -33,10 +33,11 @@ jobs:
         name: Import GPG key
         id: import_gpg
         uses: someara/ghaction-import-gpg@v3.1.0
-        env:
+        with:
           gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
-
+          git-user-signingkey: true
+          git-commit-gpgsign: true
       -
         name: GPG user IDs
         run: |
