@@ -40,7 +40,7 @@ resource "zerotier_network" "occams_router" {
 ZeroTier networks can also push routes to network members, if they
 want to receive them.
 
-```
+```hcl
 #
 # Schrödinger's Nat
 #
@@ -68,7 +68,7 @@ Ethernet tapping. Please refer to the [ZeroTier Reference Manual](https://www.ze
 details.
 
 
-```
+```hcl
 #
 # Silence of the Lan
 #
