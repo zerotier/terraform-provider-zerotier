@@ -210,11 +210,6 @@ resource "docker_container" "bob" {
     content = zerotier_identity.bob.private_key
   }
 }
-```
-
-#
-# Provider
-#
 
 provider "zerotier" {}
 
