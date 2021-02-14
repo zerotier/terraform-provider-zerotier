@@ -8,6 +8,7 @@ import (
 
 func ztNetworkYield(vs ValidatedSchema) interface{} {
 	return &ztcentral.Network{
+		ID:          vs.Get("id").(string),
 		RulesSource: vs.Get("flow_rules").(string),
 		Config: ztcentral.NetworkConfig{
 			Name:             vs.Get("name").(string),
@@ -28,6 +29,7 @@ func ztNetworkCollect(vs ValidatedSchema, d *schema.ResourceData, i interface{})
 
 	var diags diag.Diagnostics
 
+	diags = append(diags, vs.Set(d, "id", ztNetwork.ID)...)
 	diags = append(diags, vs.Set(d, "flow_rules", ztNetwork.RulesSource)...)
 	diags = append(diags, vs.Set(d, "name", ztNetwork.Config.Name)...)
 	diags = append(diags, vs.Set(d, "mtu", ztNetwork.Config.MTU)...)
@@ -48,6 +50,12 @@ var ZTNetwork = ValidatedSchema{
 	YieldFunc:   ztNetworkYield,
 	CollectFunc: ztNetworkCollect,
 	Schema: map[string]*SchemaWrap{
+		"id": {
+			Schema: &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+		},
 		"creation_time": {
 			Schema: &schema.Schema{
 				Type:     schema.TypeInt,
@@ -182,6 +190,136 @@ var ZTNetwork = ValidatedSchema{
 				Type:     schema.TypeString,
 				Optional: true,
 				Default:  "accept;",
+			},
+		},
+	},
+}
+
+// ZTNetworkDS is our internal validated schema for data sources. See schemawrap.go.
+var ZTNetworkDS = ValidatedSchema{
+	YieldFunc:   ztNetworkYield,
+	CollectFunc: ztNetworkCollect,
+	Schema: map[string]*SchemaWrap{
+		"creation_time": {
+			Schema: &schema.Schema{
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
+		},
+		"id": {
+			Schema: &schema.Schema{
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+		},
+		"name": {
+			Schema: &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+		},
+		"description": { // FIXME this is currently not working
+			Schema: &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+		},
+		"enable_broadcast": {
+			Schema: &schema.Schema{
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
+		},
+		"mtu": {
+			Schema: &schema.Schema{
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
+		},
+		"multicast_limit": {
+			Schema: &schema.Schema{
+				Type:     schema.TypeInt,
+				Computed: true,
+			},
+		},
+		"private": {
+			Schema: &schema.Schema{
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
+		},
+		"route": {
+			FromTerraformFunc: mkRoutes,
+			ToTerraformFunc:   mktfRoutes,
+			Schema: &schema.Schema{
+				Type:     schema.TypeSet,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"via": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"target": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
+			},
+		},
+		"assign_ipv4": {
+			FromTerraformFunc: mkipv4assign,
+			ToTerraformFunc:   mktfipv4assign,
+			Schema: &schema.Schema{
+				Type:     schema.TypeMap,
+				Computed: true,
+				Elem: &schema.Schema{
+					Type:     schema.TypeBool,
+					Computed: true,
+				},
+			},
+		},
+		"assign_ipv6": {
+			FromTerraformFunc: mkipv6assign,
+			ToTerraformFunc:   mktfipv6assign,
+			Schema: &schema.Schema{
+				Type:     schema.TypeMap,
+				Computed: true,
+				Elem: &schema.Schema{
+					Type:     schema.TypeBool,
+					Computed: true,
+				},
+			},
+		},
+		"assignment_pool": {
+			FromTerraformFunc: mkIPRange,
+			ToTerraformFunc:   mktfRanges,
+			Schema: &schema.Schema{
+				Type:     schema.TypeSet,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"start": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"end": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"cidr": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
+			},
+		},
+		"flow_rules": {
+			Schema: &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 		},
 	},

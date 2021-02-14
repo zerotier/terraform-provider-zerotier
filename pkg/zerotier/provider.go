@@ -28,6 +28,9 @@ func Provider() *schema.Provider {
 			"zerotier_network":  resourceNetwork(),
 			"zerotier_member":   resourceMember(),
 		},
+		DataSourcesMap: map[string]*schema.Resource{
+			"zerotier_network": dataSourceNetwork(),
+		},
 		ConfigureContextFunc: providerConfigure,
 	}
 }
