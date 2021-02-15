@@ -16,11 +16,13 @@ func Provider() *schema.Provider {
 				Type:        schema.TypeString,
 				Required:    true,
 				DefaultFunc: schema.EnvDefaultFunc("ZEROTIER_CONTROLLER_URL", ztcentral.BaseURLV1),
+				Description: "ZeroTier Central API endpoint. Unlikely you'll need to alter this unless you're testing ZeroTier central itself.",
 			},
 			"zerotier_controller_token": {
 				Type:        schema.TypeString,
 				Required:    true,
 				DefaultFunc: schema.EnvDefaultFunc("ZEROTIER_CONTROLLER_TOKEN", nil),
+				Description: "ZeroTier Central API Token; you can generate a new one at https://my.zerotier.com/account.",
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{

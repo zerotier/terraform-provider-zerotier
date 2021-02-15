@@ -24,6 +24,8 @@ endif
 
 default: install
 
+checks: fmt lint docs test
+
 mktfrc:
 	@echo Creating bootstrap terraform rc file in test.tfrc...
 	sh mktfrc.sh
@@ -86,3 +88,8 @@ endif
 
 test-image:
 	docker build ${NOCACHE_FLAG} --pull -t zerotier/terraform-test .
+
+docs:
+	go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs
+
+.PHONY: docs

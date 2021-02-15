@@ -50,65 +50,66 @@ var ZTMember = ValidatedSchema{
 	Schema: map[string]*SchemaWrap{
 		"network_id": {
 			Schema: &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "ID of the network this member belongs to",
 			},
 		},
 		"member_id": {
 			Schema: &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
-				ForceNew: true,
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Description: "ID of this member.",
 			},
 		},
 		"name": {
 			Schema: &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
-				Computed: true,
+				Type:        schema.TypeString,
+				Optional:    true,
+				Computed:    true,
+				Description: "Descriptive name of this member.",
 			},
 		},
 		"description": {
 			Schema: &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
-				Default:  "Managed by Terraform",
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "Managed by Terraform",
+				Description: "Text description of this member.",
 			},
 		},
 		"hidden": {
 			Schema: &schema.Schema{
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  false,
-			},
-		},
-		"offline_notify_delay": {
-			Schema: &schema.Schema{
-				Type:     schema.TypeInt,
-				Optional: true,
-				Default:  0,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Is this member visible?",
 			},
 		},
 		"authorized": {
 			Schema: &schema.Schema{
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  true,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     true,
+				Description: "Is the member authorized on the network?",
 			},
 		},
 		"allow_ethernet_bridging": {
 			Schema: &schema.Schema{
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  false,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Is this member allowed to activate ethernet bridging over the ZeroTier network?",
 			},
 		},
 		"no_auto_assign_ips": {
 			Schema: &schema.Schema{
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  false,
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Description: "Exempt this member from the IP auto assignment pool on a Network",
 			},
 		},
 		"ip_assignments": {
@@ -119,6 +120,7 @@ var ZTMember = ValidatedSchema{
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
+				Description: "List of IP address assignments",
 			},
 		},
 		"capabilities": {
@@ -129,6 +131,7 @@ var ZTMember = ValidatedSchema{
 				Elem: &schema.Schema{
 					Type: schema.TypeInt,
 				},
+				Description: "List of network capabilities",
 			},
 		},
 	},

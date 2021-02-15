@@ -1,0 +1,20 @@
+---
+layout: ""
+page_title: "ZeroTier Terraform Provider"
+description: |-
+  Connect team members from anywhere in the world on any device. ZeroTier creates secure networks between on-premise, cloud, desktop, and mobile devices.
+---
+
+# ZeroTier Provider
+
+This terraform provider allows you to stitch the following objects from the [ZeroTier Central API](https://my.zerotier.com/help/api):
+
+- Networks
+- Members
+- Identities
+
+## Example Usage
+
+{{tffile "examples/provider/provider.tf"}}
+
+{{ .SchemaMarkdown | trimspace }}
