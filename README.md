@@ -77,7 +77,7 @@ resource "zerotier_network" "silence_of_the_lan" {
 # Members
 
 Members are associations between Nodes and Networks. There are created
-"Authorized" button is clicked in the WebUI.
+when a node is authorized in the WebUI.
 
 
 ```hcl
