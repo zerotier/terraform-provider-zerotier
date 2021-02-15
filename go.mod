@@ -1,6 +1,6 @@
-module github.com/someara/terraform-provider-zerotier
+module github.com/zerotier/terraform-provider-zerotier
 
-go 1.14
+go 1.15
 
 //replace github.com/zerotier/go-ztcentral => /home/erikh/src/github.com/zerotier/go-ztcentral
 
