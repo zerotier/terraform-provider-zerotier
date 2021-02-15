@@ -1,8 +1,8 @@
 terraform {
   required_providers {
     zerotier = {
-      source   = "zerotier.com/dev/zerotier"
-      version  = "0.2"
+      source  = "zerotier.com/dev/zerotier"
+      version = "0.2"
     }
   }
 }

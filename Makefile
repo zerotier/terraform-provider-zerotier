@@ -24,6 +24,8 @@ endif
 
 default: install
 
+checks: fmt lint docs test
+
 mktfrc:
 	@echo Creating bootstrap terraform rc file in test.tfrc...
 	sh mktfrc.sh

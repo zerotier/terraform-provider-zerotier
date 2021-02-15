@@ -163,7 +163,8 @@ And everything should be cleaned up! Note that you can do more with the allocati
 
 Included here is a description of the Make tasks and environment variables you need to run the tests and perform builds.
 
-- make test
+- `make checks`: Everything you need to do to get through CI
+- `make test`
   - `FORCE_TESTS=1`: do not use test cache
   - `QUIET_TESTS=1`: do not show test log (just results)
   - `TEST=<pattern>`: run a specific test or tests that match the pattern
