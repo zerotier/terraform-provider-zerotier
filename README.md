@@ -1,18 +1,154 @@
-# Terraform Provider for the ZeroTier Central API
+# Terraform Provider ZeroTier
 
-Connect team members from anywhere in the world on any device. ZeroTier creates secure networks between on-premise, cloud, desktop, and mobile devices.
+ZeroTier is a smart Ethernet switch for planet Earth.
 
-This terraform provider allows you to stitch the following objects from the [ZeroTier Central API](https://my.zerotier.com/help/api):
+It's a distributed network hypervisor built atop a cryptographically
+secure global peer to peer network. It provides advanced network
+virtualization and management capabilities on par with an enterprise
+SDN switch, but across both local and wide area networks, connecting
+almost any kind of app or device.
 
-- Networks
-- Members
-- Identities
+It does not distinguish between on-premise, cloud, desktop, or mobile
+devices. You can even ZeroTier-enable individual programs with the SDK
+socket interface.
 
-# Example
+This Terraform provider allows you to manipulate objects in the [ZeroTier Central API](https://my.zerotier.com/help/api):
+
+# Networks
+
+ZeroTier Networks can be thought of as encrypted virtual Ethernet
+switches.
+
+```hcl
+resource "zerotier_network" "occams_router" {
+  name        = "occams_router"
+  description = "The prefix with largest number of bits is usually correct"
+  assignment_pool {
+    cidr = "10.1.0.0/24"
+  }
+  route {
+    target = "10.1.0.0/24"
+  }
+  flow_rules = "accept;"
+}
+```
+
+ZeroTier networks can also push routes to network members, if they
+want to receive them.
+
+```hcl
+resource "zerotier_network" "schrödingers_nat" {
+  name        = "schrödingers_nat"
+  description = "A packet's destination is simultaneiously Alice and Bob until observed by a NAT table."
+  assignment_pool {
+    cidr = "10.2.0.0/24"
+  }
+  route {
+    target = "10.2.0.0/24"
+  }
+  route {
+    target = "0.0.0.0/0"
+    via = "10.2.0.1"
+  }
+  flow_rules = "accept;"
+}
+```
+
+ZeroTier networks have a robust ```flow_rules``` language, allowing you do
+to things like dropping select traffic, or even as advanced as
+Ethernet tapping. Please refer to the [ZeroTier Reference Manual](https://www.zerotier.com/manual/) for
+details.
+
+
+```hcl
+resource "zerotier_network" "silence_of_the_lan" {
+  name        = "silence_of_the_lan"
+  description = "It puts the bits in the bucket. It does this whenever it is told."
+  assignment_pool {
+    cidr = "10.3.0.0/24"
+  }
+  route {
+    target = "10.3.0.0/24"
+  }
+  flow_rules = "drop;"
+}
+```
+
+# Members
+
+Members are associations between Nodes and Networks. There are created
+"Authorized" button is clicked in the WebUI.
+
+
+```hcl
+resource "zerotier_member" "alice" {
+  name                    = "alice"
+  member_id               = "ABCDEF1234"
+  network_id              = zerotier_network.occams_router.id
+  description             = "Curiouser and curiouser"
+  hidden                  = true
+  allow_ethernet_bridging = true
+  no_auto_assign_ips      = true
+  ip_assignments          = ["10.1.0.42"]
+}
+```
+
+
+```hcl
+resource "zerotier_member" "bob" {
+  name                    = "in Bob we trust"
+  member_id               = "1234ABCDEF"
+  network_id              = zerotier_network.schrödingers_nat.id
+}
+```
+
+# Identities
+
+The ```zerotier_identity``` resource is the odd-ball of the bunch. You
+cannot create an Identity in the API. A ZeroTier identity is the
+cryptographic identity of a ZeroTier node. It is more akin to a
+[Terraform TLS Private Key](https://registry.terraform.io/providers/hashicorp/tls/latest/docs/resources/private_key).
+
+In "normal" ZeroTier usage, the ZeroTier Identity is created by the ZeroTier
+client on first launch. When a client tries to join a ZeroTier
+Network, the public half shows up in the WebUI, waiting for
+Authorization from an administrator. (A "member" association in the
+API).
+
+Without a third party to certify the validity of the identity
+(Certificate Authority model), the node's identity needs to be verified
+out-of-band of ZeroTier. This usually means it is Trusted on First
+Use. This is the same pattern as SSH keys.
+
+With dymamic and ephemeral infrastructure, we have the usual
+chicken-and-egg problem. We cannot associate a member with a network
+until we know the identity. 
+
+The ```zerotier_identity``` resource lets us pre-generate an identity
+for use with a ```zerotier_member``` resource, but a freshly provisioned
+instance or container will not know the secret.
+
+Therefore, the secret part of the identity will need to somehow be installed on the node by one of:
+
+- Injection via userdata / environment
+- Pre-baking of the secret into the booted instance or container
+- Mounting of the secret as a volume
+
+In any event, usage of the ```zerotier_identity``` resource means the
+secret will be stored in the Terraform State, creating a potential
+security risk, and should be documented as such.
+
+
+```hcl
+resource "zerotier_identity" "alice" {}
+resource "zerotier_identity" "bob" {}
+```
+
+# Putting it all together.
 
 This example connects two docker containers with zerotier. You can then `docker exec` into one and ping the other over the ZeroTier network.
 
-```terraform
+```hcl
 terraform {
   required_providers {
     docker = {
@@ -74,10 +210,6 @@ resource "docker_container" "bob" {
     content = zerotier_identity.bob.private_key
   }
 }
-
-#
-# Provider
-#
 
 provider "zerotier" {}
 
