@@ -12,6 +12,7 @@ import (
 
 func resourceNetwork() *schema.Resource {
 	return &schema.Resource{
+		Description:   "Network provider for ZeroTier, allows you to create ZeroTier networks.",
 		CreateContext: resourceNetworkCreate,
 		ReadContext:   resourceNetworkRead,
 		UpdateContext: resourceNetworkRead, // schemawrap makes these equivalent

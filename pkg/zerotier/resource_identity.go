@@ -13,20 +13,20 @@ func resourceIdentity() *schema.Resource {
 		CreateContext: resourceIdentityCreate,
 		ReadContext:   resourceIdentityRead,
 		DeleteContext: resourceIdentityDelete,
-
+		Description:   "Identity generator for ZeroTier members. Use this provider with others to authenticate and join users to your networks.",
 		Schema: map[string]*schema.Schema{
 			"public_key": {
 				Type:        schema.TypeString,
-				Description: "public key",
 				Computed:    true,
 				ForceNew:    true,
+				Description: "The public key of the identity.",
 			},
 			"private_key": {
 				Type:        schema.TypeString,
-				Description: "private key",
 				Computed:    true,
 				ForceNew:    true,
 				Sensitive:   true,
+				Description: "The private key of the identity.",
 			},
 		},
 	}

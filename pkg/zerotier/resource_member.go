@@ -12,6 +12,7 @@ import (
 
 func resourceMember() *schema.Resource {
 	return &schema.Resource{
+		Description:   "Manage ZeroTier members and join them to networks",
 		CreateContext: resourceMemberCreate,
 		ReadContext:   resourceMemberRead,
 		UpdateContext: resourceMemberUpdate,

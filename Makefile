@@ -86,3 +86,8 @@ endif
 
 test-image:
 	docker build ${NOCACHE_FLAG} --pull -t zerotier/terraform-test .
+
+docs:
+	go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs
+
+.PHONY: docs
