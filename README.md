@@ -76,7 +76,7 @@ resource "zerotier_network" "silence_of_the_lan" {
 
 # Members
 
-Members are associations between Nodes and Networks. There are created
+Members are associations between Nodes and Networks. These are created
 when a node is authorized in the WebUI.
 
 
