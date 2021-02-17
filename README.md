@@ -213,10 +213,6 @@ resource "docker_container" "bob" {
 
 provider "zerotier" {}
 
-#
-# Alice
-#
-
 variable "ipv4_cidr" {
   default = "10.0.1.0/24"
 }
