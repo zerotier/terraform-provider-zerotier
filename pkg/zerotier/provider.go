@@ -2,6 +2,7 @@ package zerotier
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -46,6 +47,8 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 		if ztControllerURL != "" {
 			c.BaseURL = ztControllerURL
 		}
+
+		c.SetUserAgent(fmt.Sprintf("terraform-provider-zerotier/%s", Version))
 
 		return c, nil
 	}
