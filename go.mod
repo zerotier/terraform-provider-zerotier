@@ -23,6 +23,7 @@ require (
 	github.com/hashicorp/go-multierror v1.1.0 // indirect
 	github.com/hashicorp/go-uuid v1.0.2 // indirect
 	github.com/hashicorp/hcl/v2 v2.8.2 // indirect
+	github.com/hashicorp/terraform-plugin-docs v0.4.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.4.2
 	github.com/hashicorp/yamux v0.0.0-20200609203250-aecfd211c9ce // indirect
 	github.com/mitchellh/copystructure v1.1.1 // indirect
@@ -35,7 +36,6 @@ require (
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.0.1 // indirect
 	github.com/sirupsen/logrus v1.7.0 // indirect
-	github.com/zclconf/go-cty v1.7.1 // indirect
 	github.com/zerotier/go-ztcentral v0.2.1-0.20210213070016-be6aaad4acde
 	github.com/zerotier/go-ztidentity v1.0.0
 	golang.org/x/net v0.0.0-20210119194325-5f4716e94777 // indirect
