@@ -26,6 +26,7 @@ func resourceMember() *schema.Resource {
 //
 
 func resourceMemberRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	ztm := ZTMember.Clone()
 	c := m.(*ztcentral.Client)
 
 	ztNetworkID, ztNodeID := getMemberIDs(d)
@@ -34,16 +35,17 @@ func resourceMemberRead(ctx context.Context, d *schema.ResourceData, m interface
 		return diag.FromErr(err)
 	}
 
-	return ZTMember.CollectFromObject(d, member)
+	return ztm.CollectFromObject(d, member)
 }
 
 func resourceMemberCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	if err := ZTMember.CollectFromTerraform(d); err != nil {
+	ztm := ZTMember.Clone()
+	if err := ztm.CollectFromTerraform(d); err != nil {
 		return err
 	}
 
 	c := m.(*ztcentral.Client)
-	member := ZTMember.Yield().(*ztcentral.Member)
+	member := ztm.Yield().(*ztcentral.Member)
 
 	cm, err := c.CreateAuthorizedMember(ctx, member.NetworkID, member.MemberID, member.Name)
 	if err != nil {
@@ -55,29 +57,32 @@ func resourceMemberCreate(ctx context.Context, d *schema.ResourceData, m interfa
 }
 
 func resourceMemberUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	ztm := ZTMember.Clone()
+
 	if err := resourceMemberRead(ctx, d, m); err != nil {
 		return err
 	}
 
 	c := m.(*ztcentral.Client)
-	ZTMember.CollectFromTerraform(d)
+	ztm.CollectFromTerraform(d)
 
-	updated, err := c.UpdateMember(ctx, ZTMember.Yield().(*ztcentral.Member))
+	updated, err := c.UpdateMember(ctx, ztm.Yield().(*ztcentral.Member))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	ZTMember.CollectFromObject(d, updated)
+	ztm.CollectFromObject(d, updated)
 
 	return nil
 }
 
 func resourceMemberDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	ZTMember.CollectFromTerraform(d)
+	ztm := ZTMember.Clone()
+	ztm.CollectFromTerraform(d)
 
 	c := m.(*ztcentral.Client)
 
-	if err := c.DeleteMember(ctx, ZTMember.Yield().(*ztcentral.Member)); err != nil {
+	if err := c.DeleteMember(ctx, ztm.Yield().(*ztcentral.Member)); err != nil {
 		return diag.FromErr(err)
 	}
 
