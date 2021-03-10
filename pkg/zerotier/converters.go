@@ -46,11 +46,14 @@ func toStringList(i interface{}) interface{} {
 	return ray
 }
 
-func fetchIntList(d *schema.ResourceData, attr string) []int {
-	raw := d.Get(attr).([]interface{})
-	ray := make([]int, len(raw))
-	for i := range raw {
-		ray[i] = raw[i].(int)
+func fetchUintList(vs ValidatedSchema, attr string) []uint {
+	return toUintList(vs.Get(attr).([]interface{})).([]uint)
+}
+
+func toUintList(i interface{}) interface{} {
+	ray := []uint{}
+	for _, x := range i.([]interface{}) {
+		ray = append(ray, uint(x.(int)))
 	}
 	return ray
 }

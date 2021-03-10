@@ -17,4 +17,5 @@ resource "zerotier_member" "alice" {
   allow_ethernet_bridging = true
   no_auto_assign_ips      = true
   ip_assignments          = ["10.0.0.1"]
+  capabilities            = [1, 2, 3]
 }

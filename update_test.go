@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"reflect"
 	"testing"
 	"time"
 
@@ -10,6 +11,18 @@ import (
 
 func boolPtr(b bool) *bool {
 	return &b
+}
+
+// this is slightly different than the converters.go version; the result coming
+// back from json parsing will always be `float64`, instead of `int`, which we
+// pass normally through the type system in converters. See
+// pkg/zerotier/converters.go for more information.
+func toUintList(i interface{}) []uint {
+	ray := []uint{}
+	for _, x := range i.([]interface{}) {
+		ray = append(ray, uint(x.(float64))) // here
+	}
+	return ray
 }
 
 func modifyMember(ctx context.Context, networkID string, memberID string, updateFunc func(*ztcentral.Member)) error {
@@ -51,6 +64,7 @@ func TestMemberUpdate(t *testing.T) {
 					member.Config.ActiveBridge = false
 					member.Config.NoAutoAssignIPs = false
 					member.Config.IPAssignments = []string{"10.0.0.2"}
+					member.Config.Capabilities = []uint{0, 1, 2}
 				})
 				if err != nil {
 					t.Fatal(err)
@@ -83,6 +97,10 @@ func TestMemberUpdate(t *testing.T) {
 				if a(attrs["ip_assignments"])[0].(string) != "10.0.0.2" {
 					t.Fatal("ip_assignments was improperly set")
 				}
+
+				if !reflect.DeepEqual(toUintList(a(attrs["capabilities"])), []uint{0, 1, 2}) {
+					t.Fatalf("capabilities was improperly set: is %#v", a(attrs["capabilities"]))
+				}
 			default:
 				t.Fatalf("invalid member %q encountered", m["name"])
 			}
@@ -108,6 +126,10 @@ func TestMemberUpdate(t *testing.T) {
 				isBool(t, attrs["hidden"], true, "hidden")
 				isBool(t, attrs["allow_ethernet_bridging"], true, "allow_ethernet_bridging")
 				isBool(t, attrs["no_auto_assign_ips"], true, "no_auto_assign_ips")
+
+				if !reflect.DeepEqual(toUintList(a(attrs["capabilities"])), []uint{1, 2, 3}) {
+					t.Fatalf("capabilities was improperly set: is %#v", a(attrs["capabilities"]))
+				}
 
 				if a(attrs["ip_assignments"])[0].(string) != "10.0.0.1" {
 					t.Fatal("ip_assignments was improperly set")
