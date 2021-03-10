@@ -13,14 +13,14 @@ import (
 )
 
 var (
-	controllerToken = os.Getenv("ZEROTIER_CONTROLLER_TOKEN")
-	controllerURL   = os.Getenv("ZEROTIER_CONTROLLER_URL")
+	controllerToken = os.Getenv("ZEROTIER_CENTRAL_TOKEN")
+	controllerURL   = os.Getenv("ZEROTIER_CENTRAL_URL")
 )
 
 func TestMain(m *testing.M) {
 	if controllerToken == "" {
 		if fi, err := os.Stat("test-token.txt"); err != nil {
-			fmt.Println("test-token.txt not present in tree; ZEROTIER_CONTROLLER_TOKEN is required in environment for many tests.")
+			fmt.Println("test-token.txt not present in tree; ZEROTIER_CENTRAL_TOKEN is required in environment for many tests.")
 		} else if fi.Mode()&os.ModeIrregular != 0 {
 			panic("test-token.txt is not a regular file; not sure what to do here, so bailing")
 		} else {
@@ -38,11 +38,11 @@ func TestMain(m *testing.M) {
 	}
 
 	os.Setenv("TF_CLI_CONFIG_FILE", rc)
-	os.Setenv("ZEROTIER_CONTROLLER_TOKEN", controllerToken)
+	os.Setenv("ZEROTIER_CENTRAL_TOKEN", controllerToken)
 
 	if controllerURL == "" {
 		controllerURL = ztcentral.BaseURLV1
-		os.Setenv("ZEROTIER_CONTROLLER_URL", controllerURL)
+		os.Setenv("ZEROTIER_CENTRAL_URL", controllerURL)
 	}
 
 	os.Exit(m.Run())

@@ -12,10 +12,10 @@ import (
 
 // given a token, nuke all networks under that token.
 func main() {
-	controllerToken := os.Getenv("ZEROTIER_CONTROLLER_TOKEN")
+	controllerToken := os.Getenv("ZEROTIER_CENTRAL_TOKEN")
 	if controllerToken == "" {
 		if _, err := os.Stat("test-token.txt"); err != nil {
-			fmt.Println("Please supply ZEROTIER_CONTROLLER_TOKEN in the environment or test-token.txt on disk with the token assigned.")
+			fmt.Println("Please supply ZEROTIER_CENTRAL_TOKEN in the environment or test-token.txt on disk with the token assigned.")
 			panic(err)
 		}
 
