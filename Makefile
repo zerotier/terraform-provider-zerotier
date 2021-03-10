@@ -1,5 +1,5 @@
-HOSTNAME=zerotier.com
-NAMESPACE=dev
+HOSTNAME=registry.terraform.io
+NAMESPACE=zerotier
 NAME=zerotier
 BINARY=terraform-provider-${NAME}
 VERSION=0.2.0
