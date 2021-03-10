@@ -1,8 +1,6 @@
 package zerotier
 
 import (
-
-	//	"strconv"
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -57,23 +55,24 @@ func resourceMemberCreate(ctx context.Context, d *schema.ResourceData, m interfa
 }
 
 func resourceMemberUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+	c := m.(*ztcentral.Client)
 	ztm := ZTMember.Clone()
 
-	if err := resourceMemberRead(ctx, d, m); err != nil {
-		return err
-	}
-
-	c := m.(*ztcentral.Client)
-	ztm.CollectFromTerraform(d)
-
-	updated, err := c.UpdateMember(ctx, ztm.Yield().(*ztcentral.Member))
+	ztNetworkID, ztNodeID := getMemberIDs(d)
+	member, err := c.GetMember(ctx, ztNetworkID, ztNodeID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	ztm.CollectFromObject(d, updated)
+	ztm.CollectFromTerraform(d)
 
-	return nil
+	member = ztm.Yield().(*ztcentral.Member)
+	updated, err := c.UpdateMember(ctx, member)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return ztm.CollectFromObject(d, updated)
 }
 
 func resourceMemberDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {

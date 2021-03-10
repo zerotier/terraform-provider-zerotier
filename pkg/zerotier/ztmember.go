@@ -18,7 +18,7 @@ func ztMemberYield(vs ValidatedSchema) interface{} {
 			Authorized:      vs.Get("authorized").(bool),
 			ActiveBridge:    vs.Get("allow_ethernet_bridging").(bool),
 			NoAutoAssignIPs: vs.Get("no_auto_assign_ips").(bool),
-			//Capabilities:    toIntList(d, "capabilities"),
+			// Capabilities:    toIntList(d, "capabilities"),
 			IPAssignments: fetchStringList(vs, "ip_assignments"),
 		},
 	}
@@ -38,7 +38,7 @@ func ztMemberCollect(vs ValidatedSchema, d *schema.ResourceData, i interface{}) 
 	diags = append(diags, vs.Set(d, "allow_ethernet_bridging", ztMember.Config.ActiveBridge)...)
 	diags = append(diags, vs.Set(d, "no_auto_assign_ips", ztMember.Config.NoAutoAssignIPs)...)
 	diags = append(diags, vs.Set(d, "ip_assignments", ztMember.Config.IPAssignments)...)
-	//diags = append(diags, vs.Set(d, "capabilities", ztMember.Config.Capabilities)...)
+	// diags = append(diags, vs.Set(d, "capabilities", ztMember.Config.Capabilities)...)
 
 	return diags
 }

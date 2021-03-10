@@ -88,6 +88,35 @@ func TestMemberUpdate(t *testing.T) {
 			}
 		}
 	}
+
+	// reset the settings with terraform. Did it work?
+	tf.Apply("testdata/plans/basic-member.tf")
+
+	// for each network, validate the transformations were applied.
+	for _, resource := range a(tf.State()["resources"]) {
+		m := h(resource)
+		attrs := h(h(a(m["instances"])[0])["attributes"])
+
+		switch m["type"] {
+		case "zerotier_member":
+			switch m["name"] {
+			case "alice":
+				if attrs["description"].(string) != "Hello, world" {
+					t.Fatalf("description was not set; was %q", attrs["description"])
+				}
+
+				isBool(t, attrs["hidden"], true, "hidden")
+				isBool(t, attrs["allow_ethernet_bridging"], true, "allow_ethernet_bridging")
+				isBool(t, attrs["no_auto_assign_ips"], true, "no_auto_assign_ips")
+
+				if a(attrs["ip_assignments"])[0].(string) != "10.0.0.1" {
+					t.Fatal("ip_assignments was improperly set")
+				}
+			default:
+				t.Fatalf("invalid member %q encountered", m["name"])
+			}
+		}
+	}
 }
 
 func modifyNetwork(ctx context.Context, id string, updateFunc func(*ztcentral.Network)) error {
