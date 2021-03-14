@@ -13,16 +13,16 @@ import (
 func Provider() *schema.Provider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
-			"zerotier_controller_url": {
+			"zerotier_central__url": {
 				Type:        schema.TypeString,
 				Required:    true,
-				DefaultFunc: schema.EnvDefaultFunc("ZEROTIER_CONTROLLER_URL", ztcentral.BaseURLV1),
+				DefaultFunc: schema.EnvDefaultFunc("ZEROTIER_CENTRAL_URL", ztcentral.BaseURLV1),
 				Description: "ZeroTier Central API endpoint. Unlikely you'll need to alter this unless you're testing ZeroTier central itself.",
 			},
-			"zerotier_controller_token": {
+			"zerotier_central__token": {
 				Type:        schema.TypeString,
 				Required:    true,
-				DefaultFunc: schema.EnvDefaultFunc("ZEROTIER_CONTROLLER_TOKEN", nil),
+				DefaultFunc: schema.EnvDefaultFunc("ZEROTIER_CENTRAL_TOKEN", nil),
 				Description: "ZeroTier Central API Token; you can generate a new one at https://my.zerotier.com/account.",
 			},
 		},
@@ -39,8 +39,8 @@ func Provider() *schema.Provider {
 }
 
 func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
-	ztControllerURL := d.Get("zerotier_controller_url").(string)
-	ztControllerToken := d.Get("zerotier_controller_token").(string)
+	ztControllerURL := d.Get("zerotier_central__url").(string)
+	ztControllerToken := d.Get("zerotier_central__token").(string)
 
 	if ztControllerToken != "" {
 		c := ztcentral.NewClient(ztControllerToken)
@@ -53,5 +53,5 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 		return c, nil
 	}
 
-	return nil, diag.Errorf("zerotier_controller_token must be specified, or ZEROTIER_CONTROLLER_TOKEN must be specified in environment")
+	return nil, diag.Errorf("zerotier_central__token must be specified, or ZEROTIER_CENTRAL_TOKEN must be specified in environment")
 }

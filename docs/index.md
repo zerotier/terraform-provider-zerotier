@@ -128,8 +128,8 @@ resource "zerotier_member" "bob" {
 
 ### Required
 
-- **zerotier_controller_token** (String) ZeroTier Central API Token; you can generate a new one at https://my.zerotier.com/account.
+- **zerotier_central__token** (String) ZeroTier Central API Token; you can generate a new one at https://my.zerotier.com/account.
 
 ### Optional
 
-- **zerotier_controller_url** (String) ZeroTier Central API endpoint. Unlikely you'll need to alter this unless you're testing ZeroTier central itself.
+- **zerotier_central__url** (String) ZeroTier Central API endpoint. Unlikely you'll need to alter this unless you're testing ZeroTier central itself.

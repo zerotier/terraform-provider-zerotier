@@ -252,7 +252,7 @@ From here, we can:
 
 ```shell
 terraform init
-ZEROTIER_CONTROLLER_TOKEN=<apitoken> terraform apply -auto-approve
+ZEROTIER_CENTRAL_TOKEN=<apitoken> terraform apply -auto-approve
 ```
 
 And things should "just work". Once everything has applied, let's try a ping between the two container images:
@@ -282,7 +282,7 @@ PING 10.0.1.247 (10.0.1.247) 56(84) bytes of data.
 Once we're done:
 
 ```
-ZEROTIER_CONTROLLER_TOKEN=<apitoken> terraform destroy -auto-approve
+ZEROTIER_CENTRAL_TOKEN=<apitoken> terraform destroy -auto-approve
 ```
 
 And everything should be cleaned up! Note that you can do more with the allocation system to better scope your IP addresses; this is just a way to show off more that you can do.
@@ -296,7 +296,7 @@ Included here is a description of the Make tasks and environment variables you n
   - `FORCE_TESTS=1`: do not use test cache
   - `QUIET_TESTS=1`: do not show test log (just results)
   - `TEST=<pattern>`: run a specific test or tests that match the pattern
-- `ZEROTIER_CONTROLLER_TOKEN`
+- `ZEROTIER_CENTRAL_TOKEN`
   - set in env or write to `test-token.txt` at the root.
     - env is preferred but the token from file is just propagated to env and gitignored. No different, just easier to use.
 
