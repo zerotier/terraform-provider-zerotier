@@ -39,13 +39,12 @@ func Provider() *schema.Provider {
 }
 
 func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
-	ztControllerURL := d.Get("zerotier_central_url").(string)
 	ztControllerToken := d.Get("zerotier_central_token").(string)
 
 	if ztControllerToken != "" {
-		c := ztcentral.NewClient(ztControllerToken)
-		if ztControllerURL != "" {
-			c.BaseURL = ztControllerURL
+		c, err := ztcentral.NewClient(ztControllerToken)
+		if err != nil {
+			return nil, diag.FromErr(err)
 		}
 
 		c.SetUserAgent(fmt.Sprintf("terraform-provider-zerotier/%s", Version))

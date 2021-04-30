@@ -3,44 +3,47 @@ package zerotier
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/zerotier/go-ztcentral"
+	"github.com/zerotier/go-ztcentral/pkg/spec"
 )
 
 func ztNetworkYield(vs ValidatedSchema) interface{} {
-	return &ztcentral.Network{
-		ID:          vs.Get("id").(string),
-		RulesSource: vs.Get("flow_rules").(string),
-		Config: ztcentral.NetworkConfig{
-			Name:             vs.Get("name").(string),
-			IPAssignmentPool: vs.Get("assignment_pool").([]ztcentral.IPRange),
-			Routes:           vs.Get("route").([]ztcentral.Route),
-			IPV4AssignMode:   vs.Get("assign_ipv4").(*ztcentral.IPV4AssignMode),
-			IPV6AssignMode:   vs.Get("assign_ipv6").(*ztcentral.IPV6AssignMode),
-			EnableBroadcast:  boolPtr(vs.Get("enable_broadcast").(bool)),
-			MTU:              vs.Get("mtu").(int),
-			MulticastLimit:   vs.Get("multicast_limit").(int),
-			Private:          boolPtr(vs.Get("private").(bool)),
+	assignmentPools := vs.Get("assignment_pool").([]spec.IPRange)
+	routes := vs.Get("route").([]spec.Route)
+
+	return &spec.Network{
+		Id:          stringPtr(vs.Get("id").(string)),
+		RulesSource: stringPtr(vs.Get("flow_rules").(string)),
+		Config: &spec.NetworkConfig{
+			Name:              stringPtr(vs.Get("name").(string)),
+			IpAssignmentPools: &assignmentPools,
+			Routes:            &routes,
+			V4AssignMode:      vs.Get("assign_ipv4").(*spec.IPV4AssignMode),
+			V6AssignMode:      vs.Get("assign_ipv6").(*spec.IPV6AssignMode),
+			EnableBroadcast:   boolPtr(vs.Get("enable_broadcast").(bool)),
+			Mtu:               intPtr(vs.Get("mtu").(int)),
+			MulticastLimit:    intPtr(vs.Get("multicast_limit").(int)),
+			Private:           boolPtr(vs.Get("private").(bool)),
 		},
 	}
 }
 
 func ztNetworkCollect(vs ValidatedSchema, d *schema.ResourceData, i interface{}) diag.Diagnostics {
-	ztNetwork := i.(*ztcentral.Network)
+	ztNetwork := i.(*spec.Network)
 
 	var diags diag.Diagnostics
 
-	diags = append(diags, vs.Set(d, "id", ztNetwork.ID)...)
+	diags = append(diags, vs.Set(d, "id", ztNetwork.Id)...)
 	diags = append(diags, vs.Set(d, "flow_rules", ztNetwork.RulesSource)...)
 	diags = append(diags, vs.Set(d, "name", ztNetwork.Config.Name)...)
-	diags = append(diags, vs.Set(d, "mtu", ztNetwork.Config.MTU)...)
+	diags = append(diags, vs.Set(d, "mtu", ztNetwork.Config.Mtu)...)
 	diags = append(diags, vs.Set(d, "creation_time", ztNetwork.Config.CreationTime)...)
 	diags = append(diags, vs.Set(d, "route", ztNetwork.Config.Routes)...)
-	diags = append(diags, vs.Set(d, "assignment_pool", ztNetwork.Config.IPAssignmentPool)...)
+	diags = append(diags, vs.Set(d, "assignment_pool", ztNetwork.Config.IpAssignmentPools)...)
 	diags = append(diags, vs.Set(d, "enable_broadcast", ptrBool(ztNetwork.Config.EnableBroadcast))...)
 	diags = append(diags, vs.Set(d, "multicast_limit", ztNetwork.Config.MulticastLimit)...)
 	diags = append(diags, vs.Set(d, "private", ptrBool(ztNetwork.Config.Private))...)
-	diags = append(diags, vs.Set(d, "assign_ipv4", ztNetwork.Config.IPV4AssignMode)...)
-	diags = append(diags, vs.Set(d, "assign_ipv6", ztNetwork.Config.IPV6AssignMode)...)
+	diags = append(diags, vs.Set(d, "assign_ipv4", ztNetwork.Config.V4AssignMode)...)
+	diags = append(diags, vs.Set(d, "assign_ipv6", ztNetwork.Config.V6AssignMode)...)
 
 	return diags
 }
