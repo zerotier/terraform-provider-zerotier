@@ -193,7 +193,13 @@ func TestNetworkUpdate(t *testing.T) {
 			case "multicast_limit":
 				// not updateable
 			case "description":
-				// not updateable
+				err := modifyNetwork(ctx, attrs["id"].(string), func(net *spec.Network) {
+					net.Description = nil
+				})
+
+				if err != nil {
+					t.Fatal(err)
+				}
 			case "assign_off":
 				err := modifyNetwork(ctx, attrs["id"].(string), func(net *spec.Network) {
 					net.Config.V4AssignMode = &spec.IPV4AssignMode{Zt: boolPtr(true)}
@@ -256,7 +262,9 @@ func TestNetworkUpdate(t *testing.T) {
 			case "multicast_limit":
 				// not updateable
 			case "description":
-				// not updateable
+				if attrs["description"].(string) != "My description is changed!" {
+					t.Fatal("description was not updated")
+				}
 			case "flow_rules":
 				if attrs["flow_rules"].(string) != "accept;" {
 					t.Fatal("flow_rules were not updated")

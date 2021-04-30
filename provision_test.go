@@ -167,14 +167,14 @@ func TestBasicNetworkSetup(t *testing.T) {
 				// 	t.Fatalf("multicast_limit was improperly set: %f", i)
 				// }
 			case "description":
-				// s, ok := attrs["description"].(string)
-				// if !ok {
-				// 	t.Fatal("description was not set")
-				// }
-				//
-				// if s != "My description is changed!" {
-				// 	t.Fatalf("description was improperly set")
-				// }
+				s, ok := attrs["description"].(string)
+				if !ok {
+					t.Fatal("description was not set")
+				}
+
+				if s != "My description is changed!" {
+					t.Fatalf("description was improperly set")
+				}
 			case "flow_rules":
 				if attrs["flow_rules"].(string) != "drop;" {
 					t.Fatal("flow_rules were not altered")
