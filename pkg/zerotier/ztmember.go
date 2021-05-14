@@ -3,41 +3,41 @@ package zerotier
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/zerotier/go-ztcentral"
+	"github.com/zerotier/go-ztcentral/pkg/spec"
 )
 
 func ztMemberYield(vs ValidatedSchema) interface{} {
-	return &ztcentral.Member{
-		NetworkID: vs.Get("network_id").(string),
-		MemberID:  vs.Get("member_id").(string),
-		Hidden:    vs.Get("hidden").(bool),
+	return &spec.Member{
+		NetworkId: stringPtr(vs.Get("network_id").(string)),
+		NodeId:    stringPtr(vs.Get("member_id").(string)),
+		Hidden:    boolPtr(vs.Get("hidden").(bool)),
 		//OfflineNotifyDelay: toInt(d, "offline_notify_delay"),
-		Name:        vs.Get("name").(string),
-		Description: vs.Get("description").(string),
-		Config: ztcentral.MemberConfig{
-			Authorized:      vs.Get("authorized").(bool),
-			ActiveBridge:    vs.Get("allow_ethernet_bridging").(bool),
-			NoAutoAssignIPs: vs.Get("no_auto_assign_ips").(bool),
-			Capabilities:    fetchUintList(vs, "capabilities"),
-			IPAssignments:   fetchStringList(vs, "ip_assignments"),
+		Name:        stringPtr(vs.Get("name").(string)),
+		Description: stringPtr(vs.Get("description").(string)),
+		Config: &spec.MemberConfig{
+			Authorized:      boolPtr(vs.Get("authorized").(bool)),
+			ActiveBridge:    boolPtr(vs.Get("allow_ethernet_bridging").(bool)),
+			NoAutoAssignIps: boolPtr(vs.Get("no_auto_assign_ips").(bool)),
+			Capabilities:    fetchIntList(vs, "capabilities"),
+			IpAssignments:   fetchStringList(vs, "ip_assignments"),
 		},
 	}
 }
 
 func ztMemberCollect(vs ValidatedSchema, d *schema.ResourceData, i interface{}) diag.Diagnostics {
-	ztMember := i.(*ztcentral.Member)
+	ztMember := i.(*spec.Member)
 
 	var diags diag.Diagnostics
 
 	diags = append(diags, vs.Set(d, "name", ztMember.Name)...)
 	diags = append(diags, vs.Set(d, "description", ztMember.Description)...)
-	diags = append(diags, vs.Set(d, "member_id", ztMember.MemberID)...)
-	diags = append(diags, vs.Set(d, "network_id", ztMember.NetworkID)...)
+	diags = append(diags, vs.Set(d, "member_id", ztMember.NodeId)...)
+	diags = append(diags, vs.Set(d, "network_id", ztMember.NetworkId)...)
 	diags = append(diags, vs.Set(d, "hidden", ztMember.Hidden)...)
 	diags = append(diags, vs.Set(d, "authorized", ztMember.Config.Authorized)...)
 	diags = append(diags, vs.Set(d, "allow_ethernet_bridging", ztMember.Config.ActiveBridge)...)
-	diags = append(diags, vs.Set(d, "no_auto_assign_ips", ztMember.Config.NoAutoAssignIPs)...)
-	diags = append(diags, vs.Set(d, "ip_assignments", ztMember.Config.IPAssignments)...)
+	diags = append(diags, vs.Set(d, "no_auto_assign_ips", ztMember.Config.NoAutoAssignIps)...)
+	diags = append(diags, vs.Set(d, "ip_assignments", ztMember.Config.IpAssignments)...)
 	diags = append(diags, vs.Set(d, "capabilities", ztMember.Config.Capabilities)...)
 
 	return diags
