@@ -184,9 +184,17 @@ func mktfRoutes(routes interface{}) interface{} {
 	}
 
 	for _, route := range *r {
+		var target, via string
+		if route.Target != nil {
+			target = *route.Target
+		}
+		if route.Via != nil {
+			via = *route.Via
+		}
+
 		ret = append(ret, map[string]interface{}{
-			"target": *route.Target,
-			"via":    *route.Via,
+			"target": target,
+			"via":    via,
 		})
 	}
 
@@ -202,9 +210,19 @@ func mktfRanges(ranges interface{}) interface{} {
 	}
 
 	for _, r := range *r {
+		var start, end string
+
+		if r.IpRangeStart != nil {
+			start = *r.IpRangeStart
+		}
+
+		if r.IpRangeEnd != nil {
+			end = *r.IpRangeEnd
+		}
+
 		ret = append(ret, map[string]interface{}{
-			"start": *r.IpRangeStart,
-			"end":   *r.IpRangeEnd,
+			"start": start,
+			"end":   end,
 		})
 	}
 
