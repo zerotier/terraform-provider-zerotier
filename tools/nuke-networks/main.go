@@ -28,7 +28,11 @@ func main() {
 	}
 
 	fmt.Printf("This reaps all networks for the token: %q\n", controllerToken)
-	c := ztcentral.NewClient(controllerToken)
+	c, err := ztcentral.NewClient(controllerToken)
+	if err != nil {
+		panic(err)
+	}
+
 	networks, err := c.GetNetworks(context.Background())
 	if err != nil {
 		panic(err)
@@ -43,7 +47,7 @@ func main() {
 	os.Stdin.Read(buf)
 
 	for _, network := range networks {
-		if err := c.DeleteNetwork(context.Background(), network.ID); err != nil {
+		if err := c.DeleteNetwork(context.Background(), *network.Id); err != nil {
 			fmt.Fprintf(os.Stderr, "Error deleting network: %v; barrelling forward anyway", err)
 		}
 	}

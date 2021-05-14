@@ -4,44 +4,44 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/zerotier/go-ztcentral"
+	"github.com/zerotier/go-ztcentral/pkg/spec"
 )
 
 func TestCIDR(t *testing.T) {
 	type test struct {
 		fail bool
-		r    ztcentral.IPRange
+		r    spec.IPRange
 	}
 
 	table := map[string]test{
 		"10.0.0.0/24": {
-			r: ztcentral.IPRange{
-				Start: "10.0.0.0",
-				End:   "10.0.0.255",
+			r: spec.IPRange{
+				IpRangeStart: stringPtr("10.0.0.0"),
+				IpRangeEnd:   stringPtr("10.0.0.255"),
 			},
 		},
 		"10.0.0.0/20": {
-			r: ztcentral.IPRange{
-				Start: "10.0.0.0",
-				End:   "10.0.15.255",
+			r: spec.IPRange{
+				IpRangeStart: stringPtr("10.0.0.0"),
+				IpRangeEnd:   stringPtr("10.0.15.255"),
 			},
 		},
 		"10.0.0.0/16": {
-			r: ztcentral.IPRange{
-				Start: "10.0.0.0",
-				End:   "10.0.255.255",
+			r: spec.IPRange{
+				IpRangeStart: stringPtr("10.0.0.0"),
+				IpRangeEnd:   stringPtr("10.0.255.255"),
 			},
 		},
 		"10.0.0.0/12": {
-			r: ztcentral.IPRange{
-				Start: "10.0.0.0",
-				End:   "10.15.255.255",
+			r: spec.IPRange{
+				IpRangeStart: stringPtr("10.0.0.0"),
+				IpRangeEnd:   stringPtr("10.15.255.255"),
 			},
 		},
 		"10.0.0.0/8": {
-			r: ztcentral.IPRange{
-				Start: "10.0.0.0",
-				End:   "10.255.255.255",
+			r: spec.IPRange{
+				IpRangeStart: stringPtr("10.0.0.0"),
+				IpRangeEnd:   stringPtr("10.255.255.255"),
 			},
 		},
 		"10.0.0.0/1234": {
@@ -54,30 +54,30 @@ func TestCIDR(t *testing.T) {
 			fail: true,
 		},
 		"0.0.0.0/0": {
-			r: ztcentral.IPRange{
-				Start: "0.0.0.0",
-				End:   "255.255.255.255",
+			r: spec.IPRange{
+				IpRangeStart: stringPtr("0.0.0.0"),
+				IpRangeEnd:   stringPtr("255.255.255.255"),
 			},
 		},
 
 		// ipv6 now!
 
 		"fe80::/96": {
-			r: ztcentral.IPRange{
-				Start: "fe80::",
-				End:   "fe80::ffff:ffff",
+			r: spec.IPRange{
+				IpRangeStart: stringPtr("fe80::"),
+				IpRangeEnd:   stringPtr("fe80::ffff:ffff"),
 			},
 		},
 		"fe80::/48": {
-			r: ztcentral.IPRange{
-				Start: "fe80::",
-				End:   "fe80::ffff:ffff:ffff:ffff:ffff",
+			r: spec.IPRange{
+				IpRangeStart: stringPtr("fe80::"),
+				IpRangeEnd:   stringPtr("fe80::ffff:ffff:ffff:ffff:ffff"),
 			},
 		},
 		"fe80::1/128": {
-			r: ztcentral.IPRange{
-				Start: "fe80::1",
-				End:   "fe80::1",
+			r: spec.IPRange{
+				IpRangeStart: stringPtr("fe80::1"),
+				IpRangeEnd:   stringPtr("fe80::1"),
 			},
 		},
 	}
