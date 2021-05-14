@@ -28,7 +28,7 @@ func ztNetworkYield(vs ValidatedSchema) interface{} {
 }
 
 func ztNetworkCollect(vs ValidatedSchema, d *schema.ResourceData, i interface{}) diag.Diagnostics {
-	ztNetwork := i.(*spec.Network)
+	ztNetwork := i.(spec.Network)
 
 	var diags diag.Diagnostics
 

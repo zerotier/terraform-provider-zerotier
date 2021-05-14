@@ -16,32 +16,32 @@ func TestCIDR(t *testing.T) {
 	table := map[string]test{
 		"10.0.0.0/24": {
 			r: spec.IPRange{
-				IpRangeStart: "10.0.0.0",
-				IpRangeEnd:   "10.0.0.255",
+				IpRangeStart: stringPtr("10.0.0.0"),
+				IpRangeEnd:   stringPtr("10.0.0.255"),
 			},
 		},
 		"10.0.0.0/20": {
 			r: spec.IPRange{
-				IpRangeStart: "10.0.0.0",
-				IpRangeEnd:   "10.0.15.255",
+				IpRangeStart: stringPtr("10.0.0.0"),
+				IpRangeEnd:   stringPtr("10.0.15.255"),
 			},
 		},
 		"10.0.0.0/16": {
 			r: spec.IPRange{
-				IpRangeStart: "10.0.0.0",
-				IpRangeEnd:   "10.0.255.255",
+				IpRangeStart: stringPtr("10.0.0.0"),
+				IpRangeEnd:   stringPtr("10.0.255.255"),
 			},
 		},
 		"10.0.0.0/12": {
 			r: spec.IPRange{
-				IpRangeStart: "10.0.0.0",
-				IpRangeEnd:   "10.15.255.255",
+				IpRangeStart: stringPtr("10.0.0.0"),
+				IpRangeEnd:   stringPtr("10.15.255.255"),
 			},
 		},
 		"10.0.0.0/8": {
 			r: spec.IPRange{
-				IpRangeStart: "10.0.0.0",
-				IpRangeEnd:   "10.255.255.255",
+				IpRangeStart: stringPtr("10.0.0.0"),
+				IpRangeEnd:   stringPtr("10.255.255.255"),
 			},
 		},
 		"10.0.0.0/1234": {
@@ -55,8 +55,8 @@ func TestCIDR(t *testing.T) {
 		},
 		"0.0.0.0/0": {
 			r: spec.IPRange{
-				IpRangeStart: "0.0.0.0",
-				IpRangeEnd:   "255.255.255.255",
+				IpRangeStart: stringPtr("0.0.0.0"),
+				IpRangeEnd:   stringPtr("255.255.255.255"),
 			},
 		},
 
@@ -64,20 +64,20 @@ func TestCIDR(t *testing.T) {
 
 		"fe80::/96": {
 			r: spec.IPRange{
-				IpRangeStart: "fe80::",
-				IpRangeEnd:   "fe80::ffff:ffff",
+				IpRangeStart: stringPtr("fe80::"),
+				IpRangeEnd:   stringPtr("fe80::ffff:ffff"),
 			},
 		},
 		"fe80::/48": {
 			r: spec.IPRange{
-				IpRangeStart: "fe80::",
-				IpRangeEnd:   "fe80::ffff:ffff:ffff:ffff:ffff",
+				IpRangeStart: stringPtr("fe80::"),
+				IpRangeEnd:   stringPtr("fe80::ffff:ffff:ffff:ffff:ffff"),
 			},
 		},
 		"fe80::1/128": {
 			r: spec.IPRange{
-				IpRangeStart: "fe80::1",
-				IpRangeEnd:   "fe80::1",
+				IpRangeStart: stringPtr("fe80::1"),
+				IpRangeEnd:   stringPtr("fe80::1"),
 			},
 		},
 	}

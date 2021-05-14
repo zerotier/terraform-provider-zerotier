@@ -25,7 +25,7 @@ func ztMemberYield(vs ValidatedSchema) interface{} {
 }
 
 func ztMemberCollect(vs ValidatedSchema, d *schema.ResourceData, i interface{}) diag.Diagnostics {
-	ztMember := i.(*spec.Member)
+	ztMember := i.(spec.Member)
 
 	var diags diag.Diagnostics
 

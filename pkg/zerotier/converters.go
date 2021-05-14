@@ -178,7 +178,12 @@ func mkRoutes(routes interface{}) (interface{}, diag.Diagnostics) {
 func mktfRoutes(routes interface{}) interface{} {
 	ret := []map[string]interface{}{}
 
-	for _, route := range routes.([]spec.Route) {
+	r := routes.(*[]spec.Route)
+	if r == nil {
+		return ret
+	}
+
+	for _, route := range *r {
 		ret = append(ret, map[string]interface{}{
 			"target": *route.Target,
 			"via":    *route.Via,
@@ -191,7 +196,12 @@ func mktfRoutes(routes interface{}) interface{} {
 func mktfRanges(ranges interface{}) interface{} {
 	ret := []map[string]interface{}{}
 
-	for _, r := range ranges.([]spec.IPRange) {
+	r := ranges.(*[]spec.IPRange)
+	if r == nil {
+		return ret
+	}
+
+	for _, r := range *r {
 		ret = append(ret, map[string]interface{}{
 			"start": *r.IpRangeStart,
 			"end":   *r.IpRangeEnd,
