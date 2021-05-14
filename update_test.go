@@ -7,15 +7,10 @@ import (
 	"time"
 
 	"github.com/zerotier/go-ztcentral"
-	"github.com/zerotier/go-ztcentral/pkg/spec"
 )
 
 func boolPtr(b bool) *bool {
 	return &b
-}
-
-func stringPtr(s string) *string {
-	return &s
 }
 
 // this is slightly different than the converters.go version; the result coming
@@ -30,20 +25,16 @@ func toUintList(i interface{}) []uint {
 	return ray
 }
 
-func modifyMember(ctx context.Context, networkID string, memberID string, updateFunc func(*spec.Member)) error {
-	c, err := ztcentral.NewClient(controllerToken)
-	if err != nil {
-		return err
-	}
-
+func modifyMember(ctx context.Context, networkID string, memberID string, updateFunc func(*ztcentral.Member)) error {
+	c := ztcentral.NewClient(controllerToken)
 	member, err := c.GetMember(ctx, networkID, memberID)
 	if err != nil {
 		return err
 	}
 
-	updateFunc(&member)
+	updateFunc(member)
 
-	if _, err := c.UpdateMember(ctx, networkID, memberID, member); err != nil {
+	if _, err := c.UpdateMember(ctx, member); err != nil {
 		return err
 	}
 
@@ -67,13 +58,13 @@ func TestMemberUpdate(t *testing.T) {
 		case "zerotier_member":
 			switch m["name"] {
 			case "alice":
-				err := modifyMember(ctx, attrs["network_id"].(string), attrs["member_id"].(string), func(member *spec.Member) {
-					member.Description = stringPtr("This is a new description")
-					member.Hidden = boolPtr(false)
-					member.Config.ActiveBridge = boolPtr(false)
-					member.Config.NoAutoAssignIps = boolPtr(false)
-					member.Config.IpAssignments = &[]string{"10.0.0.2"}
-					member.Config.Capabilities = &[]int{0, 1, 2}
+				err := modifyMember(ctx, attrs["network_id"].(string), attrs["member_id"].(string), func(member *ztcentral.Member) {
+					member.Description = "This is a new description"
+					member.Hidden = false
+					member.Config.ActiveBridge = false
+					member.Config.NoAutoAssignIPs = false
+					member.Config.IPAssignments = []string{"10.0.0.2"}
+					member.Config.Capabilities = []uint{0, 1, 2}
 				})
 				if err != nil {
 					t.Fatal(err)
@@ -150,19 +141,16 @@ func TestMemberUpdate(t *testing.T) {
 	}
 }
 
-func modifyNetwork(ctx context.Context, id string, updateFunc func(*spec.Network)) error {
-	c, err := ztcentral.NewClient(controllerToken)
-	if err != nil {
-		return err
-	}
+func modifyNetwork(ctx context.Context, id string, updateFunc func(*ztcentral.Network)) error {
+	c := ztcentral.NewClient(controllerToken)
 	net, err := c.GetNetwork(ctx, id)
 	if err != nil {
 		return err
 	}
 
-	updateFunc(&net)
+	updateFunc(net)
 
-	if _, err := c.UpdateNetwork(ctx, *net.Id, net); err != nil {
+	if _, err := c.UpdateNetwork(ctx, net); err != nil {
 		return err
 	}
 
@@ -201,16 +189,16 @@ func TestNetworkUpdate(t *testing.T) {
 					t.Fatal(err)
 				}
 			case "assign_off":
-				err := modifyNetwork(ctx, attrs["id"].(string), func(net *spec.Network) {
-					net.Config.V4AssignMode = &spec.IPV4AssignMode{Zt: boolPtr(true)}
-					net.Config.V6AssignMode = &spec.IPV6AssignMode{Zt: boolPtr(true), N6plane: boolPtr(false), Rfc4193: boolPtr(false)}
+				err := modifyNetwork(ctx, attrs["id"].(string), func(net *ztcentral.Network) {
+					net.Config.IPV4AssignMode = &ztcentral.IPV4AssignMode{ZeroTier: boolPtr(true)}
+					net.Config.IPV6AssignMode = &ztcentral.IPV6AssignMode{ZeroTier: boolPtr(true), ZT6Plane: boolPtr(false), RFC4193: boolPtr(false)}
 				})
 
 				if err != nil {
 					t.Fatal(err)
 				}
 			case "private":
-				err := modifyNetwork(ctx, attrs["id"].(string), func(net *spec.Network) {
+				err := modifyNetwork(ctx, attrs["id"].(string), func(net *ztcentral.Network) {
 					net.Config.Private = boolPtr(false)
 				})
 
@@ -218,7 +206,7 @@ func TestNetworkUpdate(t *testing.T) {
 					t.Fatal(err)
 				}
 			case "no_broadcast":
-				err := modifyNetwork(ctx, attrs["id"].(string), func(net *spec.Network) {
+				err := modifyNetwork(ctx, attrs["id"].(string), func(net *ztcentral.Network) {
 					net.Config.EnableBroadcast = boolPtr(true)
 				})
 
@@ -226,10 +214,7 @@ func TestNetworkUpdate(t *testing.T) {
 					t.Fatal(err)
 				}
 			case "flow_rules":
-				c, err := ztcentral.NewClient(controllerToken)
-				if err != nil {
-					t.Fatal(err)
-				}
+				c := ztcentral.NewClient(controllerToken)
 				rules, err := c.UpdateNetworkRules(ctx, attrs["id"].(string), "accept;")
 				if err != nil {
 					t.Fatal(err)

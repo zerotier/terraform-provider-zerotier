@@ -8,7 +8,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/zerotier/go-ztcentral"
-	"github.com/zerotier/go-ztcentral/pkg/spec"
 )
 
 func resourceNetwork() *schema.Resource {
@@ -29,10 +28,10 @@ func resourceNetworkCreate(ctx context.Context, d *schema.ResourceData, m interf
 	}
 
 	c := m.(*ztcentral.Client)
-	net := ztn.Yield().(*spec.Network)
+	net := ztn.Yield().(*ztcentral.Network)
 	rules := net.RulesSource
 
-	n, err := c.NewNetwork(ctx, *net.Config.Name, *net)
+	n, err := c.NewNetwork(ctx, net.Config.Name, net)
 	if err != nil {
 		return []diag.Diagnostic{{
 			Severity: diag.Error,
@@ -41,11 +40,11 @@ func resourceNetworkCreate(ctx context.Context, d *schema.ResourceData, m interf
 		}}
 	}
 
-	if _, err := c.UpdateNetworkRules(ctx, *n.Id, *rules); err != nil {
+	if _, err := c.UpdateNetworkRules(ctx, n.ID, rules); err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(*n.Id)
+	d.SetId(n.ID)
 	d.Set("tf_last_updated", time.Now().Unix())
 
 	return resourceNetworkRead(ctx, d, m)
@@ -79,14 +78,16 @@ func resourceNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interf
 
 	ztn.CollectFromTerraform(d)
 
-	net := ztn.Yield().(*spec.Network)
+	net := ztn.Yield().(*ztcentral.Network)
 	rules := net.RulesSource
 
-	if _, err := c.UpdateNetworkRules(ctx, *net.Id, *rules); err != nil {
+	if _, err := c.UpdateNetworkRules(ctx, net.ID, rules); err != nil {
 		return diag.FromErr(err)
 	}
 
-	updated, err := c.UpdateNetwork(ctx, *net.Id, *net)
+	net.RulesSource = ""
+
+	updated, err := c.UpdateNetwork(ctx, net)
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -8,7 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/zerotier/go-ztcentral/pkg/spec"
+	"github.com/zerotier/go-ztcentral"
 )
 
 func boolPtr(b bool) *bool {
@@ -23,14 +23,6 @@ func ptrBool(p *bool) bool {
 	return false
 }
 
-func stringPtr(s string) *string {
-	return &s
-}
-
-func intPtr(i int) *int {
-	return &i
-}
-
 func getMemberIDs(d *schema.ResourceData) (string, string) {
 	ztNetworkID := d.Get("network_id").(string)
 	memberID := d.Get("member_id").(string)
@@ -42,32 +34,32 @@ func getMemberIDs(d *schema.ResourceData) (string, string) {
 	return ztNetworkID, memberID
 }
 
-func fetchStringList(vs ValidatedSchema, attr string) *[]string {
-	return toStringList(vs.Get(attr).([]interface{})).(*[]string)
+func fetchStringList(vs ValidatedSchema, attr string) []string {
+	return toStringList(vs.Get(attr).([]interface{})).([]string)
 }
 
 func toStringList(i interface{}) interface{} {
-	ray := &[]string{}
+	ray := []string{}
 	for _, x := range i.([]interface{}) {
-		*ray = append(*ray, x.(string))
+		ray = append(ray, x.(string))
 	}
 	return ray
 }
 
-func fetchIntList(vs ValidatedSchema, attr string) *[]int {
-	return toIntList(vs.Get(attr).([]interface{})).(*[]int)
+func fetchUintList(vs ValidatedSchema, attr string) []uint {
+	return toUintList(vs.Get(attr).([]interface{})).([]uint)
 }
 
-func toIntList(i interface{}) interface{} {
-	ray := &[]int{}
+func toUintList(i interface{}) interface{} {
+	ray := []uint{}
 	for _, x := range i.([]interface{}) {
-		*ray = append(*ray, x.(int))
+		ray = append(ray, uint(x.(int)))
 	}
 	return ray
 }
 
-func mkIPRangeFromCIDR(cidr interface{}) (spec.IPRange, error) {
-	iprange := spec.IPRange{}
+func mkIPRangeFromCIDR(cidr interface{}) (ztcentral.IPRange, error) {
+	iprange := ztcentral.IPRange{}
 
 	first, nw, err := net.ParseCIDR(cidr.(string))
 	if err != nil {
@@ -101,19 +93,16 @@ func mkIPRangeFromCIDR(cidr interface{}) (spec.IPRange, error) {
 		}
 	}
 
-	ipFirst := first.String()
-	ipLast := last.String()
-
-	iprange = spec.IPRange{
-		IpRangeStart: &ipFirst,
-		IpRangeEnd:   &ipLast,
+	iprange = ztcentral.IPRange{
+		Start: first.String(),
+		End:   last.String(),
 	}
 
 	return iprange, nil
 }
 
 func mkIPRange(ranges interface{}) (interface{}, diag.Diagnostics) {
-	ret := []spec.IPRange{}
+	ret := []ztcentral.IPRange{}
 
 	for _, r := range ranges.(*schema.Set).List() {
 		m := r.(map[string]interface{})
@@ -140,9 +129,9 @@ func mkIPRange(ranges interface{}) (interface{}, diag.Diagnostics) {
 				return ret, diag.FromErr(errors.New("end does not exist"))
 			}
 
-			ret = append(ret, spec.IPRange{
-				IpRangeStart: &start,
-				IpRangeEnd:   &end,
+			ret = append(ret, ztcentral.IPRange{
+				Start: start,
+				End:   end,
 			})
 		}
 	}
@@ -151,7 +140,7 @@ func mkIPRange(ranges interface{}) (interface{}, diag.Diagnostics) {
 }
 
 func mkRoutes(routes interface{}) (interface{}, diag.Diagnostics) {
-	ret := []spec.Route{}
+	ret := []ztcentral.Route{}
 
 	for _, r := range routes.(*schema.Set).List() {
 		m := r.(map[string]interface{})
@@ -166,9 +155,9 @@ func mkRoutes(routes interface{}) (interface{}, diag.Diagnostics) {
 			via = v.(string)
 		}
 
-		ret = append(ret, spec.Route{
-			Target: &target,
-			Via:    &via,
+		ret = append(ret, ztcentral.Route{
+			Target: target,
+			Via:    via,
 		})
 	}
 
@@ -178,10 +167,10 @@ func mkRoutes(routes interface{}) (interface{}, diag.Diagnostics) {
 func mktfRoutes(routes interface{}) interface{} {
 	ret := []map[string]interface{}{}
 
-	for _, route := range routes.([]spec.Route) {
+	for _, route := range routes.([]ztcentral.Route) {
 		ret = append(ret, map[string]interface{}{
-			"target": *route.Target,
-			"via":    *route.Via,
+			"target": route.Target,
+			"via":    route.Via,
 		})
 	}
 
@@ -191,10 +180,10 @@ func mktfRoutes(routes interface{}) interface{} {
 func mktfRanges(ranges interface{}) interface{} {
 	ret := []map[string]interface{}{}
 
-	for _, r := range ranges.([]spec.IPRange) {
+	for _, r := range ranges.([]ztcentral.IPRange) {
 		ret = append(ret, map[string]interface{}{
-			"start": *r.IpRangeStart,
-			"end":   *r.IpRangeEnd,
+			"start": r.Start,
+			"end":   r.End,
 		})
 	}
 
@@ -202,14 +191,14 @@ func mktfRanges(ranges interface{}) interface{} {
 }
 
 func mktfipv6assign(i interface{}) interface{} {
-	ipv6 := i.(*spec.IPV6AssignMode)
+	ipv6 := i.(*ztcentral.IPV6AssignMode)
 
 	m := map[string]interface{}{}
 
 	iter := map[string]*bool{
-		"zerotier": ipv6.Zt,
-		"sixplane": ipv6.N6plane,
-		"rfc4193":  ipv6.Rfc4193,
+		"zerotier": ipv6.ZeroTier,
+		"sixplane": ipv6.ZT6Plane,
+		"rfc4193":  ipv6.RFC4193,
 	}
 
 	for key, b := range iter {
@@ -222,10 +211,10 @@ func mktfipv6assign(i interface{}) interface{} {
 }
 
 func mktfipv4assign(i interface{}) interface{} {
-	ipv4 := i.(*spec.IPV4AssignMode)
+	ipv4 := i.(*ztcentral.IPV4AssignMode)
 	m := map[string]interface{}{}
-	if ipv4.Zt != nil {
-		m["zerotier"] = ptrBool(ipv4.Zt)
+	if ipv4.ZeroTier != nil {
+		m["zerotier"] = ptrBool(ipv4.ZeroTier)
 	}
 
 	return m
@@ -240,7 +229,7 @@ func mkipv4assign(assignments interface{}) (interface{}, diag.Diagnostics) {
 		zt = true // default
 	}
 
-	return &spec.IPV4AssignMode{Zt: boolPtr(zt)}, nil
+	return &ztcentral.IPV4AssignMode{ZeroTier: boolPtr(zt)}, nil
 }
 
 func mkipv6assign(assignments interface{}) (interface{}, diag.Diagnostics) {
@@ -262,9 +251,9 @@ func mkipv6assign(assignments interface{}) (interface{}, diag.Diagnostics) {
 		rfc4193 = r.(bool)
 	}
 
-	return &spec.IPV6AssignMode{
-		Zt:      boolPtr(zt),
-		N6plane: boolPtr(sixPlane),
-		Rfc4193: boolPtr(rfc4193),
+	return &ztcentral.IPV6AssignMode{
+		ZeroTier: boolPtr(zt),
+		ZT6Plane: boolPtr(sixPlane),
+		RFC4193:  boolPtr(rfc4193),
 	}, nil
 }
