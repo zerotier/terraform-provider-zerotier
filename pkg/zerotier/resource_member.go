@@ -34,7 +34,7 @@ func resourceMemberRead(ctx context.Context, d *schema.ResourceData, m interface
 		return diag.FromErr(err)
 	}
 
-	return ztm.CollectFromObject(d, member)
+	return ztm.CollectFromObject(d, member, true)
 }
 
 func resourceMemberCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
@@ -67,7 +67,7 @@ func resourceMemberUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 		return diag.FromErr(err)
 	}
 
-	return ztm.CollectFromObject(d, updated)
+	return ztm.CollectFromObject(d, updated, true)
 }
 
 func resourceMemberDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {

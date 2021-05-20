@@ -70,14 +70,12 @@ func resourceNetworkRead(ctx context.Context, d *schema.ResourceData, m interfac
 }
 
 func resourceNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	if err := resourceNetworkRead(ctx, d, m); err != nil {
-		return err
-	}
-
 	c := m.(*ztcentral.Client)
 	ztn := NewNetwork()
 
-	ztn.CollectFromTerraform(d)
+	if err := ztn.CollectFromTerraform(d); err != nil {
+		return err
+	}
 
 	net := ztn.Yield().(*spec.Network)
 	rules := net.RulesSource
@@ -91,7 +89,13 @@ func resourceNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interf
 		return diag.FromErr(err)
 	}
 
-	ztn.CollectFromObject(d, updated)
+	updated.RulesSource = rules
+
+	if err := ztn.CollectFromObject(d, updated, true); err != nil {
+		return err
+	}
+
+	d.Set("tf_last_updated", time.Now().Unix())
 
 	return nil
 }
