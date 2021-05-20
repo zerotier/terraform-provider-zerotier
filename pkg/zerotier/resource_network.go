@@ -18,12 +18,12 @@ func resourceNetwork() *schema.Resource {
 		ReadContext:   resourceNetworkRead,
 		UpdateContext: resourceNetworkRead, // schemawrap makes these equivalent
 		DeleteContext: resourceNetworkDelete,
-		Schema:        ZTNetwork.TerraformSchema(),
+		Schema:        NewNetwork().TerraformSchema(),
 	}
 }
 
 func resourceNetworkCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	ztn := ZTNetwork.Clone()
+	ztn := NewNetwork()
 	if err := ztn.CollectFromTerraform(d); err != nil {
 		return err
 	}
@@ -66,7 +66,7 @@ func resourceNetworkRead(ctx context.Context, d *schema.ResourceData, m interfac
 		return diags
 	}
 
-	return ZTNetwork.Clone().CollectFromObject(d, ztNetwork)
+	return NewNetwork().CollectFromObject(d, ztNetwork, true)
 }
 
 func resourceNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
@@ -75,7 +75,7 @@ func resourceNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interf
 	}
 
 	c := m.(*ztcentral.Client)
-	ztn := ZTNetwork.Clone()
+	ztn := NewNetwork()
 
 	ztn.CollectFromTerraform(d)
 

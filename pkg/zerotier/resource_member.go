@@ -16,7 +16,7 @@ func resourceMember() *schema.Resource {
 		ReadContext:   resourceMemberRead,
 		UpdateContext: resourceMemberUpdate,
 		DeleteContext: resourceMemberDelete,
-		Schema:        ZTMember.TerraformSchema(),
+		Schema:        NewMember().TerraformSchema(),
 	}
 }
 
@@ -25,7 +25,7 @@ func resourceMember() *schema.Resource {
 //
 
 func resourceMemberRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	ztm := ZTMember.Clone()
+	ztm := NewMember()
 	c := m.(*ztcentral.Client)
 
 	ztNetworkID, ztNodeID := getMemberIDs(d)
@@ -38,7 +38,7 @@ func resourceMemberRead(ctx context.Context, d *schema.ResourceData, m interface
 }
 
 func resourceMemberCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	ztm := ZTMember.Clone()
+	ztm := NewMember()
 	if err := ztm.CollectFromTerraform(d); err != nil {
 		return err
 	}
@@ -57,7 +57,7 @@ func resourceMemberCreate(ctx context.Context, d *schema.ResourceData, m interfa
 
 func resourceMemberUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := m.(*ztcentral.Client)
-	ztm := ZTMember.Clone()
+	ztm := NewMember()
 
 	ztm.CollectFromTerraform(d)
 
@@ -71,7 +71,7 @@ func resourceMemberUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 }
 
 func resourceMemberDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	ztm := ZTMember.Clone()
+	ztm := NewMember()
 	ztm.CollectFromTerraform(d)
 
 	c := m.(*ztcentral.Client)
