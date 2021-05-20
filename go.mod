@@ -2,7 +2,7 @@ module github.com/zerotier/terraform-provider-zerotier
 
 go 1.15
 
-replace github.com/zerotier/go-ztcentral => /home/erikh/src/github.com/zerotier/go-ztcentral
+//replace github.com/zerotier/go-ztcentral => /home/erikh/src/github.com/zerotier/go-ztcentral
 
 require (
 	github.com/Microsoft/go-winio v0.4.16 // indirect
@@ -38,7 +38,7 @@ require (
 	github.com/opencontainers/image-spec v1.0.1 // indirect
 	github.com/sirupsen/logrus v1.7.0 // indirect
 	github.com/zclconf/go-cty v1.8.3 // indirect
-	github.com/zerotier/go-ztcentral v0.3.0
+	github.com/zerotier/go-ztcentral v0.3.1-0.20210520100821-970e165fa514
 	github.com/zerotier/go-ztidentity v1.0.0
 	golang.org/x/crypto v0.0.0-20210513164829-c07d793c2f9a // indirect
 	golang.org/x/net v0.0.0-20210510120150-4163338589ed // indirect

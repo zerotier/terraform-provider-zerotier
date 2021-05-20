@@ -451,6 +451,8 @@ github.com/zerotier/go-ztcentral v0.2.1-0.20210307120356-7f562728e846 h1:X8eQ0zB
 github.com/zerotier/go-ztcentral v0.2.1-0.20210307120356-7f562728e846/go.mod h1:90weKZT7Rdq02tdJskc+XR8W93bMgL/9uMCq4Txz0Hk=
 github.com/zerotier/go-ztcentral v0.3.0 h1:jmmz+6j9M1V4WGpvKiZYz9wyodHtYfMKBYWsz55iiZg=
 github.com/zerotier/go-ztcentral v0.3.0/go.mod h1:sDIFmQpdLXx4jKYV6BrXVCsxJP/9Alv7Oo6A+rfFuCk=
+github.com/zerotier/go-ztcentral v0.3.1-0.20210520100821-970e165fa514 h1:ZHCSDN6XCrYIBOIorOWOdlsI3wht8NAn+SFfYj6+RKQ=
+github.com/zerotier/go-ztcentral v0.3.1-0.20210520100821-970e165fa514/go.mod h1:sDIFmQpdLXx4jKYV6BrXVCsxJP/9Alv7Oo6A+rfFuCk=
 github.com/zerotier/go-ztidentity v1.0.0 h1:dgm1ChTxw1TXMrSJQ6VWK2RmHKVYqRd69h/Co/RG+xo=
 github.com/zerotier/go-ztidentity v1.0.0/go.mod h1:zcOy+qXl5A01QhR6dfqOTPiHFMBEjgPlPpDPAO+2jg4=
 go.opencensus.io v0.21.0/go.mod h1:mSImk1erAIZhrmZN+AvHh14ztQfjbGwt4TtuofqLduU=
