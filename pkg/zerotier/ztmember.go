@@ -29,16 +29,26 @@ func ztMemberCollect(vs ValidatedSchema, d *schema.ResourceData, i interface{}, 
 
 	var diags diag.Diagnostics
 
-	diags = append(diags, vs.Set(d, "name", ztMember.Name)...)
-	diags = append(diags, vs.Set(d, "description", ztMember.Description)...)
-	diags = append(diags, vs.Set(d, "member_id", ztMember.NodeId)...)
-	diags = append(diags, vs.Set(d, "network_id", ztMember.NetworkId)...)
-	diags = append(diags, vs.Set(d, "hidden", ztMember.Hidden)...)
-	diags = append(diags, vs.Set(d, "authorized", ztMember.Config.Authorized)...)
-	diags = append(diags, vs.Set(d, "allow_ethernet_bridging", ztMember.Config.ActiveBridge)...)
-	diags = append(diags, vs.Set(d, "no_auto_assign_ips", ztMember.Config.NoAutoAssignIps)...)
-	diags = append(diags, vs.Set(d, "ip_assignments", ztMember.Config.IpAssignments)...)
-	diags = append(diags, vs.Set(d, "capabilities", ztMember.Config.Capabilities)...)
+	stuff := map[string]interface{}{
+		"name":                    ztMember.Name,
+		"description":             ztMember.Description,
+		"member_id":               ztMember.NodeId,
+		"network_id":              ztMember.NetworkId,
+		"hidden":                  ztMember.Hidden,
+		"authorized":              ztMember.Config.Authorized,
+		"allow_ethernet_bridging": ztMember.Config.ActiveBridge,
+		"no_auto_assign_ips":      ztMember.Config.NoAutoAssignIps,
+		"ip_assignments":          ztMember.Config.IpAssignments,
+		"capabilities":            ztMember.Config.Capabilities,
+	}
+
+	for key, value := range stuff {
+		if d.HasChange(key) || force {
+			if err := vs.Set(d, key, value); err != nil {
+				diags = append(diags, err...)
+			}
+		}
+	}
 
 	return diags
 }
