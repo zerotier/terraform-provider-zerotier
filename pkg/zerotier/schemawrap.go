@@ -110,8 +110,8 @@ func (vs ValidatedSchema) Set(d *schema.ResourceData, key string, value interfac
 	}
 
 	if sw.ToTerraformFunc != nil {
-		value = sw.ToTerraformFunc(value)
-		if err := d.Set(key, value); err != nil {
+		tfVal := sw.ToTerraformFunc(value)
+		if err := d.Set(key, tfVal); err != nil {
 			return diag.FromErr(err)
 		}
 	} else {

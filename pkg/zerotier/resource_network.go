@@ -16,7 +16,7 @@ func resourceNetwork() *schema.Resource {
 		Description:   "Network provider for ZeroTier, allows you to create ZeroTier networks.",
 		CreateContext: resourceNetworkCreate,
 		ReadContext:   resourceNetworkRead,
-		UpdateContext: resourceNetworkRead, // schemawrap makes these equivalent
+		UpdateContext: resourceNetworkUpdate,
 		DeleteContext: resourceNetworkDelete,
 		Schema:        NewNetwork().TerraformSchema(),
 	}
