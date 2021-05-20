@@ -24,115 +24,128 @@ func ztMemberYield(vs ValidatedSchema) interface{} {
 	}
 }
 
-func ztMemberCollect(vs ValidatedSchema, d *schema.ResourceData, i interface{}) diag.Diagnostics {
-	ztMember := i.(spec.Member)
+func ztMemberCollect(vs ValidatedSchema, d *schema.ResourceData, i interface{}, force bool) diag.Diagnostics {
+	ztMember := i.(*spec.Member)
 
 	var diags diag.Diagnostics
 
-	diags = append(diags, vs.Set(d, "name", ztMember.Name)...)
-	diags = append(diags, vs.Set(d, "description", ztMember.Description)...)
-	diags = append(diags, vs.Set(d, "member_id", ztMember.NodeId)...)
-	diags = append(diags, vs.Set(d, "network_id", ztMember.NetworkId)...)
-	diags = append(diags, vs.Set(d, "hidden", ztMember.Hidden)...)
-	diags = append(diags, vs.Set(d, "authorized", ztMember.Config.Authorized)...)
-	diags = append(diags, vs.Set(d, "allow_ethernet_bridging", ztMember.Config.ActiveBridge)...)
-	diags = append(diags, vs.Set(d, "no_auto_assign_ips", ztMember.Config.NoAutoAssignIps)...)
-	diags = append(diags, vs.Set(d, "ip_assignments", ztMember.Config.IpAssignments)...)
-	diags = append(diags, vs.Set(d, "capabilities", ztMember.Config.Capabilities)...)
+	stuff := map[string]interface{}{
+		"name":                    ztMember.Name,
+		"description":             ztMember.Description,
+		"member_id":               ztMember.NodeId,
+		"network_id":              ztMember.NetworkId,
+		"hidden":                  ztMember.Hidden,
+		"authorized":              ztMember.Config.Authorized,
+		"allow_ethernet_bridging": ztMember.Config.ActiveBridge,
+		"no_auto_assign_ips":      ztMember.Config.NoAutoAssignIps,
+		"ip_assignments":          ztMember.Config.IpAssignments,
+		"capabilities":            ztMember.Config.Capabilities,
+	}
+
+	for key, value := range stuff {
+		if d.HasChange(key) || force {
+			if err := vs.Set(d, key, value); err != nil {
+				diags = append(diags, err...)
+			}
+		}
+	}
 
 	return diags
 }
 
-// ZTMember is our internal validated schema. See schemawrap.go.
-var ZTMember = ValidatedSchema{
-	YieldFunc:   ztMemberYield,
-	CollectFunc: ztMemberCollect,
-	Schema: map[string]*SchemaWrap{
-		"network_id": {
-			Schema: &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "ID of the network this member belongs to",
-			},
-		},
-		"member_id": {
-			Schema: &schema.Schema{
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Description: "ID of this member.",
-			},
-		},
-		"name": {
-			Schema: &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				Computed:    true,
-				Description: "Descriptive name of this member.",
-			},
-		},
-		"description": {
-			Schema: &schema.Schema{
-				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     "Managed by Terraform",
-				Description: "Text description of this member.",
-			},
-		},
-		"hidden": {
-			Schema: &schema.Schema{
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-				Description: "Is this member visible?",
-			},
-		},
-		"authorized": {
-			Schema: &schema.Schema{
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     true,
-				Description: "Is the member authorized on the network?",
-			},
-		},
-		"allow_ethernet_bridging": {
-			Schema: &schema.Schema{
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-				Description: "Is this member allowed to activate ethernet bridging over the ZeroTier network?",
-			},
-		},
-		"no_auto_assign_ips": {
-			Schema: &schema.Schema{
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-				Description: "Exempt this member from the IP auto assignment pool on a Network",
-			},
-		},
-		"ip_assignments": {
-			Schema: &schema.Schema{
-				Type:     schema.TypeList,
-				Computed: true,
-				Optional: true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
+// NewMember creates a new member schema
+func NewMember() ValidatedSchema {
+	// ZTMember is our internal validated schema. See schemawrap.go.
+	return ValidatedSchema{
+		YieldFunc:   ztMemberYield,
+		CollectFunc: ztMemberCollect,
+		Schema: map[string]*SchemaWrap{
+			"network_id": {
+				Schema: &schema.Schema{
+					Type:        schema.TypeString,
+					Required:    true,
+					ForceNew:    true,
+					Description: "ID of the network this member belongs to",
 				},
-				Description: "List of IP address assignments",
 			},
-		},
-		"capabilities": {
-			Schema: &schema.Schema{
-				Type:     schema.TypeList,
-				Computed: true,
-				Optional: true,
-				Elem: &schema.Schema{
-					Type: schema.TypeInt,
+			"member_id": {
+				Schema: &schema.Schema{
+					Type:        schema.TypeString,
+					Required:    true,
+					ForceNew:    true,
+					Description: "ID of this member.",
 				},
-				Description: "List of network capabilities",
+			},
+			"name": {
+				Schema: &schema.Schema{
+					Type:        schema.TypeString,
+					Optional:    true,
+					Computed:    true,
+					Description: "Descriptive name of this member.",
+				},
+			},
+			"description": {
+				Schema: &schema.Schema{
+					Type:        schema.TypeString,
+					Optional:    true,
+					Default:     "Managed by Terraform",
+					Description: "Text description of this member.",
+				},
+			},
+			"hidden": {
+				Schema: &schema.Schema{
+					Type:        schema.TypeBool,
+					Optional:    true,
+					Default:     false,
+					Description: "Is this member visible?",
+				},
+			},
+			"authorized": {
+				Schema: &schema.Schema{
+					Type:        schema.TypeBool,
+					Optional:    true,
+					Default:     true,
+					Description: "Is the member authorized on the network?",
+				},
+			},
+			"allow_ethernet_bridging": {
+				Schema: &schema.Schema{
+					Type:        schema.TypeBool,
+					Optional:    true,
+					Default:     false,
+					Description: "Is this member allowed to activate ethernet bridging over the ZeroTier network?",
+				},
+			},
+			"no_auto_assign_ips": {
+				Schema: &schema.Schema{
+					Type:        schema.TypeBool,
+					Optional:    true,
+					Default:     false,
+					Description: "Exempt this member from the IP auto assignment pool on a Network",
+				},
+			},
+			"ip_assignments": {
+				Schema: &schema.Schema{
+					Type:     schema.TypeList,
+					Computed: true,
+					Optional: true,
+					Elem: &schema.Schema{
+						Type: schema.TypeString,
+					},
+					Description: "List of IP address assignments",
+				},
+			},
+			"capabilities": {
+				Schema: &schema.Schema{
+					Type:     schema.TypeList,
+					Computed: true,
+					Optional: true,
+					Elem: &schema.Schema{
+						Type: schema.TypeInt,
+					},
+					Description: "List of network capabilities",
+				},
 			},
 		},
-	},
+	}
 }

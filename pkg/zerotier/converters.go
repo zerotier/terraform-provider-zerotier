@@ -147,7 +147,7 @@ func mkIPRange(ranges interface{}) (interface{}, diag.Diagnostics) {
 		}
 	}
 
-	return ret, nil
+	return &ret, nil
 }
 
 func mkRoutes(routes interface{}) (interface{}, diag.Diagnostics) {
@@ -164,6 +164,8 @@ func mkRoutes(routes interface{}) (interface{}, diag.Diagnostics) {
 
 		if v, ok := m["via"]; ok && v.(string) != "" {
 			via = v.(string)
+		} else {
+			via = ""
 		}
 
 		ret = append(ret, spec.Route{
@@ -172,7 +174,7 @@ func mkRoutes(routes interface{}) (interface{}, diag.Diagnostics) {
 		})
 	}
 
-	return ret, nil
+	return &ret, nil
 }
 
 func mktfRoutes(routes interface{}) interface{} {
@@ -198,7 +200,7 @@ func mktfRoutes(routes interface{}) interface{} {
 		})
 	}
 
-	return ret
+	return &ret
 }
 
 func mktfRanges(ranges interface{}) interface{} {

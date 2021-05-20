@@ -39,7 +39,7 @@ func main() {
 	}
 
 	for _, network := range networks {
-		fmt.Println(network.Config.Name)
+		fmt.Println(*network.Config.Name)
 	}
 
 	fmt.Println("These networks will be deleted. Press enter to continue, ^C to cancel")

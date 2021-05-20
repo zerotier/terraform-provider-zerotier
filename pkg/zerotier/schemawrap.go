@@ -16,7 +16,7 @@ type ValidatedSchema struct {
 	// Should be programmed to yield the type at Yield time.
 	YieldFunc func(ValidatedSchema) interface{}
 	// Should be programmed to populate the validated schema with Set calls.
-	CollectFunc func(ValidatedSchema, *schema.ResourceData, interface{}) diag.Diagnostics
+	CollectFunc func(ValidatedSchema, *schema.ResourceData, interface{}, bool) diag.Diagnostics
 }
 
 // SchemaWrap wraps the terraform schema with validators and converters.
@@ -40,36 +40,6 @@ type SchemaWrap struct {
 	// in both ValidatedSchema.YieldFunc() and ValidatedSchema.CollectFunc
 	// interchangeably, as in, they can be type asserted without panicking.
 	Value interface{}
-}
-
-func (sw *SchemaWrap) Clone() *SchemaWrap {
-	val, err := sw.Schema.DefaultValue()
-	if err != nil {
-		panic(err)
-	}
-
-	return &SchemaWrap{
-		Value:             val,
-		Schema:            sw.Schema,
-		ValidatorFunc:     sw.ValidatorFunc,
-		FromTerraformFunc: sw.FromTerraformFunc,
-		ToTerraformFunc:   sw.ToTerraformFunc,
-		EqualFunc:         sw.EqualFunc,
-	}
-}
-
-func (vs ValidatedSchema) Clone() ValidatedSchema {
-	vs2 := ValidatedSchema{
-		Schema:      map[string]*SchemaWrap{},
-		YieldFunc:   vs.YieldFunc,
-		CollectFunc: vs.CollectFunc,
-	}
-
-	for key, sw := range vs.Schema {
-		vs2.Schema[key] = sw.Clone()
-	}
-
-	return vs2
 }
 
 // TerraformSchema returns the unadulterated schema for use by terraform.
@@ -116,8 +86,8 @@ func (vs ValidatedSchema) CollectFromTerraform(d *schema.ResourceData) diag.Diag
 
 // CollectFromObject is a pre-programmed call on the struct which accepts the
 // known object and sets all the values appropriately.
-func (vs ValidatedSchema) CollectFromObject(d *schema.ResourceData, i interface{}) diag.Diagnostics {
-	return vs.CollectFunc(vs, d, i)
+func (vs ValidatedSchema) CollectFromObject(d *schema.ResourceData, i interface{}, force bool) diag.Diagnostics {
+	return vs.CollectFunc(vs, d, i, force)
 }
 
 // Get retrieves the set value inside the schema.
@@ -140,8 +110,8 @@ func (vs ValidatedSchema) Set(d *schema.ResourceData, key string, value interfac
 	}
 
 	if sw.ToTerraformFunc != nil {
-		value = sw.ToTerraformFunc(value)
-		if err := d.Set(key, value); err != nil {
+		tfVal := sw.ToTerraformFunc(value)
+		if err := d.Set(key, tfVal); err != nil {
 			return diag.FromErr(err)
 		}
 	} else {
