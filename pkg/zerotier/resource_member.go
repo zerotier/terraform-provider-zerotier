@@ -62,7 +62,7 @@ func resourceMemberUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 	ztm.CollectFromTerraform(d)
 
 	tfMember := ztm.Yield().(*spec.Member)
-	updated, err := c.UpdateMember(ctx, *tfMember.NetworkId, *tfMember.NodeId, *tfMember)
+	updated, err := c.UpdateMember(ctx, *tfMember.NetworkId, *tfMember.NodeId, tfMember)
 	if err != nil {
 		return diag.FromErr(err)
 	}

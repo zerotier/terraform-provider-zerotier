@@ -41,7 +41,7 @@ func modifyMember(ctx context.Context, networkID string, memberID string, update
 		return err
 	}
 
-	updateFunc(&member)
+	updateFunc(member)
 
 	if _, err := c.UpdateMember(ctx, networkID, memberID, member); err != nil {
 		return err
@@ -160,7 +160,7 @@ func modifyNetwork(ctx context.Context, id string, updateFunc func(*spec.Network
 		return err
 	}
 
-	updateFunc(&net)
+	updateFunc(net)
 
 	if _, err := c.UpdateNetwork(ctx, *net.Id, net); err != nil {
 		return err

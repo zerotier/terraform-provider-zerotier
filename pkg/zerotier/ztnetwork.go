@@ -7,16 +7,16 @@ import (
 )
 
 func ztNetworkYield(vs ValidatedSchema) interface{} {
-	assignmentPools := vs.Get("assignment_pool").([]spec.IPRange)
-	routes := vs.Get("route").([]spec.Route)
+	assignmentPools := vs.Get("assignment_pool").(*[]spec.IPRange)
+	routes := vs.Get("route").(*[]spec.Route)
 
 	return &spec.Network{
 		Id:          stringPtr(vs.Get("id").(string)),
 		RulesSource: stringPtr(vs.Get("flow_rules").(string)),
 		Config: &spec.NetworkConfig{
 			Name:              stringPtr(vs.Get("name").(string)),
-			IpAssignmentPools: &assignmentPools,
-			Routes:            &routes,
+			IpAssignmentPools: assignmentPools,
+			Routes:            routes,
 			V4AssignMode:      vs.Get("assign_ipv4").(*spec.IPV4AssignMode),
 			V6AssignMode:      vs.Get("assign_ipv6").(*spec.IPV6AssignMode),
 			EnableBroadcast:   boolPtr(vs.Get("enable_broadcast").(bool)),

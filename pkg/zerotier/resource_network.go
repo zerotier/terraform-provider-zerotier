@@ -32,7 +32,7 @@ func resourceNetworkCreate(ctx context.Context, d *schema.ResourceData, m interf
 	net := ztn.Yield().(*spec.Network)
 	rules := net.RulesSource
 
-	n, err := c.NewNetwork(ctx, *net.Config.Name, *net)
+	n, err := c.NewNetwork(ctx, *net.Config.Name, net)
 	if err != nil {
 		return []diag.Diagnostic{{
 			Severity: diag.Error,
@@ -86,7 +86,7 @@ func resourceNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interf
 		return diag.FromErr(err)
 	}
 
-	updated, err := c.UpdateNetwork(ctx, *net.Id, *net)
+	updated, err := c.UpdateNetwork(ctx, *net.Id, net)
 	if err != nil {
 		return diag.FromErr(err)
 	}
