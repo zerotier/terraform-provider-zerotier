@@ -3,12 +3,10 @@ package zerotier
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/zerotier/go-ztcentral"
-	"github.com/zerotier/go-ztcentral/pkg/spec"
 )
 
 func resourceNetwork() *schema.Resource {
@@ -18,19 +16,16 @@ func resourceNetwork() *schema.Resource {
 		ReadContext:   resourceNetworkRead,
 		UpdateContext: resourceNetworkUpdate,
 		DeleteContext: resourceNetworkDelete,
-		Schema:        NewNetwork().TerraformSchema(),
+		Schema:        NetworkSchema,
 	}
 }
 
 func resourceNetworkCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	ztn := NewNetwork()
-	if err := ztn.CollectFromTerraform(d); err != nil {
-		return err
-	}
-
 	c := m.(*ztcentral.Client)
-	net := ztn.Yield().(*spec.Network)
-	rules := net.RulesSource
+	net, derr := toNetwork(d)
+	if derr != nil {
+		return derr
+	}
 
 	n, err := c.NewNetwork(ctx, *net.Config.Name, net)
 	if err != nil {
@@ -41,22 +36,24 @@ func resourceNetworkCreate(ctx context.Context, d *schema.ResourceData, m interf
 		}}
 	}
 
-	if _, err := c.UpdateNetworkRules(ctx, *n.Id, *rules); err != nil {
-		return diag.FromErr(err)
+	rs, err := c.UpdateNetworkRules(ctx, *n.Id, d.Get("flow_rules").(string))
+	if err != nil {
+		return []diag.Diagnostic{{
+			Severity: diag.Error,
+			Summary:  "Unable to update ZeroTier Network flow rules",
+			Detail:   fmt.Sprintf("CreateNetwork returned error: %v", err),
+		}}
 	}
+	n.RulesSource = &rs
 
-	d.SetId(*n.Id)
-	d.Set("tf_last_updated", time.Now().Unix())
-
-	return resourceNetworkRead(ctx, d, m)
+	return networkToTerraform(d, n)
 }
 
 func resourceNetworkRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := m.(*ztcentral.Client)
 	var diags diag.Diagnostics
 
-	ztNetworkID := d.Id()
-	ztNetwork, err := c.GetNetwork(ctx, ztNetworkID)
+	ztNetwork, err := c.GetNetwork(ctx, d.Get("id").(string))
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
@@ -66,22 +63,14 @@ func resourceNetworkRead(ctx context.Context, d *schema.ResourceData, m interfac
 		return diags
 	}
 
-	return NewNetwork().CollectFromObject(d, ztNetwork, true)
+	return networkToTerraform(d, ztNetwork)
 }
 
 func resourceNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := m.(*ztcentral.Client)
-	ztn := NewNetwork()
-
-	if err := ztn.CollectFromTerraform(d); err != nil {
-		return err
-	}
-
-	net := ztn.Yield().(*spec.Network)
-	rules := net.RulesSource
-
-	if _, err := c.UpdateNetworkRules(ctx, *net.Id, *rules); err != nil {
-		return diag.FromErr(err)
+	net, derr := toNetwork(d)
+	if derr != nil {
+		return derr
 	}
 
 	updated, err := c.UpdateNetwork(ctx, *net.Id, net)
@@ -89,15 +78,18 @@ func resourceNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interf
 		return diag.FromErr(err)
 	}
 
-	updated.RulesSource = rules
-
-	if err := ztn.CollectFromObject(d, updated, true); err != nil {
-		return err
+	rs, err := c.UpdateNetworkRules(ctx, *net.Id, d.Get("flow_rules").(string))
+	if err != nil {
+		return []diag.Diagnostic{{
+			Severity: diag.Error,
+			Summary:  "Unable to update ZeroTier Network flow rules",
+			Detail:   fmt.Sprintf("CreateNetwork returned error: %v", err),
+		}}
 	}
 
-	d.Set("tf_last_updated", time.Now().Unix())
+	updated.RulesSource = &rs
 
-	return nil
+	return networkToTerraform(d, updated)
 }
 
 func resourceNetworkDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {

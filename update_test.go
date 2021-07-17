@@ -202,8 +202,8 @@ func TestNetworkUpdate(t *testing.T) { // nolint:gocyclo
 				}
 			case "assign_off":
 				err := modifyNetwork(ctx, attrs["id"].(string), func(net *spec.Network) {
-					net.Config.V4AssignMode = &spec.IPV4AssignMode{Zt: boolPtr(true)}
-					net.Config.V6AssignMode = &spec.IPV6AssignMode{Zt: boolPtr(true), N6plane: boolPtr(false), Rfc4193: boolPtr(false)}
+					net.Config.V4AssignMode = &spec.IPV4AssignMode{Zt: boolPtr(false)}
+					net.Config.V6AssignMode = &spec.IPV6AssignMode{Zt: boolPtr(false), N6plane: boolPtr(true), Rfc4193: boolPtr(true)}
 				})
 
 				if err != nil {
@@ -270,16 +270,16 @@ func TestNetworkUpdate(t *testing.T) { // nolint:gocyclo
 					t.Fatal("flow_rules were not updated")
 				}
 			case "assign_off":
-				isBool(t, h(attrs["assign_ipv4"])["zerotier"], true, "assign_ipv4/zerotier")
+				isBool(t, h(a(attrs["assign_ipv4"])[0])["zerotier"], false, "assign_ipv4/zerotier")
 
 				table := map[string]bool{
-					"zerotier": true,
-					"sixplane": false,
-					"rfc4193":  false,
+					"zerotier": false,
+					"sixplane": true,
+					"rfc4193":  true,
 				}
 
 				for name, val := range table {
-					isBool(t, h(attrs["assign_ipv6"])[name], val, "assign_ipv6/"+name)
+					isBool(t, h(a(attrs["assign_ipv6"])[0])[name], val, "assign_ipv6/"+name)
 				}
 			case "private":
 				isBool(t, attrs["private"], false, "private")

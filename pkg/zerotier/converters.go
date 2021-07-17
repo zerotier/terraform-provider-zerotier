@@ -42,8 +42,8 @@ func getMemberIDs(d *schema.ResourceData) (string, string) {
 	return ztNetworkID, memberID
 }
 
-func fetchStringList(vs ValidatedSchema, attr string) *[]string {
-	return toStringList(vs.Get(attr).([]interface{})).(*[]string)
+func fetchStringList(d *schema.ResourceData, attr string) *[]string {
+	return toStringList(d.Get(attr).([]interface{})).(*[]string)
 }
 
 func toStringList(i interface{}) interface{} {
@@ -54,8 +54,8 @@ func toStringList(i interface{}) interface{} {
 	return ray
 }
 
-func fetchIntList(vs ValidatedSchema, attr string) *[]int {
-	return toIntList(vs.Get(attr).([]interface{})).(*[]int)
+func fetchIntList(d *schema.ResourceData, attr string) *[]int {
+	return toIntList(d.Get(attr).([]interface{})).(*[]int)
 }
 
 func toIntList(i interface{}) interface{} {
@@ -177,7 +177,7 @@ func mkRoutes(routes interface{}) (interface{}, diag.Diagnostics) {
 	return &ret, nil
 }
 
-func mktfRoutes(routes interface{}) interface{} {
+func mktfRoutes(routes interface{}) []map[string]interface{} {
 	ret := []map[string]interface{}{}
 
 	r := routes.(*[]spec.Route)
@@ -194,24 +194,25 @@ func mktfRoutes(routes interface{}) interface{} {
 			via = *route.Via
 		}
 
-		ret = append(ret, map[string]interface{}{
-			"target": target,
-			"via":    via,
-		})
+		m := map[string]interface{}{}
+
+		m["target"] = target
+		m["via"] = via
+
+		ret = append(ret, m)
 	}
 
-	return &ret
+	return ret
 }
 
-func mktfRanges(ranges interface{}) interface{} {
+func mktfRanges(ranges *[]spec.IPRange) []map[string]interface{} {
 	ret := []map[string]interface{}{}
 
-	r := ranges.(*[]spec.IPRange)
-	if r == nil {
+	if ranges == nil {
 		return ret
 	}
 
-	for _, r := range *r {
+	for _, r := range *ranges {
 		var start, end string
 
 		if r.IpRangeStart != nil {
@@ -222,74 +223,92 @@ func mktfRanges(ranges interface{}) interface{} {
 			end = *r.IpRangeEnd
 		}
 
-		ret = append(ret, map[string]interface{}{
-			"start": start,
-			"end":   end,
-		})
+		m := map[string]interface{}{}
+		m["start"] = start
+		m["end"] = end
+
+		ret = append(ret, m)
 	}
 
 	return ret
 }
 
-func mktfipv6assign(i interface{}) interface{} {
-	ipv6 := i.(*spec.IPV6AssignMode)
+func ipv6set(m interface{}) int {
+	ipv6 := m.(map[string]interface{})
 
-	m := map[string]interface{}{}
+	order := []string{"zerotier", "sixplane", "rfc4193"}
 
-	iter := map[string]*bool{
-		"zerotier": ipv6.Zt,
-		"sixplane": ipv6.N6plane,
-		"rfc4193":  ipv6.Rfc4193,
-	}
+	res := 0
 
-	for key, b := range iter {
-		if b != nil {
-			m[key] = ptrBool(b)
+	for i, b := range order {
+		if ptrBool(ipv6[b].(*bool)) {
+			res |= 1 << i
 		}
 	}
 
-	return m
+	return res
 }
 
-func mktfipv4assign(i interface{}) interface{} {
-	ipv4 := i.(*spec.IPV4AssignMode)
-	m := map[string]interface{}{}
-	if ipv4.Zt != nil {
-		m["zerotier"] = ptrBool(ipv4.Zt)
+func mktfipv6assign(ipv6 *spec.IPV6AssignMode) *schema.Set {
+	return schema.NewSet(ipv6set, []interface{}{
+		map[string]interface{}{
+			"zerotier": ipv6.Zt,
+			"sixplane": ipv6.N6plane,
+			"rfc4193":  ipv6.Rfc4193,
+		},
+	})
+}
+
+func ipv4set(m interface{}) int {
+	ipv4 := m.(map[string]interface{})
+
+	if ptrBool(ipv4["zerotier"].(*bool)) {
+		return 1
 	}
 
-	return m
+	return 0
+}
+
+func mktfipv4assign(ipv4 *spec.IPV4AssignMode) *schema.Set {
+	return schema.NewSet(ipv4set, []interface{}{map[string]interface{}{"zerotier": ipv4.Zt}})
 }
 
 func mkipv4assign(assignments interface{}) (interface{}, diag.Diagnostics) {
-	m := assignments.(map[string]interface{})
-	var zt bool
-	if z, ok := m["zerotier"]; ok {
-		zt = z.(bool)
-	} else {
-		zt = true // default
+	m := assignments.(*schema.Set)
+	zt := true
+
+	if m.Len() > 0 {
+		for _, set := range m.List() {
+			tmp := set.(map[string]interface{})
+
+			if z, ok := tmp["zerotier"]; ok {
+				zt = z.(bool)
+			}
+		}
 	}
 
 	return &spec.IPV4AssignMode{Zt: boolPtr(zt)}, nil
 }
 
 func mkipv6assign(assignments interface{}) (interface{}, diag.Diagnostics) {
-	m := assignments.(map[string]interface{})
-	var zt bool
-	if z, ok := m["zerotier"]; ok {
-		zt = z.(bool)
-	} else {
-		zt = true // default
-	}
+	m := assignments.(*schema.Set)
+	var zt, sixPlane, rfc4193 bool
 
-	var sixPlane bool
-	if s, ok := m["sixplane"]; ok {
-		sixPlane = s.(bool)
-	}
+	if m.Len() > 0 {
+		for _, set := range m.List() {
+			tmp := set.(map[string]interface{})
+			if z, ok := tmp["zerotier"]; ok {
+				zt = z.(bool)
+			}
 
-	var rfc4193 bool
-	if r, ok := m["rfc4193"]; ok {
-		rfc4193 = r.(bool)
+			if s, ok := tmp["sixplane"]; ok {
+				sixPlane = s.(bool)
+			}
+
+			if r, ok := tmp["rfc4193"]; ok {
+				rfc4193 = r.(bool)
+			}
+		}
 	}
 
 	return &spec.IPV6AssignMode{

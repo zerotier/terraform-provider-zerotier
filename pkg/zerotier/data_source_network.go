@@ -13,7 +13,7 @@ func dataSourceNetwork() *schema.Resource {
 	return &schema.Resource{
 		Description: "Data source for ZeroTier networks, allowing you to find a network by ID",
 		ReadContext: dataSourceNetworkRead,
-		Schema:      NewNetworkDS().TerraformSchema(),
+		Schema:      DataSourceNetworkSchema,
 	}
 }
 
@@ -22,6 +22,7 @@ func dataSourceNetworkRead(ctx context.Context, d *schema.ResourceData, m interf
 	var diags diag.Diagnostics
 
 	ztNetworkID := d.Get("id").(string)
+
 	ztNetwork, err := c.GetNetwork(ctx, ztNetworkID)
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
@@ -32,5 +33,5 @@ func dataSourceNetworkRead(ctx context.Context, d *schema.ResourceData, m interf
 		return diags
 	}
 
-	return NewNetworkDS().CollectFromObject(d, ztNetwork, true)
+	return networkToTerraform(d, ztNetwork)
 }

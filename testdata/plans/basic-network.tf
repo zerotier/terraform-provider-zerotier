@@ -40,11 +40,11 @@ resource "zerotier_network" "bobs_garage" {
 
 resource "zerotier_network" "assign_off" {
   name = "assign_off"
-  assign_ipv4 = {
+  assign_ipv4 {
     zerotier = false
   }
 
-  assign_ipv6 = {
+  assign_ipv6 {
     zerotier = false
     sixplane = true
     rfc4193  = true

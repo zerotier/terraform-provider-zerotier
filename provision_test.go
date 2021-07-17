@@ -1,6 +1,7 @@
 package main
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/erikh/tftest"
@@ -177,10 +178,10 @@ func TestBasicNetworkSetup(t *testing.T) {
 				}
 			case "flow_rules":
 				if attrs["flow_rules"].(string) != "drop;" {
-					t.Fatal("flow_rules were not altered")
+					t.Fatal("flow_rules were not altered", attrs["flow_rules"])
 				}
 			case "assign_off":
-				isBool(t, h(attrs["assign_ipv4"])["zerotier"], false, "assign_ipv4/zerotier")
+				isBool(t, h(a(attrs["assign_ipv4"])[0])["zerotier"], false, "assign_ipv4/zerotier")
 
 				table := map[string]bool{
 					"zerotier": false,
@@ -189,14 +190,14 @@ func TestBasicNetworkSetup(t *testing.T) {
 				}
 
 				for name, val := range table {
-					isBool(t, h(attrs["assign_ipv6"])[name], val, "assign_ipv6/"+name)
+					isBool(t, h(a(attrs["assign_ipv6"])[0])[name], val, "assign_ipv6/"+name)
 				}
 			case "private":
 				isBool(t, attrs["private"], true, "private")
 			case "no_broadcast":
 				isBool(t, attrs["enable_broadcast"], false, "enable_broadcast")
 			case "alice", "bobs_garage":
-				for _, name := range []string{"creation_time", "tf_last_updated"} {
+				for _, name := range []string{"creation_time"} {
 					isNonZeroNum(t, attrs[name], name)
 				}
 
@@ -208,7 +209,7 @@ func TestBasicNetworkSetup(t *testing.T) {
 					t.Fatal("assign_ipv4 key was missing")
 				}
 
-				isBool(t, h(m)["zerotier"], true, "assign_ipv4/zerotier")
+				isBool(t, h(a(m)[0])["zerotier"], true, "assign_ipv4/zerotier")
 
 				m, ok = attrs["assign_ipv6"]
 				if !ok {
@@ -216,16 +217,16 @@ func TestBasicNetworkSetup(t *testing.T) {
 				}
 
 				table := map[string]bool{
-					"zerotier": true,
+					"zerotier": false,
 					"sixplane": false,
 					"rfc4193":  false,
 				}
 
 				for name, val := range table {
-					isBool(t, h(m)[name], val, "assign_ipv6/"+name)
+					isBool(t, h(a(m)[0])[name], val, "assign_ipv6/"+name)
 				}
 
-				if attrs["flow_rules"].(string) != "accept;" {
+				if !strings.HasSuffix(strings.TrimSpace(attrs["flow_rules"].(string)), "accept;") {
 					t.Fatal("flow_rules were not accept by default:", attrs["flow_rules"])
 				}
 

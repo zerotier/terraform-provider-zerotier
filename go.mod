@@ -14,7 +14,7 @@ require (
 	github.com/docker/docker v20.10.3+incompatible
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-units v0.4.0 // indirect
-	github.com/erikh/tftest v0.1.1-0.20210423080548-3599d4ff17ca
+	github.com/erikh/tftest v0.1.1
 	github.com/fatih/color v1.12.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/gorilla/mux v1.8.0 // indirect
@@ -41,14 +41,14 @@ require (
 	github.com/oklog/run v1.1.0 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.0.1 // indirect
-	github.com/sirupsen/logrus v1.7.0 // indirect
+	github.com/sirupsen/logrus v1.8.1
 	github.com/zclconf/go-cty v1.9.0 // indirect
 	github.com/zerotier/go-ztcentral v0.4.0
 	github.com/zerotier/go-ztidentity v1.0.0
 	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97 // indirect
-	golang.org/x/net v0.0.0-20210614182718-04defd469f4e // indirect
+	golang.org/x/net v0.0.0-20210716203947-853a461950ff // indirect
 	golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c // indirect
 	google.golang.org/appengine v1.6.7 // indirect
-	google.golang.org/genproto v0.0.0-20210714021259-044028024a4f // indirect
+	google.golang.org/genproto v0.0.0-20210716133855-ce7ef5c701ea // indirect
 	gotest.tools/v3 v3.0.3 // indirect
 )

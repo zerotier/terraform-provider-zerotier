@@ -3,14 +3,28 @@ package zerotier
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/sirupsen/logrus"
 	"github.com/zerotier/go-ztcentral"
 )
 
+func init() {
+	logrus.SetOutput(os.Stderr)
+	level, err := logrus.ParseLevel(os.Getenv("TF_LOG"))
+	if err != nil {
+		level = logrus.InfoLevel
+	}
+
+	logrus.SetLevel(level)
+}
+
 // Provider -
 func Provider() *schema.Provider {
+	logrus.Debug("ZeroTier provider initialized")
+
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
 			"zerotier_central_url": {
@@ -39,6 +53,8 @@ func Provider() *schema.Provider {
 }
 
 func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
+	defer logrus.Debug("ZeroTier provider configured")
+
 	ztControllerToken := d.Get("zerotier_central_token").(string)
 
 	if ztControllerToken != "" {
@@ -46,6 +62,8 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 		if err != nil {
 			return nil, diag.FromErr(err)
 		}
+
+		logrus.Debug("Token configured successfully")
 
 		c.SetUserAgent(fmt.Sprintf("terraform-provider-zerotier/%s", Version))
 

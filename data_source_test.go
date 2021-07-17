@@ -13,13 +13,17 @@ func TestDataSourceNetwork(t *testing.T) {
 		m := h(data)
 		attrs := h(h(a(m["instances"])[0])["attributes"])
 
-		if m["type"] == "zerotier_network" && m["mode"] == "data" && m["name"] == "bob" {
-			if attrs["name"] != "bobs_garage" {
-				t.Fatal("name was not set on object")
+		if m["type"] == "zerotier_network" {
+			if attrs["name"].(string) != "bobs_garage" {
+				t.Fatal("name was not set on object, was:", attrs["name"])
 			}
 
-			if attrs["id"] != "" {
-				t.Fatal("name was not set on object")
+			if attrs["description"].(string) != "so say we bob" {
+				t.Fatal("description was incorrect, was:", attrs["description"])
+			}
+
+			if attrs["id"].(string) == "" {
+				t.Fatal("id was not set on object, was", attrs["id"])
 			}
 		}
 
