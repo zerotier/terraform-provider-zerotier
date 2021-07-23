@@ -2,8 +2,6 @@ package zerotier
 
 import (
 	"errors"
-	"math/big"
-	"net"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -66,85 +64,28 @@ func toIntList(i interface{}) interface{} {
 	return ray
 }
 
-func mkIPRangeFromCIDR(cidr interface{}) (spec.IPRange, error) {
-	iprange := spec.IPRange{}
-
-	first, nw, err := net.ParseCIDR(cidr.(string))
-	if err != nil {
-		return iprange, err
-	}
-
-	var last net.IP
-
-	prefixLen, bits := nw.Mask.Size()
-
-	if prefixLen == bits {
-		last = first
-	} else {
-		val := big.NewInt(0)
-		val.SetBytes(first)
-		lastVal := big.NewInt(1)
-		lastVal.Lsh(lastVal, uint(bits-prefixLen))
-		lastVal.Sub(lastVal, big.NewInt(1))
-		lastVal.Or(lastVal, val)
-
-		last = net.IP(make([]byte, len(first)))
-		b := lastVal.Bytes()
-		for i := 1; i <= len(b); i++ {
-			last[len(last)-i] = b[len(b)-i]
-		}
-
-		first = net.IP(make([]byte, len(first)))
-		b = val.Bytes()
-		for i := 1; i <= len(b); i++ {
-			first[len(first)-i] = b[len(b)-i]
-		}
-	}
-
-	ipFirst := first.String()
-	ipLast := last.String()
-
-	iprange = spec.IPRange{
-		IpRangeStart: &ipFirst,
-		IpRangeEnd:   &ipLast,
-	}
-
-	return iprange, nil
-}
-
 func mkIPRange(ranges interface{}) (interface{}, diag.Diagnostics) {
 	ret := []spec.IPRange{}
 
 	for _, r := range ranges.(*schema.Set).List() {
 		m := r.(map[string]interface{})
-		// FIXME: if cidr is supplied, start/end simply are not considered. may want
-		//			  to hard-validate this later.
-		if cidr, ok := m["cidr"]; ok && cidr.(string) != "" {
-			ipRange, err := mkIPRangeFromCIDR(cidr)
-			if err != nil {
-				return ret, diag.FromErr(err)
-			}
-
-			ret = append(ret, ipRange)
+		var start, end string
+		if s, ok := m["start"]; ok && s.(string) != "" {
+			start = s.(string)
 		} else {
-			var start, end string
-			if s, ok := m["start"]; ok && s.(string) != "" {
-				start = s.(string)
-			} else {
-				return ret, diag.FromErr(errors.New("start does not exist"))
-			}
-
-			if e, ok := m["end"]; ok && e.(string) != "" {
-				end = e.(string)
-			} else {
-				return ret, diag.FromErr(errors.New("end does not exist"))
-			}
-
-			ret = append(ret, spec.IPRange{
-				IpRangeStart: &start,
-				IpRangeEnd:   &end,
-			})
+			return ret, diag.FromErr(errors.New("start does not exist"))
 		}
+
+		if e, ok := m["end"]; ok && e.(string) != "" {
+			end = e.(string)
+		} else {
+			return ret, diag.FromErr(errors.New("end does not exist"))
+		}
+
+		ret = append(ret, spec.IPRange{
+			IpRangeStart: &start,
+			IpRangeEnd:   &end,
+		})
 	}
 
 	return &ret, nil

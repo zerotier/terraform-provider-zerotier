@@ -129,11 +129,6 @@ var NetworkSchema = map[string]*schema.Schema{
 					Optional:    true,
 					Description: "The last address in the assignment rule. This must be the highest number in the pool. end must also be accompanied by start.",
 				},
-				"cidr": {
-					Type:        schema.TypeString,
-					Optional:    true,
-					Description: "An address range in CIDR notation. This must have no other keys assigned to this block as CIDR denotes the start and end address automatically",
-				},
 			},
 			Description: "Rules regarding IPv4 and IPv6 assignments",
 		},

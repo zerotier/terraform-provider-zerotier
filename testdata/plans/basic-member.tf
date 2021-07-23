@@ -4,7 +4,8 @@ resource "zerotier_identity" "alice" {}
 resource "zerotier_network" "alicenet" {
   name = "alicenet"
   assignment_pool {
-    cidr = "10.0.0.0/24"
+    start = "10.0.0.1"
+    end   = "10.0.0.254"
   }
 }
 
