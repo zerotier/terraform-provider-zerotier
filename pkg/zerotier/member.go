@@ -8,22 +8,6 @@ import (
 	"github.com/zerotier/go-ztcentral/pkg/spec"
 )
 
-// DataSourceMemberSchema is the zerotier_member data source schema
-var DataSourceMemberSchema = map[string]*schema.Schema{
-	"network_id": {
-		Type:        schema.TypeString,
-		Required:    true,
-		ForceNew:    true,
-		Description: "ID of the network this member belongs to",
-	},
-	"member_id": {
-		Type:        schema.TypeString,
-		Required:    true,
-		ForceNew:    true,
-		Description: "ID of this member.",
-	},
-}
-
 // MemberSchema is the zerotier_member resource schema.
 var MemberSchema = map[string]*schema.Schema{
 	"network_id": {

@@ -61,11 +61,6 @@ resource "zerotier_network" "no_broadcast" {
   enable_broadcast = false
 }
 
-resource "zerotier_network" "mtu" {
-  name = "mtu"
-  mtu  = 1500
-}
-
 resource "zerotier_network" "multicast_limit" {
   name            = "multicast_limit"
   multicast_limit = 50

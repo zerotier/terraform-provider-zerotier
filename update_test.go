@@ -188,8 +188,6 @@ func TestNetworkUpdate(t *testing.T) { // nolint:gocyclo
 		case "zerotier_network":
 			switch m["name"] {
 			// XXX please, before you modify any of this, read the comments in provision_test.go.
-			case "mtu":
-				// not updateable
 			case "multicast_limit":
 				// not updateable
 			case "description":
@@ -256,9 +254,6 @@ func TestNetworkUpdate(t *testing.T) { // nolint:gocyclo
 		switch m["type"] {
 		case "zerotier_network":
 			switch m["name"] {
-			// XXX please, before you modify any of this, read the comments in provision_test.go.
-			case "mtu":
-				// not updateable
 			case "multicast_limit":
 				// not updateable
 			case "description":

@@ -149,15 +149,6 @@ func TestBasicNetworkSetup(t *testing.T) {
 			// available so they are exhausted in before the default statement, which
 			// will fail the test for unknown networks. This is a safeguard to keep
 			// extraneous stuff from landing in the test plan.
-			case "mtu":
-				// i, ok := attrs["mtu"].(float64)
-				// if !ok {
-				// 	t.Fatal("mtu was not set")
-				// }
-				//
-				// if i != 1500 {
-				// 	t.Fatalf("mtu was improperly set: %f", i)
-				// }
 			case "multicast_limit":
 				// i, ok := attrs["multicast_limit"].(float64)
 				// if !ok {

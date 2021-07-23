@@ -6,15 +6,6 @@ import (
 	"github.com/zerotier/go-ztcentral/pkg/spec"
 )
 
-// DataSourceNetworkSchema is the schema used to read data sources
-var DataSourceNetworkSchema = map[string]*schema.Schema{
-	"id": {
-		Type:        schema.TypeString,
-		Required:    true,
-		Description: "ZeroTier's internal network identifier, aka NetworkID",
-	},
-}
-
 // NetworkSchema is our terraform network resource's schema.
 var NetworkSchema = map[string]*schema.Schema{
 	"id": {
@@ -45,11 +36,6 @@ var NetworkSchema = map[string]*schema.Schema{
 		Optional:    true,
 		Default:     true,
 		Description: "Enable broadcast packets on the network",
-	},
-	"mtu": {
-		Type:        schema.TypeInt,
-		Optional:    true,
-		Description: "MTU to set on the client virtual network adapter",
 	},
 	"multicast_limit": {
 		Type:        schema.TypeInt,
@@ -192,7 +178,6 @@ func toNetwork(d *schema.ResourceData) (*spec.Network, diag.Diagnostics) {
 			V4AssignMode:      (v4assign).(*spec.IPV4AssignMode),
 			V6AssignMode:      (v6assign).(*spec.IPV6AssignMode),
 			EnableBroadcast:   boolPtr(d.Get("enable_broadcast").(bool)),
-			Mtu:               intPtr(d.Get("mtu").(int)),
 			MulticastLimit:    intPtr(d.Get("multicast_limit").(int)),
 			Private:           boolPtr(d.Get("private").(bool)),
 		},
@@ -205,8 +190,7 @@ func networkToTerraform(d *schema.ResourceData, n *spec.Network) diag.Diagnostic
 	d.SetId(*n.Id)
 	d.Set("flow_rules", *n.RulesSource)
 	d.Set("description", *n.Description)
-	d.Set("name", *n.Config.Name)
-	d.Set("mtu", *n.Config.Mtu)
+	d.Set("name", n.Config.Name)
 	d.Set("creation_time", *n.Config.CreationTime)
 	d.Set("route", mktfRoutes(n.Config.Routes))
 	d.Set("assignment_pool", mktfRanges(n.Config.IpAssignmentPools))

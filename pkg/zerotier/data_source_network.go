@@ -13,7 +13,7 @@ func dataSourceNetwork() *schema.Resource {
 	return &schema.Resource{
 		Description: "Data source for ZeroTier networks, allowing you to find a network by ID",
 		ReadContext: dataSourceNetworkRead,
-		Schema:      DataSourceNetworkSchema,
+		Schema:      NetworkSchema,
 	}
 }
 
