@@ -15,11 +15,12 @@ func resourceToken() *schema.Resource {
 		DeleteContext: resourceTokenDelete,
 		Description:   "Generate API tokens for Central.",
 		Schema: map[string]*schema.Schema{
-			"id": {
+			"name": {
 				Type:        schema.TypeString,
-				Computed:    true,
+				Optional:    true,
 				ForceNew:    true,
-				Description: "The name of the token",
+				Computed:    true,
+				Description: "The name of the token; if you do not supply this value, one will be generated",
 			},
 			"token": {
 				Type:        schema.TypeString,
@@ -39,7 +40,17 @@ func resourceTokenCreate(ctx context.Context, d *schema.ResourceData, m interfac
 		return diag.FromErr(err)
 	}
 
-	name := d.Get("id").(string)
+	name := d.Get("name").(string)
+
+	if name == "" {
+		var err error
+		name, err = c.RandomToken(ctx)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		d.Set("name", name)
+	}
 
 	token, err := c.RandomToken(ctx)
 	if err != nil {
@@ -50,18 +61,14 @@ func resourceTokenCreate(ctx context.Context, d *schema.ResourceData, m interfac
 		return diag.FromErr(err)
 	}
 
-	d.SetId(d.Get("id").(string))
+	d.SetId(name)
 	d.Set("token", token)
 
 	return nil
 }
 
 func resourceTokenRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	if s, ok := d.Get("token").(string); ok && len(s) != 0 {
-		return nil
-	}
-
-	return resourceTokenCreate(ctx, d, m)
+	return nil
 }
 
 func resourceTokenDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
@@ -72,9 +79,7 @@ func resourceTokenDelete(ctx context.Context, d *schema.ResourceData, m interfac
 		return diag.FromErr(err)
 	}
 
-	name := d.Get("id").(string)
-
-	if err := c.DeleteAPIToken(ctx, *user.Id, name); err != nil {
+	if err := c.DeleteAPIToken(ctx, *user.Id, d.Id()); err != nil {
 		return diag.FromErr(err)
 	}
 

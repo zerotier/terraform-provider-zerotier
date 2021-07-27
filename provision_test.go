@@ -97,6 +97,32 @@ func TestIdentity(t *testing.T) {
 	}
 }
 
+func TestToken(t *testing.T) {
+	tf := getTFTest(t)
+	tf.Apply("testdata/plans/token.tf")
+	var sawHello bool // ah this does suck
+
+	for _, resource := range a(tf.State()["resources"]) {
+		m := h(resource)
+		attrs := h(h(a(m["instances"])[0])["attributes"])
+
+		switch m["type"] {
+		case "zerotier_token":
+			if len(attrs["name"].(string)) == 0 || len(attrs["token"].(string)) == 0 {
+				t.Fatal("name or token was not set")
+			}
+
+			if attrs["name"].(string) == "hello-world" {
+				sawHello = true
+			}
+		}
+	}
+
+	if !sawHello {
+		t.Fatal("never saw the hello-world token")
+	}
+}
+
 func TestBasicMembers(t *testing.T) {
 	tf := getTFTest(t)
 	tf.Apply("testdata/plans/basic-member.tf")
