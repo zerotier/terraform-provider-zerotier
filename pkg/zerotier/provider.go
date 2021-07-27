@@ -44,6 +44,7 @@ func Provider() *schema.Provider {
 			"zerotier_identity": resourceIdentity(),
 			"zerotier_network":  resourceNetwork(),
 			"zerotier_member":   resourceMember(),
+			"zerotier_token":    resourceToken(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"zerotier_network": dataSourceNetwork(),

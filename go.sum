@@ -429,6 +429,8 @@ github.com/zclconf/go-cty v1.9.0/go.mod h1:vVKLxnk3puL4qRAv72AO+W99LUD4da90g3uUA
 github.com/zclconf/go-cty-debug v0.0.0-20191215020915-b22d67c1ba0b/go.mod h1:ZRKQfBXbGkpdV6QMzT3rU1kSTAnfu1dO8dPKjYprgj8=
 github.com/zerotier/go-ztcentral v0.4.0 h1:firB90ky5YjLZoeKFPZONo6bIn6jYUuSqOde4Ez3Mkg=
 github.com/zerotier/go-ztcentral v0.4.0/go.mod h1:sDIFmQpdLXx4jKYV6BrXVCsxJP/9Alv7Oo6A+rfFuCk=
+github.com/zerotier/go-ztcentral v0.5.1 h1:uFoyZjFuz+r1xalj4YVcnxg202K7yBc5Y+Spfhxn7+4=
+github.com/zerotier/go-ztcentral v0.5.1/go.mod h1:9ahYX8Aiavtyv9BwbxgUml22EjWCNAou8xMwseFqtWs=
 github.com/zerotier/go-ztidentity v1.0.0 h1:dgm1ChTxw1TXMrSJQ6VWK2RmHKVYqRd69h/Co/RG+xo=
 github.com/zerotier/go-ztidentity v1.0.0/go.mod h1:zcOy+qXl5A01QhR6dfqOTPiHFMBEjgPlPpDPAO+2jg4=
 go.opencensus.io v0.21.0/go.mod h1:mSImk1erAIZhrmZN+AvHh14ztQfjbGwt4TtuofqLduU=
