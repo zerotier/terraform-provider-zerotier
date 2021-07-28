@@ -24,7 +24,8 @@ resource "zerotier_network" "occams_router" {
   name        = "occams_router"
   description = "The prefix with largest number of bits is usually correct"
   assignment_pool {
-    cidr = "10.1.0.0/24"
+    start = "10.1.0.1/24"
+    end   = "10.1.0.254/24"
   }
   route {
     target = "10.1.0.0/24"
@@ -41,7 +42,8 @@ resource "zerotier_network" "schrödingers_nat" {
   name        = "schrödingers_nat"
   description = "A packet's destination is simultaneiously Alice and Bob until observed by a NAT table."
   assignment_pool {
-    cidr = "10.2.0.0/24"
+    start = "10.2.0.1/24"
+    end   = "10.2.0.254/24"
   }
   route {
     target = "10.2.0.0/24"
@@ -65,7 +67,8 @@ resource "zerotier_network" "silence_of_the_lan" {
   name        = "silence_of_the_lan"
   description = "It puts the bits in the bucket. It does this whenever it is told."
   assignment_pool {
-    cidr = "10.3.0.0/24"
+    start = "10.3.0.1/24"
+    end   = "10.3.0.254/24"
   }
   route {
     target = "10.3.0.0/24"
