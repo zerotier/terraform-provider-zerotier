@@ -7,7 +7,6 @@ go 1.15
 require (
 	github.com/agext/levenshtein v1.2.3 // indirect
 	github.com/containerd/containerd v1.4.3 // indirect
-	github.com/deepmap/oapi-codegen v1.8.1 // indirect
 	github.com/docker/distribution v2.7.1+incompatible // indirect
 	github.com/docker/docker v20.10.3+incompatible
 	github.com/docker/go-connections v0.4.0 // indirect

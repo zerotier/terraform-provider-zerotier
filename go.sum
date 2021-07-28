@@ -96,7 +96,6 @@ github.com/cyberdelia/templates v0.0.0-20141128023046-ca7fffd4298c/go.mod h1:GyV
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/deepmap/oapi-codegen v1.6.1/go.mod h1:ryDa9AgbELGeB+YEXE1dR53yAjHwFvE9iAUlWl9Al3M=
 github.com/deepmap/oapi-codegen v1.8.1 h1:gSKgzu1DvWfRctnr0UVwieWkg1LEecP0C2htZyBwDTA=
 github.com/deepmap/oapi-codegen v1.8.1/go.mod h1:YLgSKSDv/bZQB7N4ws6luhozi3cEdRktEqrX88CvjIw=
 github.com/dgrijalva/jwt-go v3.2.0+incompatible/go.mod h1:E3ru+11k8xSBh+hMPgOLZmtrrCbhqsmaPHjLKYnJCaQ=
@@ -123,7 +122,6 @@ github.com/fatih/color v1.12.0 h1:mRhaKNwANqRgUBGKmnI5ZxEk7QXmjQeCcuYFMX2bfcc=
 github.com/fatih/color v1.12.0/go.mod h1:ELkj/draVOlAH/xkhN6mQ50Qd0MPOk5AAr3maGEBuJM=
 github.com/flynn/go-shlex v0.0.0-20150515145356-3f9db97f8568 h1:BHsljHzVlRcyQhjrss6TZTdY2VfCqZPbv5k3iBFa2ZQ=
 github.com/flynn/go-shlex v0.0.0-20150515145356-3f9db97f8568/go.mod h1:xEzjJPgXI435gkrCt3MPfRiAkVrwSbHsst4LCFVfpJc=
-github.com/getkin/kin-openapi v0.53.0/go.mod h1:7Yn5whZr5kJi6t+kShccXS8ae1APpYTW6yheSwk8Yi4=
 github.com/getkin/kin-openapi v0.61.0/go.mod h1:7Yn5whZr5kJi6t+kShccXS8ae1APpYTW6yheSwk8Yi4=
 github.com/ghodss/yaml v1.0.0/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeMEF04=
 github.com/gliderlabs/ssh v0.2.2 h1:6zsha5zo/TWhRhwqCD3+EarCAgZ2yN28ipRnGPnwkI0=
@@ -427,10 +425,6 @@ github.com/zclconf/go-cty v1.8.4/go.mod h1:vVKLxnk3puL4qRAv72AO+W99LUD4da90g3uUA
 github.com/zclconf/go-cty v1.9.0 h1:IgJxw5b4LPXCPeqFjjhLaNEA8NKXMyaEUdAd399acts=
 github.com/zclconf/go-cty v1.9.0/go.mod h1:vVKLxnk3puL4qRAv72AO+W99LUD4da90g3uUAzyuvAk=
 github.com/zclconf/go-cty-debug v0.0.0-20191215020915-b22d67c1ba0b/go.mod h1:ZRKQfBXbGkpdV6QMzT3rU1kSTAnfu1dO8dPKjYprgj8=
-github.com/zerotier/go-ztcentral v0.4.0 h1:firB90ky5YjLZoeKFPZONo6bIn6jYUuSqOde4Ez3Mkg=
-github.com/zerotier/go-ztcentral v0.4.0/go.mod h1:sDIFmQpdLXx4jKYV6BrXVCsxJP/9Alv7Oo6A+rfFuCk=
-github.com/zerotier/go-ztcentral v0.5.1 h1:uFoyZjFuz+r1xalj4YVcnxg202K7yBc5Y+Spfhxn7+4=
-github.com/zerotier/go-ztcentral v0.5.1/go.mod h1:9ahYX8Aiavtyv9BwbxgUml22EjWCNAou8xMwseFqtWs=
 github.com/zerotier/go-ztcentral v0.5.2 h1:AoGPLbI4T24oBXR7iJwpgPJZjO2tX6YGONm4Ft/276w=
 github.com/zerotier/go-ztcentral v0.5.2/go.mod h1:9ahYX8Aiavtyv9BwbxgUml22EjWCNAou8xMwseFqtWs=
 github.com/zerotier/go-ztidentity v1.0.0 h1:dgm1ChTxw1TXMrSJQ6VWK2RmHKVYqRd69h/Co/RG+xo=
