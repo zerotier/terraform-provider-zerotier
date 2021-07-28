@@ -77,6 +77,12 @@ resource "zerotier_network" "silence_of_the_lan" {
 }
 ```
 
+Pre 1.0.0 versions of this provider allowed you to specify an IPv4 CIDR
+instead of a start/end range. This was removed to reflect the reality
+of the current Central API. If you would like to use a CIDR, please
+see the [ZeroTier Network Terraform Module](https://registry.terraform.io/modules/zerotier/network/zerotier/latest)
+on the Registry, or [Github](https://github.com/zerotier/terraform-zerotier-network)
+
 # Members
 
 Members are associations between Nodes and Networks. These are created

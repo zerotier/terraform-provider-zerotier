@@ -1,5 +1,8 @@
 # terraform-provider-zerotier CHANGELOG
 
+## v1.0.1
+- Updating deps
+
 ## v1.0.0
 
 Initial Stable Release!
