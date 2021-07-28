@@ -147,6 +147,23 @@ resource "zerotier_identity" "alice" {}
 resource "zerotier_identity" "bob" {}
 ```
 
+# Tokens
+
+The ```zerotier_token``` resource will return a token from the Central
+API. You can use this to inject a token into containers or instance
+cloud-init scripts for things that also need to talk to the Central
+API.
+
+```hcl
+zerotier_token "foo" {
+  name = "foo"
+}
+
+zerotier_token "bar" {
+  name = "bar"
+}
+```
+
 # Putting it all together.
 
 This example connects two docker containers with zerotier. You can then `docker exec` into one and ping the other over the ZeroTier network.

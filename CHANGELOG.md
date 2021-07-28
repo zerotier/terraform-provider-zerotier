@@ -13,5 +13,5 @@ This project will follow semantic versioning as described at https://semver.org/
 - Removed MTU, as you cannot actually set it.
 - Both assign_ipv4 and assign_ipv6 have been changed to sets instead
   of maps, This allows them to be presented as blocks (useful for
-  dynamic configurations).
-  
+  dynamic configurations).  
+- Adding zerotier_token resource
