@@ -46,7 +46,7 @@ var NetworkSchema = map[string]*schema.Schema{
 	"private": {
 		Type:        schema.TypeBool,
 		Optional:    true,
-		Default:     false,
+		Default:     true,
 		Description: "Whether or not the network is private.  If false, members will *NOT* need to be authorized to join.",
 	},
 	"route": {

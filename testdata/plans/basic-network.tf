@@ -21,6 +21,7 @@ variable "networks" {
 resource "zerotier_network" "alice" {
   for_each = var.networks
   name     = each.key
+  private  = false
 }
 
 resource "zerotier_identity" "alice" {}
@@ -36,6 +37,7 @@ resource "zerotier_member" "alice" {
 resource "zerotier_network" "bobs_garage" {
   name        = "bobs_garage"
   description = "so say we bob"
+  private     = false
 }
 
 resource "zerotier_network" "assign_off" {
