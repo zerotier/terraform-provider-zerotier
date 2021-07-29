@@ -1,5 +1,8 @@
 # terraform-provider-zerotier CHANGELOG
 
+## v1.0.2
+- BUGFIX: Networks are now private by default
+
 ## v1.0.1
 - Updating deps
 
