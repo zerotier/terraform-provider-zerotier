@@ -1,5 +1,10 @@
 # terraform-provider-zerotier CHANGELOG
 
+## v1.1.0
+- Support tags in member definition
+- Support zerotier_central_url
+- Fix version tagging in user_agent
+
 ## v1.0.2
 - BUGFIX: Networks are now private by default
 
