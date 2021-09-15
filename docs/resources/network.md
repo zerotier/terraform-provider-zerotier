@@ -80,4 +80,10 @@ Optional:
 
 - **via** (String) Gateway address
 
+## Import
 
+Networks can be imported using their ID, e.g.
+
+```
+$ terraform import zerotier_network.network 8056c2e21c1930be
+```
