@@ -57,8 +57,15 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 	defer logrus.Debug("ZeroTier provider configured")
 
 	ztControllerToken := d.Get("zerotier_central_token").(string)
+	ztControllerURL := d.Get("zerotier_central_url").(string)
 
 	if ztControllerToken != "" {
+		// NOTE this whole block is extremely order-dependent
+		//      deal with it
+		if ztControllerURL != "" {
+			ztcentral.BaseURLV1 = ztControllerURL
+		}
+
 		c, err := ztcentral.NewClient(ztControllerToken)
 		if err != nil {
 			return nil, diag.FromErr(err)
