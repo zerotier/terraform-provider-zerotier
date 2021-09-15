@@ -56,6 +56,21 @@ func fetchIntList(d *schema.ResourceData, attr string) *[]int {
 	return toIntList(d.Get(attr).([]interface{})).(*[]int)
 }
 
+func fetchTags(d []interface{}) *[][]int {
+	tags := [][]int{}
+
+	for _, tagref := range d {
+		ref := []int{}
+		for _, value := range tagref.([]interface{}) {
+			ref = append(ref, value.(int))
+		}
+
+		tags = append(tags, ref)
+	}
+
+	return &tags
+}
+
 func toIntList(i interface{}) interface{} {
 	ray := &[]int{}
 	for _, x := range i.([]interface{}) {

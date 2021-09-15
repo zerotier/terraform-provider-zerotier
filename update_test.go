@@ -30,6 +30,18 @@ func toUintList(i interface{}) []uint {
 	return ray
 }
 
+func toUintDoubleList(i interface{}) [][]uint {
+	ray := [][]uint{}
+	for _, x := range i.([]interface{}) {
+		items := []uint{}
+		for _, y := range x.([]interface{}) {
+			items = append(items, uint(y.(float64)))
+		}
+		ray = append(ray, items)
+	}
+	return ray
+}
+
 func modifyMember(ctx context.Context, networkID string, memberID string, updateFunc func(*spec.Member)) error {
 	c, err := ztcentral.NewClient(controllerToken)
 	if err != nil {
@@ -74,6 +86,7 @@ func TestMemberUpdate(t *testing.T) {
 					member.Config.NoAutoAssignIps = boolPtr(false)
 					member.Config.IpAssignments = &[]string{"10.0.0.2"}
 					member.Config.Capabilities = &[]int{0, 1, 2}
+					member.Config.Tags = &[][]int{{0, 1}}
 				})
 				if err != nil {
 					t.Fatal(err)
@@ -110,6 +123,10 @@ func TestMemberUpdate(t *testing.T) {
 				if !reflect.DeepEqual(toUintList(a(attrs["capabilities"])), []uint{0, 1, 2}) {
 					t.Fatalf("capabilities was improperly set: is %#v", a(attrs["capabilities"]))
 				}
+
+				if !reflect.DeepEqual(toUintDoubleList(a(attrs["tags"])), [][]uint{{0, 1}}) {
+					t.Fatalf("tags was improperly set: is %#v", a(attrs["tags"]))
+				}
 			default:
 				t.Fatalf("invalid member %q encountered", m["name"])
 			}
@@ -142,6 +159,10 @@ func TestMemberUpdate(t *testing.T) {
 
 				if a(attrs["ip_assignments"])[0].(string) != "10.0.0.1" {
 					t.Fatal("ip_assignments was improperly set")
+				}
+
+				if !reflect.DeepEqual(toUintDoubleList(a(attrs["tags"])), [][]uint{{1000, 100}}) {
+					t.Fatalf("tags was improperly set: is %#v", a(attrs["tags"]))
 				}
 			default:
 				t.Fatalf("invalid member %q encountered", m["name"])

@@ -76,6 +76,18 @@ var MemberSchema = map[string]*schema.Schema{
 		},
 		Description: "List of network capabilities",
 	},
+	"tags": {
+		Type:     schema.TypeList,
+		Computed: true,
+		Optional: true,
+		Elem: &schema.Schema{
+			Type: schema.TypeList,
+			Elem: &schema.Schema{
+				Type: schema.TypeInt,
+			},
+		},
+		Description: "List of network tags",
+	},
 }
 
 func toMember(d *schema.ResourceData) *spec.Member {
@@ -92,6 +104,7 @@ func toMember(d *schema.ResourceData) *spec.Member {
 			NoAutoAssignIps: boolPtr(d.Get("no_auto_assign_ips").(bool)),
 			Capabilities:    fetchIntList(d, "capabilities"),
 			IpAssignments:   fetchStringList(d, "ip_assignments"),
+			Tags:            fetchTags(d.Get("tags").([]interface{})),
 		},
 	}
 }
@@ -109,6 +122,7 @@ func memberToTerraform(d *schema.ResourceData, m *spec.Member) diag.Diagnostics 
 	d.Set("no_auto_assign_ips", *m.Config.NoAutoAssignIps)
 	d.Set("ip_assignments", *m.Config.IpAssignments)
 	d.Set("capabilities", *m.Config.Capabilities)
+	d.Set("tags", *m.Config.Tags)
 
 	return nil
 }
