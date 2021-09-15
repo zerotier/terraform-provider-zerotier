@@ -14,7 +14,7 @@ builds:
   flags:
     - -trimpath
   ldflags:
-    - '-s -w -X pkg/zerotier.Version={{.Version}}'
+    - '-s -w -X github.com/zerotier/terraform-provider-zerotier/pkg/zerotier.Version={{ .Version }}'
   goos:
     - freebsd
     - windows
@@ -36,7 +36,7 @@ builds:
     - goarm: mips64
       gomips: hardfloat
           
-  binary: '{{ .ProjectName }}_v{{ .Version }}'
+  binary: '{{ .ProjectName }}_{{ .Version }}'
 archives:
 - format: zip
   name_template: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}'

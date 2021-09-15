@@ -11,7 +11,8 @@ import (
 	"github.com/zerotier/go-ztcentral"
 )
 
-func init() {
+// Provider -
+func Provider() *schema.Provider {
 	logrus.SetOutput(os.Stderr)
 	level, err := logrus.ParseLevel(os.Getenv("TF_LOG"))
 	if err != nil {
@@ -19,11 +20,7 @@ func init() {
 	}
 
 	logrus.SetLevel(level)
-}
-
-// Provider -
-func Provider() *schema.Provider {
-	logrus.Debug("ZeroTier provider initialized")
+	logrus.Infof("ZeroTier %s provider initialized", Version)
 
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
