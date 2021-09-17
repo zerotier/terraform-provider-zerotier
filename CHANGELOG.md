@@ -1,5 +1,8 @@
 # terraform-provider-zerotier CHANGELOG
 
+## v1.2.0
+- Support importing network resources
+
 ## v1.1.0
 - Support tags in member definition
 - Support zerotier_central_url
