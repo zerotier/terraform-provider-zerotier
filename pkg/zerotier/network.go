@@ -3,6 +3,7 @@ package zerotier
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/sirupsen/logrus"
 	"github.com/zerotier/go-ztcentral/pkg/spec"
 )
 
@@ -68,6 +69,29 @@ var NetworkSchema = map[string]*schema.Schema{
 			},
 			Description: "A ipv4 or ipv6 network route",
 		},
+	},
+	"dns": {
+		Type:     schema.TypeSet,
+		Optional: true,
+		Computed: true,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"domain": {
+					Type:        schema.TypeString,
+					Required:    true,
+					Description: "Domain suffix for DNS searches",
+				},
+				"servers": {
+					Type: schema.TypeList,
+					Elem: &schema.Schema{
+						Type: schema.TypeString,
+					},
+					Required:    true,
+					Description: "Nameservers to send DNS requests to",
+				},
+			},
+		},
+		Description: "DNS settings for network members",
 	},
 	"assign_ipv4": {
 		Type:     schema.TypeSet,
@@ -162,6 +186,11 @@ func toNetwork(d *schema.ResourceData) (*spec.Network, diag.Diagnostics) {
 		return nil, err
 	}
 
+	dns, err := mkDNS(d.Get("dns"))
+	if err != nil {
+		return nil, err
+	}
+
 	network := &spec.Network{
 		Id:          stringPtr(d.Get("id").(string)),
 		RulesSource: stringPtr(d.Get("flow_rules").(string)),
@@ -175,6 +204,7 @@ func toNetwork(d *schema.ResourceData) (*spec.Network, diag.Diagnostics) {
 			EnableBroadcast:   boolPtr(d.Get("enable_broadcast").(bool)),
 			MulticastLimit:    intPtr(d.Get("multicast_limit").(int)),
 			Private:           boolPtr(d.Get("private").(bool)),
+			Dns:               dns.(*spec.DNS),
 		},
 	}
 
@@ -194,6 +224,9 @@ func networkToTerraform(d *schema.ResourceData, n *spec.Network) diag.Diagnostic
 	d.Set("private", ptrBool(n.Config.Private))
 	d.Set("assign_ipv4", mktfipv4assign(n.Config.V4AssignMode))
 	d.Set("assign_ipv6", mktfipv6assign(n.Config.V6AssignMode))
+	dns := mktfDNS(n.Config.Dns)
+	logrus.Info("dns:", dns)
+	d.Set("dns", dns)
 
 	return nil
 }
