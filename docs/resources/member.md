@@ -46,3 +46,11 @@ resource "zerotier_member" "alice" {
 - **no_auto_assign_ips** (Boolean) Exempt this member from the IP auto assignment pool on a Network
 
 
+
+## Import
+
+Members can be imported using their Network ID and Node ID, for example:
+
+```
+$ terraform import zerotier_network.network "8056c2e21c1930be-1122334455"
+```
