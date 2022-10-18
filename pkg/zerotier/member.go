@@ -59,7 +59,7 @@ var MemberSchema = map[string]*schema.Schema{
 		Description: "Exempt this member from the IP auto assignment pool on a Network",
 	},
 	"ip_assignments": {
-		Type:     schema.TypeList,
+		Type:     schema.TypeSet,
 		Computed: true,
 		Optional: true,
 		Elem: &schema.Schema{
@@ -68,7 +68,7 @@ var MemberSchema = map[string]*schema.Schema{
 		Description: "List of IP address assignments",
 	},
 	"capabilities": {
-		Type:     schema.TypeList,
+		Type:     schema.TypeSet,
 		Computed: true,
 		Optional: true,
 		Elem: &schema.Schema{
@@ -77,7 +77,7 @@ var MemberSchema = map[string]*schema.Schema{
 		Description: "List of network capabilities",
 	},
 	"tags": {
-		Type:     schema.TypeList,
+		Type:     schema.TypeSet, 
 		Computed: true,
 		Optional: true,
 		Elem: &schema.Schema{
@@ -102,9 +102,9 @@ func toMember(d *schema.ResourceData) *spec.Member {
 			Authorized:      boolPtr(d.Get("authorized").(bool)),
 			ActiveBridge:    boolPtr(d.Get("allow_ethernet_bridging").(bool)),
 			NoAutoAssignIps: boolPtr(d.Get("no_auto_assign_ips").(bool)),
-			Capabilities:    fetchIntList(d, "capabilities"),
-			IpAssignments:   fetchStringList(d, "ip_assignments"),
-			Tags:            fetchTags(d.Get("tags").([]interface{})),
+			Capabilities:    fetchIntSet(d, "capabilities"),
+			IpAssignments:   fetchStringSet(d, "ip_assignments"),
+			Tags:            fetchTags(d.Get("tags").(*schema.Set).List()),
 		},
 	}
 }
