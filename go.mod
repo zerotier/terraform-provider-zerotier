@@ -34,6 +34,7 @@ require (
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.0.1 // indirect
 	github.com/sirupsen/logrus v1.8.1
+	github.com/stretchr/testify v1.8.0
 	github.com/zclconf/go-cty v1.9.0 // indirect
 	github.com/zerotier/go-ztcentral v0.5.3
 	github.com/zerotier/go-ztidentity v1.0.0
