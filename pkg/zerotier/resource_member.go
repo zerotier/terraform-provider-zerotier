@@ -2,6 +2,7 @@ package zerotier
 
 import (
 	"context"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -16,6 +17,9 @@ func resourceMember() *schema.Resource {
 		UpdateContext: resourceMemberUpdate,
 		DeleteContext: resourceMemberDelete,
 		Schema:        MemberSchema,
+		Importer: &schema.ResourceImporter{
+			State: schema.ImportStatePassthrough,
+		},
 	}
 }
 
@@ -26,7 +30,9 @@ func resourceMember() *schema.Resource {
 func resourceMemberRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := m.(*ztcentral.Client)
 
-	member, err := c.GetMember(ctx, d.Get("network_id").(string), d.Get("member_id").(string))
+	nwid, nodeId := resourceNetworkAndNodeIdentifiers(d)
+
+	member, err := c.GetMember(ctx, nwid, nodeId)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -74,4 +80,15 @@ func resourceMemberDelete(ctx context.Context, d *schema.ResourceData, m interfa
 
 	d.SetId("")
 	return nil
+}
+
+func resourceNetworkAndNodeIdentifiers(d *schema.ResourceData) (string, string) {
+	nwid := d.Get("network_id").(string)
+	nodeID := d.Get("member_id").(string)
+
+	if nwid == "" && nodeID == "" {
+		parts := strings.Split(d.Id(), "-")
+		nwid, nodeID = parts[0], parts[1]
+	}
+	return nwid, nodeID
 }
