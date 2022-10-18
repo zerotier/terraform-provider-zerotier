@@ -1,5 +1,8 @@
 # terraform-provider-zerotier CHANGELOG
 
+## v1.3.0
+- Allow importing zerotier_member resources
+
 ## v1.2.0
 - Support importing network resources
 
