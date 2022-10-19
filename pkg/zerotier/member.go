@@ -89,6 +89,24 @@ var MemberSchema = map[string]*schema.Schema{
 		},
 		Description: "List of network tags",
 	},
+	"ipv4_assignments": {
+		Type:     schema.TypeSet,
+		Computed: true,
+		Optional: true,
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+		},
+		Description: "ZeroTier managed IPv4 addresses.",
+	},
+	"ipv6_assignments": {
+		Type:     schema.TypeSet,
+		Computed: true,
+		Optional: true,
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+		},
+		Description: "ZeroTier managed IPv6 addresses.",
+	},
 	"sixplane": {
 		Type:        schema.TypeString,
 		Optional:    true,
@@ -137,6 +155,9 @@ func memberToTerraform(d *schema.ResourceData, m *spec.Member) diag.Diagnostics 
 	d.Set("capabilities", *m.Config.Capabilities)
 	d.Set("tags", *m.Config.Tags)
 
+	ipv4Assignments, ipv6Assignments := assignedIpsGrouping(*m.Config.IpAssignments)
+	d.Set("ipv4_assignments", ipv4Assignments)
+	d.Set("ipv6_assignments", ipv6Assignments)
 	d.Set("rfc4193", rfc4193Address(d))
 	d.Set("sixplane", sixPlaneAddress(d))
 
@@ -165,6 +186,17 @@ func buildIPV6(data string) (result string) {
 		result += s
 		if (i+1)%4 == 0 && i != end {
 			result += ":"
+		}
+	}
+	return
+}
+
+func assignedIpsGrouping(ipAssignments []string) (ipv4s []string, ipv6s []string) {
+	for _, element := range ipAssignments {
+		if strings.Contains(element, ":") {
+			ipv6s = append(ipv6s, element)
+		} else {
+			ipv4s = append(ipv4s, element)
 		}
 	}
 	return
