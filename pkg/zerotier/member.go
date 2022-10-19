@@ -1,6 +1,7 @@
 package zerotier
 
 import (
+	"strconv"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -77,7 +78,7 @@ var MemberSchema = map[string]*schema.Schema{
 		Description: "List of network capabilities",
 	},
 	"tags": {
-		Type:     schema.TypeSet, 
+		Type:     schema.TypeSet,
 		Computed: true,
 		Optional: true,
 		Elem: &schema.Schema{
@@ -87,6 +88,18 @@ var MemberSchema = map[string]*schema.Schema{
 			},
 		},
 		Description: "List of network tags",
+	},
+	"sixplane": {
+		Type:        schema.TypeString,
+		Optional:    true,
+		Computed:    true,
+		Description: "Computed 6PLANE address. assign_ipv6.sixplane must be enabled on the network resource.",
+	},
+	"rfc4193": {
+		Type:        schema.TypeString,
+		Optional:    true,
+		Computed:    true,
+		Description: "Computed RFC4193 address. assign_ipv6.rfc4193 must be enabled on the network resource.",
 	},
 }
 
@@ -124,5 +137,35 @@ func memberToTerraform(d *schema.ResourceData, m *spec.Member) diag.Diagnostics 
 	d.Set("capabilities", *m.Config.Capabilities)
 	d.Set("tags", *m.Config.Tags)
 
+	d.Set("rfc4193", rfc4193Address(d))
+	d.Set("sixplane", sixPlaneAddress(d))
+
 	return nil
+}
+
+func sixPlaneAddress(d *schema.ResourceData) string {
+	nwid, nodeID := resourceNetworkAndNodeIdentifiers(d)
+	return buildIPV6("fd" + nwid + "9993" + nodeID)
+}
+
+func rfc4193Address(d *schema.ResourceData) string {
+	nwid, nodeID := resourceNetworkAndNodeIdentifiers(d)
+	nwidInt, _ := strconv.ParseUint(nwid, 16, 64)
+	networkMask := uint32((nwidInt >> 32) ^ nwidInt)
+	networkPrefix := strconv.FormatUint(uint64(networkMask), 16)
+	return buildIPV6("fc" + networkPrefix + nodeID + "000000000001")
+}
+
+// Receive a string and format every 4th element with a ":"
+func buildIPV6(data string) (result string) {
+	s := strings.SplitAfter(data, "")
+	end := len(s) - 1
+	result = ""
+	for i, s := range s {
+		result += s
+		if (i+1)%4 == 0 && i != end {
+			result += ":"
+		}
+	}
+	return
 }
