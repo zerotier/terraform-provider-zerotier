@@ -1,5 +1,10 @@
 # terraform-provider-zerotier CHANGELOG
 
+## v1.3.1
+- Fix for managing DNS setting (#23)
+- Fix for avoid unnecessary diffs of members (#33)
+- Documentation fixes (#31) (#26)
+
 ## v1.3.0
 - Allow importing zerotier_member resources
 
