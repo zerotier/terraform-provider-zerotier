@@ -44,6 +44,10 @@ func fetchStringList(d *schema.ResourceData, attr string) *[]string {
 	return toStringList(d.Get(attr).([]interface{})).(*[]string)
 }
 
+func fetchStringSet(d *schema.ResourceData, attr string) *[]string {
+	return toStringList(d.Get(attr).(*schema.Set).List()).(*[]string)
+}
+
 func toStringList(i interface{}) interface{} {
 	ray := &[]string{}
 	for _, x := range i.([]interface{}) {
@@ -54,6 +58,10 @@ func toStringList(i interface{}) interface{} {
 
 func fetchIntList(d *schema.ResourceData, attr string) *[]int {
 	return toIntList(d.Get(attr).([]interface{})).(*[]int)
+}
+
+func fetchIntSet(d *schema.ResourceData, attr string) *[]int {
+	return toIntList(d.Get(attr).(*schema.Set).List()).(*[]int)
 }
 
 func fetchTags(d []interface{}) *[][]int {
@@ -187,6 +195,70 @@ func mktfRanges(ranges *[]spec.IPRange) []map[string]interface{} {
 	}
 
 	return ret
+}
+
+func dnsset(m interface{}) int {
+
+	dns := m.(map[string]interface{})
+
+	// this weird algorithm was written after midnight
+	ret := int64(0)
+
+	if obj, ok := dns["servers"]; ok && obj != nil {
+		for _, s := range dns["servers"].([]string) {
+			for _, c := range s {
+				ret += int64(c)
+			}
+			ret += 255 // meh
+		}
+	}
+
+	if obj, ok := dns["domain"]; ok && obj != nil {
+		for _, c := range dns["domain"].(string) {
+			ret += int64(c)
+		}
+	}
+
+	return int(ret >> 4) // super hella broken probably
+}
+
+func mktfDNS(dns *spec.DNS) *schema.Set {
+	ret := map[string]interface{}{}
+
+	if dns.Domain != nil {
+		ret["domain"] = *dns.Domain
+	}
+
+	if dns.Servers != nil {
+		ret["servers"] = *dns.Servers
+	}
+
+	return schema.NewSet(dnsset, []interface{}{ret})
+}
+
+func mkDNS(settings interface{}) (interface{}, diag.Diagnostics) {
+	m := settings.(*schema.Set)
+
+	ret := &spec.DNS{}
+
+	for _, set := range m.List() {
+		tmp := set.(map[string]interface{})
+
+		if domain, ok := tmp["domain"].(string); ok {
+			ret.Domain = &domain
+		}
+
+		if s, ok := tmp["servers"]; ok {
+			servers := []string{}
+			for _, server := range s.([]interface{}) {
+				servers = append(servers, server.(string))
+			}
+
+			ret.Servers = &servers
+		}
+	}
+
+	return ret, nil
 }
 
 func ipv6set(m interface{}) int {

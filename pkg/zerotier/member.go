@@ -1,6 +1,7 @@
 package zerotier
 
 import (
+	"strconv"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -59,7 +60,7 @@ var MemberSchema = map[string]*schema.Schema{
 		Description: "Exempt this member from the IP auto assignment pool on a Network",
 	},
 	"ip_assignments": {
-		Type:     schema.TypeList,
+		Type:     schema.TypeSet,
 		Computed: true,
 		Optional: true,
 		Elem: &schema.Schema{
@@ -68,7 +69,7 @@ var MemberSchema = map[string]*schema.Schema{
 		Description: "List of IP address assignments",
 	},
 	"capabilities": {
-		Type:     schema.TypeList,
+		Type:     schema.TypeSet,
 		Computed: true,
 		Optional: true,
 		Elem: &schema.Schema{
@@ -77,7 +78,7 @@ var MemberSchema = map[string]*schema.Schema{
 		Description: "List of network capabilities",
 	},
 	"tags": {
-		Type:     schema.TypeList,
+		Type:     schema.TypeSet,
 		Computed: true,
 		Optional: true,
 		Elem: &schema.Schema{
@@ -87,6 +88,36 @@ var MemberSchema = map[string]*schema.Schema{
 			},
 		},
 		Description: "List of network tags",
+	},
+	"ipv4_assignments": {
+		Type:     schema.TypeSet,
+		Computed: true,
+		Optional: true,
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+		},
+		Description: "ZeroTier managed IPv4 addresses.",
+	},
+	"ipv6_assignments": {
+		Type:     schema.TypeSet,
+		Computed: true,
+		Optional: true,
+		Elem: &schema.Schema{
+			Type: schema.TypeString,
+		},
+		Description: "ZeroTier managed IPv6 addresses.",
+	},
+	"sixplane": {
+		Type:        schema.TypeString,
+		Optional:    true,
+		Computed:    true,
+		Description: "Computed 6PLANE address. assign_ipv6.sixplane must be enabled on the network resource.",
+	},
+	"rfc4193": {
+		Type:        schema.TypeString,
+		Optional:    true,
+		Computed:    true,
+		Description: "Computed RFC4193 address. assign_ipv6.rfc4193 must be enabled on the network resource.",
 	},
 }
 
@@ -102,9 +133,9 @@ func toMember(d *schema.ResourceData) *spec.Member {
 			Authorized:      boolPtr(d.Get("authorized").(bool)),
 			ActiveBridge:    boolPtr(d.Get("allow_ethernet_bridging").(bool)),
 			NoAutoAssignIps: boolPtr(d.Get("no_auto_assign_ips").(bool)),
-			Capabilities:    fetchIntList(d, "capabilities"),
-			IpAssignments:   fetchStringList(d, "ip_assignments"),
-			Tags:            fetchTags(d.Get("tags").([]interface{})),
+			Capabilities:    fetchIntSet(d, "capabilities"),
+			IpAssignments:   fetchStringSet(d, "ip_assignments"),
+			Tags:            fetchTags(d.Get("tags").(*schema.Set).List()),
 		},
 	}
 }
@@ -124,5 +155,49 @@ func memberToTerraform(d *schema.ResourceData, m *spec.Member) diag.Diagnostics 
 	d.Set("capabilities", *m.Config.Capabilities)
 	d.Set("tags", *m.Config.Tags)
 
+	ipv4Assignments, ipv6Assignments := assignedIpsGrouping(*m.Config.IpAssignments)
+	d.Set("ipv4_assignments", ipv4Assignments)
+	d.Set("ipv6_assignments", ipv6Assignments)
+	d.Set("rfc4193", rfc4193Address(d))
+	d.Set("sixplane", sixPlaneAddress(d))
+
 	return nil
+}
+
+func sixPlaneAddress(d *schema.ResourceData) string {
+	nwid, nodeID := resourceNetworkAndNodeIdentifiers(d)
+	return buildIPV6("fd" + nwid + "9993" + nodeID)
+}
+
+func rfc4193Address(d *schema.ResourceData) string {
+	nwid, nodeID := resourceNetworkAndNodeIdentifiers(d)
+	nwidInt, _ := strconv.ParseUint(nwid, 16, 64)
+	networkMask := uint32((nwidInt >> 32) ^ nwidInt)
+	networkPrefix := strconv.FormatUint(uint64(networkMask), 16)
+	return buildIPV6("fc" + networkPrefix + nodeID + "000000000001")
+}
+
+// Receive a string and format every 4th element with a ":"
+func buildIPV6(data string) (result string) {
+	s := strings.SplitAfter(data, "")
+	end := len(s) - 1
+	result = ""
+	for i, s := range s {
+		result += s
+		if (i+1)%4 == 0 && i != end {
+			result += ":"
+		}
+	}
+	return
+}
+
+func assignedIpsGrouping(ipAssignments []string) (ipv4s []string, ipv6s []string) {
+	for _, element := range ipAssignments {
+		if strings.Contains(element, ":") {
+			ipv6s = append(ipv6s, element)
+		} else {
+			ipv4s = append(ipv4s, element)
+		}
+	}
+	return
 }

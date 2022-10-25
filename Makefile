@@ -2,7 +2,7 @@ HOSTNAME=registry.terraform.io
 NAMESPACE=zerotier
 NAME=zerotier
 BINARY=terraform-provider-${NAME}
-VERSION=0.2.0
+VERSION=0.2.2
 OS_ARCH=$(shell go env GOOS)_$(shell go env GOARCH)
 GOLANGCI_LINT_VERSION=1.34.1
 BUILD=go build -ldflags "-X github.com/zerotier/terraform-provider-zerotier/pkg/zerotier.Version=${VERSION}" -o

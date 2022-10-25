@@ -257,6 +257,17 @@ func TestNetworkUpdate(t *testing.T) { // nolint:gocyclo
 				if rules != "accept;" {
 					t.Fatal("rules were not alterered on set")
 				}
+			case "dns_settings":
+				err := modifyNetwork(ctx, attrs["id"].(string), func(net *spec.Network) {
+					domain := "testing.home"
+					net.Config.Dns = &spec.DNS{
+						Domain:  &domain,
+						Servers: &[]string{"1.1.1.1", "8.8.8.8"},
+					}
+				})
+				if err != nil {
+					t.Fatal(err)
+				}
 			case "alice", "bobs_garage":
 				// this is a collection of defaults; not sure testing this is really worth the effort.
 			default:
@@ -301,6 +312,27 @@ func TestNetworkUpdate(t *testing.T) { // nolint:gocyclo
 				isBool(t, attrs["private"], false, "private")
 			case "no_broadcast":
 				isBool(t, attrs["enable_broadcast"], true, "private")
+			case "dns_settings":
+				if attrs["dns"] == nil {
+					t.Fatal("dns settings were missing")
+				}
+
+				domain := h(a(attrs["dns"])[0])["domain"].(string)
+				if domain != "testing.home" {
+					t.Fatalf("dns domain was not updated, was %q", domain)
+				}
+
+				if len(a(h(a(attrs["dns"])[0])["servers"])) != 2 {
+					t.Fatal("dns servers were not updated")
+				}
+
+				if a(h(a(attrs["dns"])[0])["servers"])[0] != "1.1.1.1" {
+					t.Fatal("dns servers were incorrect")
+				}
+
+				if a(h(a(attrs["dns"])[0])["servers"])[1] != "8.8.8.8" {
+					t.Fatal("dns servers were incorrect")
+				}
 			case "alice", "bobs_garage":
 				// this is a collection of defaults; not sure testing this is really worth the effort.
 			default:

@@ -48,7 +48,6 @@ resource "zerotier_network" "my_network" {
 - **description** (String) The description of the network
 - **enable_broadcast** (Boolean) Enable broadcast packets on the network
 - **flow_rules** (String) The layer 2 flow rules to apply to packets traveling across this network. Please see https://www.zerotier.com/manual/#3_4_1 for more information.
-- **mtu** (Number) MTU to set on the client virtual network adapter
 - **multicast_limit** (Number) Maximum number of recipients per multicast or broadcast. Warning - Setting this to 0 will disable IPv4 communication on your network!
 - **private** (Boolean) Whether or not the network is private.  If false, members will *NOT* need to be authorized to join.
 - **route** (Block Set) A ipv4 or ipv6 network route (see [below for nested schema](#nestedblock--route))

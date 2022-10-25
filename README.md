@@ -24,8 +24,8 @@ resource "zerotier_network" "occams_router" {
   name        = "occams_router"
   description = "The prefix with largest number of bits is usually correct"
   assignment_pool {
-    start = "10.1.0.1/24"
-    end   = "10.1.0.254/24"
+    start = "10.1.0.1"
+    end   = "10.1.0.254"
   }
   route {
     target = "10.1.0.0/24"
@@ -42,8 +42,8 @@ resource "zerotier_network" "schrödingers_nat" {
   name        = "schrödingers_nat"
   description = "A packet's destination is simultaneiously Alice and Bob until observed by a NAT table."
   assignment_pool {
-    start = "10.2.0.1/24"
-    end   = "10.2.0.254/24"
+    start = "10.2.0.1"
+    end   = "10.2.0.254"
   }
   route {
     target = "10.2.0.0/24"
@@ -67,8 +67,8 @@ resource "zerotier_network" "silence_of_the_lan" {
   name        = "silence_of_the_lan"
   description = "It puts the bits in the bucket. It does this whenever it is told."
   assignment_pool {
-    start = "10.3.0.1/24"
-    end   = "10.3.0.254/24"
+    start = "10.3.0.1"
+    end   = "10.3.0.254"
   }
   route {
     target = "10.3.0.0/24"
@@ -325,6 +325,15 @@ Included here is a description of the Make tasks and environment variables you n
 - `ZEROTIER_CENTRAL_TOKEN`
   - set in env or write to `test-token.txt` at the root.
     - env is preferred but the token from file is just propagated to env and gitignored. No different, just easier to use.
+
+## Cleanup commands you may find useful
+Sometimes tests fail and resources get left behind
+
+- `docker ps -a -f name=zerotier --format {{.ID}} | xargs docker rm -f` removed orphaned containers with "zerotier" in the name.
+- `docker network prune` removed orphaned networks 
+- `rm /tmp/tftest` if problems downloading kreuzwerker/docker.
+- Delete the "hello-word" auth token from your central account.
+- Don't use your main central account for tests. Use an alternate. Delete it and recreate when too many networks to clean up.
 
 # License
 
