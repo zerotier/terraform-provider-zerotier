@@ -326,6 +326,15 @@ Included here is a description of the Make tasks and environment variables you n
   - set in env or write to `test-token.txt` at the root.
     - env is preferred but the token from file is just propagated to env and gitignored. No different, just easier to use.
 
+## Cleanup commands you may find useful
+Sometimes tests fail and resources get left behind
+
+- `docker ps -a -f name=zerotier --format {{.ID}} | xargs docker rm -f` removed orphaned containers with "zerotier" in the name.
+- `docker network prune` removed orphaned networks 
+- `rm /tmp/tftest` if problems downloading kreuzwerker/docker.
+- Delete the "hello-word" auth token from your central account.
+- Don't use your main central account for tests. Use an alternate. Delete it and recreate when too many networks to clean up.
+
 # License
 
 - BSD 3-Clause

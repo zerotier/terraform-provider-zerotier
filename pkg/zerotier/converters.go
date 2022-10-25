@@ -44,6 +44,10 @@ func fetchStringList(d *schema.ResourceData, attr string) *[]string {
 	return toStringList(d.Get(attr).([]interface{})).(*[]string)
 }
 
+func fetchStringSet(d *schema.ResourceData, attr string) *[]string {
+	return toStringList(d.Get(attr).(*schema.Set).List()).(*[]string)
+}
+
 func toStringList(i interface{}) interface{} {
 	ray := &[]string{}
 	for _, x := range i.([]interface{}) {
@@ -54,6 +58,10 @@ func toStringList(i interface{}) interface{} {
 
 func fetchIntList(d *schema.ResourceData, attr string) *[]int {
 	return toIntList(d.Get(attr).([]interface{})).(*[]int)
+}
+
+func fetchIntSet(d *schema.ResourceData, attr string) *[]int {
+	return toIntList(d.Get(attr).(*schema.Set).List()).(*[]int)
 }
 
 func fetchTags(d []interface{}) *[][]int {
