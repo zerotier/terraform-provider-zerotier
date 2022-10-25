@@ -213,6 +213,18 @@ func TestBasicNetworkSetup(t *testing.T) {
 				isBool(t, attrs["private"], true, "private")
 			case "no_broadcast":
 				isBool(t, attrs["enable_broadcast"], false, "enable_broadcast")
+			case "dns_settings":
+				if h(a(attrs["dns"])[0])["domain"].(string) != "leisure.town" {
+					t.Fatal("domain was incorrect")
+				}
+
+				if a(h(a(attrs["dns"])[0])["servers"])[0].(string) != "1.2.3.4" {
+					t.Fatal("nameserver #1 was incorrect")
+				}
+
+				if a(h(a(attrs["dns"])[0])["servers"])[1].(string) != "5.6.7.8" {
+					t.Fatal("nameserver #2 was incorrect")
+				}
 			case "alice", "bobs_garage":
 				for _, name := range []string{"creation_time"} {
 					isNonZeroNum(t, attrs[name], name)

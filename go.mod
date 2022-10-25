@@ -7,6 +7,7 @@ go 1.15
 require (
 	github.com/agext/levenshtein v1.2.3 // indirect
 	github.com/containerd/containerd v1.4.3 // indirect
+	github.com/deepmap/oapi-codegen v1.8.3 // indirect
 	github.com/docker/distribution v2.7.1+incompatible // indirect
 	github.com/docker/docker v20.10.3+incompatible
 	github.com/docker/go-connections v0.4.0 // indirect
@@ -36,7 +37,7 @@ require (
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.8.0
 	github.com/zclconf/go-cty v1.9.0 // indirect
-	github.com/zerotier/go-ztcentral v0.5.3
+	github.com/zerotier/go-ztcentral v0.5.4
 	github.com/zerotier/go-ztidentity v1.0.0
 	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97 // indirect
 	golang.org/x/net v0.0.0-20210716203947-853a461950ff // indirect
