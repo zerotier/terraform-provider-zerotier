@@ -52,5 +52,5 @@ resource "zerotier_member" "alice" {
 Members can be imported using their Network ID and Node ID, for example:
 
 ```
-$ terraform import zerotier_network.network "8056c2e21c1930be-1122334455"
+$ terraform import zerotier_member.alice "8056c2e21c1930be-1122334455"
 ```
