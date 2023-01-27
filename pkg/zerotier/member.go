@@ -158,19 +158,22 @@ func memberToTerraform(d *schema.ResourceData, m *spec.Member) diag.Diagnostics 
 	ipv4Assignments, ipv6Assignments := assignedIpsGrouping(*m.Config.IpAssignments)
 	d.Set("ipv4_assignments", ipv4Assignments)
 	d.Set("ipv6_assignments", ipv6Assignments)
-	d.Set("rfc4193", rfc4193Address(d))
-	d.Set("sixplane", sixPlaneAddress(d))
+
+	nwid, nodeID, err := resourceNetworkAndNodeIdentifiers(d)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	d.Set("rfc4193", rfc4193Address(nwid, nodeID))
+	d.Set("sixplane", sixPlaneAddress(nwid, nodeID))
 
 	return nil
 }
 
-func sixPlaneAddress(d *schema.ResourceData) string {
-	nwid, nodeID := resourceNetworkAndNodeIdentifiers(d)
+func sixPlaneAddress(nwid, nodeID string) string {
 	return buildIPV6("fd" + nwid + "9993" + nodeID)
 }
 
-func rfc4193Address(d *schema.ResourceData) string {
-	nwid, nodeID := resourceNetworkAndNodeIdentifiers(d)
+func rfc4193Address(nwid, nodeID string) string {
 	nwidInt, _ := strconv.ParseUint(nwid, 16, 64)
 	networkMask := uint32((nwidInt >> 32) ^ nwidInt)
 	networkPrefix := strconv.FormatUint(uint64(networkMask), 16)
