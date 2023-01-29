@@ -1,5 +1,10 @@
 # terraform-provider-zerotier CHANGELOG
 
+## v1.4.0
+- Add rfc4193 and sixplane to member.go
+- Return human-readable error on malformed member id #35
+- Thanks Andrew Sichevoi!
+
 ## v1.3.1
 - Fix for managing DNS setting (#23)
 - Fix for avoid unnecessary diffs of members (#33)
