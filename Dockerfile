@@ -1,6 +1,6 @@
 FROM debian:latest
 
-RUN apt-get update -qq && apt-get install iputils-ping netcat curl gnupg procps -y
+RUN apt-get update -qq && apt-get install iputils-ping netcat-traditional curl gnupg procps -y
 
 RUN curl -sSL https://install.zerotier.com | bash
 
