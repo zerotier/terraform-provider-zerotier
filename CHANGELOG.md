@@ -1,5 +1,9 @@
 # terraform-provider-zerotier CHANGELOG
 
+## v1.4.1
+- fixing 6plane / rfc4193 address flipping #38
+- Update terraform-plugin-docs + generated files + dependencies #39
+
 ## v1.4.0
 - Add rfc4193 and sixplane to member.go
 - Return human-readable error on malformed member id #35
