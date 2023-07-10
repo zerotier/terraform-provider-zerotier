@@ -30,27 +30,33 @@ resource "zerotier_member" "alice" {
 
 ### Required
 
-- **member_id** (String) ID of this member.
-- **network_id** (String) ID of the network this member belongs to
+- `member_id` (String) ID of this member.
+- `network_id` (String) ID of the network this member belongs to
 
 ### Optional
 
-- **allow_ethernet_bridging** (Boolean) Is this member allowed to activate ethernet bridging over the ZeroTier network?
-- **authorized** (Boolean) Is the member authorized on the network?
-- **capabilities** (List of Number) List of network capabilities
-- **description** (String) Text description of this member.
-- **hidden** (Boolean) Is this member visible?
-- **id** (String) The ID of this resource.
-- **ip_assignments** (List of String) List of IP address assignments
-- **name** (String) Descriptive name of this member.
-- **no_auto_assign_ips** (Boolean) Exempt this member from the IP auto assignment pool on a Network
+- `allow_ethernet_bridging` (Boolean) Is this member allowed to activate ethernet bridging over the ZeroTier network?
+- `authorized` (Boolean) Is the member authorized on the network?
+- `capabilities` (Set of Number) List of network capabilities
+- `description` (String) Text description of this member.
+- `hidden` (Boolean) Is this member visible?
+- `ip_assignments` (Set of String) List of IP address assignments
+- `ipv4_assignments` (Set of String) ZeroTier managed IPv4 addresses.
+- `ipv6_assignments` (Set of String) ZeroTier managed IPv6 addresses.
+- `name` (String) Descriptive name of this member.
+- `no_auto_assign_ips` (Boolean) Exempt this member from the IP auto assignment pool on a Network
+- `rfc4193` (String) Computed RFC4193 address. assign_ipv6.rfc4193 must be enabled on the network resource.
+- `sixplane` (String) Computed 6PLANE address. assign_ipv6.sixplane must be enabled on the network resource.
+- `tags` (Set of List of Number) List of network tags
 
+### Read-Only
 
+- `id` (String) The ID of this resource.
 
 ## Import
 
-Members can be imported using their Network ID and Node ID, for example:
+Import is supported using the following syntax:
 
-```
-$ terraform import zerotier_member.alice "8056c2e21c1930be-1122334455"
+```shell
+terraform import zerotier_member.alice "8056c2e21c1930be-1122334455"
 ```

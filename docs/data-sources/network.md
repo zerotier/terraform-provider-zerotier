@@ -23,38 +23,66 @@ data "zerotier_network" "bob" {
 
 ### Optional
 
-- **id** (String) ZeroTier's internal network identifier, aka NetworkID
+- `assign_ipv4` (Block Set) IPv4 Assignment RuleSets (see [below for nested schema](#nestedblock--assign_ipv4))
+- `assign_ipv6` (Block Set) IPv6 Assignment RuleSets (see [below for nested schema](#nestedblock--assign_ipv6))
+- `assignment_pool` (Block Set) (see [below for nested schema](#nestedblock--assignment_pool))
+- `description` (String) The description of the network
+- `dns` (Block Set) DNS settings for network members (see [below for nested schema](#nestedblock--dns))
+- `enable_broadcast` (Boolean) Enable broadcast packets on the network
+- `flow_rules` (String) The layer 2 flow rules to apply to packets traveling across this network. Please see https://www.zerotier.com/manual/#3_4_1 for more information.
+- `id` (String) ZeroTier's internal network identifier, aka NetworkID
+- `multicast_limit` (Number) Maximum number of recipients per multicast or broadcast. Warning - Setting this to 0 will disable IPv4 communication on your network!
+- `name` (String) The name of the network
+- `private` (Boolean) Whether or not the network is private.  If false, members will *NOT* need to be authorized to join.
+- `route` (Block Set) (see [below for nested schema](#nestedblock--route))
 
 ### Read-Only
 
-- **assign_ipv4** (Map of Boolean) IPv4 Assignment RuleSets
-- **assign_ipv6** (Map of Boolean) IPv6 Assignment RuleSets
-- **assignment_pool** (Set of Object) Rules regarding IPv4 and IPv6 assignments (see [below for nested schema](#nestedatt--assignment_pool))
-- **creation_time** (Number) The time at which this network was created, in epoch seconds
-- **description** (String) The description of the network
-- **enable_broadcast** (Boolean) Enable broadcast packets on the network
-- **flow_rules** (String) The layer 2 flow rules to apply to packets traveling across this network. Please see https://www.zerotier.com/manual/#3_4_1 for more information.
-- **multicast_limit** (Number) Maximum number of recipients per multicast or broadcast. Warning - Setting this to 0 will disable IPv4 communication on your network!
-- **name** (String) The name of the network
-- **private** (Boolean) Whether or not the network is private.  If false, members will *NOT* need to be authorized to join.
-- **route** (Set of Object) A ipv4 or ipv6 network route (see [below for nested schema](#nestedatt--route))
+- `creation_time` (Number) The time at which this network was created, in epoch seconds
 
-<a id="nestedatt--assignment_pool"></a>
+<a id="nestedblock--assign_ipv4"></a>
+### Nested Schema for `assign_ipv4`
+
+Optional:
+
+- `zerotier` (Boolean) Use zerotier ipv4 addressing
+
+
+<a id="nestedblock--assign_ipv6"></a>
+### Nested Schema for `assign_ipv6`
+
+Optional:
+
+- `rfc4193` (Boolean) RFC4193 addressing method
+- `sixplane` (Boolean) 6PLANE addressing method
+- `zerotier` (Boolean) Use zerotier ipv6 manual addressing
+
+
+<a id="nestedblock--assignment_pool"></a>
 ### Nested Schema for `assignment_pool`
 
-Read-Only:
+Optional:
 
-- **cidr** (String)
-- **end** (String)
-- **start** (String)
+- `end` (String) The last address in the assignment rule. This must be the highest number in the pool. end must also be accompanied by start.
+- `start` (String) The first address in the assignment rule. This must be the lowest number in the pool. `start` must also be accompanied by `end`.
 
 
-<a id="nestedatt--route"></a>
+<a id="nestedblock--dns"></a>
+### Nested Schema for `dns`
+
+Required:
+
+- `domain` (String) Domain suffix for DNS searches
+- `servers` (List of String) Nameservers to send DNS requests to
+
+
+<a id="nestedblock--route"></a>
 ### Nested Schema for `route`
 
-Read-Only:
+Required:
 
-- **target** (String)
-- **via** (String)
+- `target` (String) Network to route for
 
+Optional:
 
+- `via` (String) Gateway address

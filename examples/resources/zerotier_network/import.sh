@@ -1,0 +1,1 @@
+terraform import zerotier_network.network 8056c2e21c1930be

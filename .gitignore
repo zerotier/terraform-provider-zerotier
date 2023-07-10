@@ -37,3 +37,4 @@ dist
 /test-token.txt
 /test.tfrc
 /.tfdata
+.envrc
