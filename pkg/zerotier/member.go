@@ -170,14 +170,14 @@ func memberToTerraform(d *schema.ResourceData, m *spec.Member) diag.Diagnostics 
 }
 
 func sixPlaneAddress(nwid, nodeID string) string {
-	return buildIPV6("fd" + nwid + "9993" + nodeID)
-}
-
-func rfc4193Address(nwid, nodeID string) string {
 	nwidInt, _ := strconv.ParseUint(nwid, 16, 64)
 	networkMask := uint32((nwidInt >> 32) ^ nwidInt)
 	networkPrefix := strconv.FormatUint(uint64(networkMask), 16)
 	return buildIPV6("fc" + networkPrefix + nodeID + "000000000001")
+}
+
+func rfc4193Address(nwid, nodeID string) string {
+	return buildIPV6("fd" + nwid + "9993" + nodeID)
 }
 
 // Receive a string and format every 4th element with a ":"
