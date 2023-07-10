@@ -1,5 +1,8 @@
 # terraform-provider-zerotier CHANGELOG
 
+## v1.4.2
+- Signing with correct GPG key
+
 ## v1.4.1
 - fixing 6plane / rfc4193 address flipping #38
 - Update terraform-plugin-docs + generated files + dependencies #39
