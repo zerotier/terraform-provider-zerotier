@@ -27,7 +27,7 @@ func Test_ResourceNetworkAndNodeIdentifiers_PresetValues(t *testing.T) {
 		},
 	}
 
-	res := schema.Resource{Schema: MemberSchema}
+	res := schema.Resource{Schema: buildMemberSchema(true)}
 	for _, test := range tests {
 		t.Run(test.desc, func(t *testing.T) {
 			d := res.TestResourceData()
@@ -73,7 +73,7 @@ func Test_ResourceNetworkAndNodeIdentifiers_ParsingMemberID(t *testing.T) {
 		},
 	}
 
-	res := schema.Resource{Schema: MemberSchema}
+	res := schema.Resource{Schema: buildMemberSchema(true)}
 	for _, test := range tests {
 		t.Run(test.desc, func(t *testing.T) {
 			d := res.TestResourceData()

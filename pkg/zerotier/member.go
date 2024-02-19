@@ -9,116 +9,143 @@ import (
 	"github.com/zerotier/go-ztcentral/pkg/spec"
 )
 
-// MemberSchema is the zerotier_member resource schema.
-var MemberSchema = map[string]*schema.Schema{
-	"network_id": {
-		Type:        schema.TypeString,
-		Required:    true,
-		ForceNew:    true,
-		Description: "ID of the network this member belongs to",
-	},
-	"member_id": {
-		Type:        schema.TypeString,
-		Required:    true,
-		ForceNew:    true,
-		Description: "ID of this member.",
-	},
-	"name": {
-		Type:        schema.TypeString,
-		Optional:    true,
-		Computed:    true,
-		Description: "Descriptive name of this member.",
-	},
-	"description": {
-		Type:        schema.TypeString,
-		Optional:    true,
-		Default:     "Managed by Terraform",
-		Description: "Text description of this member.",
-	},
-	"hidden": {
-		Type:        schema.TypeBool,
-		Optional:    true,
-		Default:     false,
-		Description: "Is this member visible?",
-	},
-	"authorized": {
-		Type:        schema.TypeBool,
-		Optional:    true,
-		Default:     true,
-		Description: "Is the member authorized on the network?",
-	},
-	"allow_ethernet_bridging": {
-		Type:        schema.TypeBool,
-		Optional:    true,
-		Default:     false,
-		Description: "Is this member allowed to activate ethernet bridging over the ZeroTier network?",
-	},
-	"no_auto_assign_ips": {
-		Type:        schema.TypeBool,
-		Optional:    true,
-		Default:     false,
-		Description: "Exempt this member from the IP auto assignment pool on a Network",
-	},
-	"ip_assignments": {
-		Type:     schema.TypeSet,
-		Computed: true,
-		Optional: true,
-		Elem: &schema.Schema{
+// buildMemberSchema return the schema for zerotier_member resource schema.
+// asResource is a boolean that indicates if the schema is for a resource or a data source.
+func buildMemberSchema(asResource bool) map[string]*schema.Schema {
+	start := map[string]*schema.Schema{
+		"network_id": {
 			Type: schema.TypeString,
+			//Required:    true,
+			//ForceNew:    true,
+			Description: "ID of the network this member belongs to.",
 		},
-		Description: "List of IP address assignments",
-	},
-	"capabilities": {
-		Type:     schema.TypeSet,
-		Computed: true,
-		Optional: true,
-		Elem: &schema.Schema{
-			Type: schema.TypeInt,
+		"member_id": {
+			Type: schema.TypeString,
+			//Required:    true,
+			Description: "ID of this member.",
 		},
-		Description: "List of network capabilities",
-	},
-	"tags": {
-		Type:     schema.TypeSet,
-		Computed: true,
-		Optional: true,
-		Elem: &schema.Schema{
-			Type: schema.TypeList,
+		"name": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			Description: "Descriptive name of this member.",
+		},
+		"description": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Default:     "Managed by Terraform",
+			Description: "Text description of this member.",
+		},
+		"hidden": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			Description: "Is this member visible?",
+		},
+		"authorized": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     true,
+			Description: "Is the member authorized on the network?",
+		},
+		"allow_ethernet_bridging": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			Description: "Is this member allowed to activate ethernet bridging over the ZeroTier network?",
+		},
+		"no_auto_assign_ips": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			Description: "Exempt this member from the IP auto assignment pool on a Network",
+		},
+		"ip_assignments": {
+			Type:     schema.TypeSet,
+			Computed: true,
+			Optional: true,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			Description: "List of IP address assignments",
+		},
+		"capabilities": {
+			Type:     schema.TypeSet,
+			Computed: true,
+			Optional: true,
 			Elem: &schema.Schema{
 				Type: schema.TypeInt,
 			},
+			Description: "List of network capabilities",
 		},
-		Description: "List of network tags",
-	},
-	"ipv4_assignments": {
-		Type:     schema.TypeSet,
-		Computed: true,
-		Optional: true,
-		Elem: &schema.Schema{
-			Type: schema.TypeString,
+		"tags": {
+			Type:     schema.TypeSet,
+			Computed: true,
+			Optional: true,
+			Elem: &schema.Schema{
+				Type: schema.TypeList,
+				Elem: &schema.Schema{
+					Type: schema.TypeInt,
+				},
+			},
+			Description: "List of network tags",
 		},
-		Description: "ZeroTier managed IPv4 addresses.",
-	},
-	"ipv6_assignments": {
-		Type:     schema.TypeSet,
-		Computed: true,
-		Optional: true,
-		Elem: &schema.Schema{
-			Type: schema.TypeString,
+		"ipv4_assignments": {
+			Type:     schema.TypeSet,
+			Computed: true,
+			Optional: true,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			Description: "ZeroTier managed IPv4 addresses.",
 		},
-		Description: "ZeroTier managed IPv6 addresses.",
-	},
-	"sixplane": {
-		Type:        schema.TypeString,
-		Optional:    true,
-		Computed:    true,
-		Description: "Computed 6PLANE address. assign_ipv6.sixplane must be enabled on the network resource.",
-	},
-	"rfc4193": {
-		Type:        schema.TypeString,
-		Optional:    true,
-		Computed:    true,
-		Description: "Computed RFC4193 address. assign_ipv6.rfc4193 must be enabled on the network resource.",
-	},
+		"ipv6_assignments": {
+			Type:     schema.TypeSet,
+			Computed: true,
+			Optional: true,
+			Elem: &schema.Schema{
+				Type: schema.TypeString,
+			},
+			Description: "ZeroTier managed IPv6 addresses.",
+		},
+		"sixplane": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			Description: "Computed 6PLANE address. assign_ipv6.sixplane must be enabled on the network resource.",
+		},
+		"rfc4193": {
+			Type:        schema.TypeString,
+			Optional:    true,
+			Computed:    true,
+			Description: "Computed RFC4193 address. assign_ipv6.rfc4193 must be enabled on the network resource.",
+		},
+	}
+	if asResource {
+		start["network_id"] = &schema.Schema{
+			Type:        schema.TypeString,
+			Required:    true,
+			ForceNew:    true,
+			Description: "ID of the network this member belongs to.",
+		}
+		start["member_id"] = &schema.Schema{
+			Type:        schema.TypeString,
+			Required:    true,
+			Description: "ID of this member.",
+		}
+	} else {
+		start["network_id"] = &schema.Schema{
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "ID of the network this member belongs to.",
+		}
+		start["member_id"] = &schema.Schema{
+			Type:        schema.TypeString,
+			Computed:    true,
+			Description: "ID of this member.",
+		}
+	}
+	return start
 }
 
 func toMember(d *schema.ResourceData) *spec.Member {

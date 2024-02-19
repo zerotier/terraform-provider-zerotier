@@ -18,7 +18,7 @@ func resourceMember() *schema.Resource {
 		ReadContext:   resourceMemberRead,
 		UpdateContext: resourceMemberUpdate,
 		DeleteContext: resourceMemberDelete,
-		Schema:        MemberSchema,
+		Schema:        buildMemberSchema(true),
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},

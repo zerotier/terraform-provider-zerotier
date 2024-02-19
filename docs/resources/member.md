@@ -31,7 +31,7 @@ resource "zerotier_member" "alice" {
 ### Required
 
 - `member_id` (String) ID of this member.
-- `network_id` (String) ID of the network this member belongs to
+- `network_id` (String) ID of the network this member belongs to.
 
 ### Optional
 
