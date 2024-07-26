@@ -38,7 +38,7 @@ resource "docker_image" "zerotier" {
 
 resource "docker_container" "alice" {
   name    = "zerotier_alice"
-  image   = docker_image.zerotier.latest
+  image   = docker_image.zerotier.image_id
   command = [zerotier_network.docker_network.id]
 
   devices { host_path = "/dev/net/tun" }
@@ -59,7 +59,7 @@ resource "docker_container" "alice" {
 
 resource "docker_container" "bob" {
   name    = "zerotier_bob"
-  image   = docker_image.zerotier.latest
+  image   = docker_image.zerotier.image_id
   command = [zerotier_network.docker_network.id]
 
   capabilities {

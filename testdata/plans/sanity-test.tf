@@ -19,10 +19,10 @@ resource "docker_image" "zerotier" {
 
 resource "docker_container" "uno" {
   name  = "zerotier_uno"
-  image = docker_image.zerotier.latest
+  image = docker_image.zerotier.image_id
 }
 
 resource "docker_container" "dos" {
   name  = "zerotier_dos"
-  image = docker_image.zerotier.latest
+  image = docker_image.zerotier.image_id
 }
