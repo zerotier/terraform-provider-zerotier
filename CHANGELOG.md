@@ -1,5 +1,11 @@
 # terraform-provider-zerotier CHANGELOG
 
+## v1.5.1
+- Fixing up tests
+
+## v1.5.0
+- Network members datasource
+
 ## v1.4.2
 - Signing with correct GPG key
 
