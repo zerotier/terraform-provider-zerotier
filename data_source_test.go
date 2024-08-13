@@ -29,3 +29,24 @@ func TestDataSourceNetwork(t *testing.T) {
 
 	}
 }
+
+func TestDataSourceMembers(t *testing.T) {
+	tf := getTFTest(t)
+
+	tf.Apply("testdata/plans/data-source-members.tf")
+	tf.Refresh()
+
+	outputs := h(tf.State()["outputs"])
+
+	memberName := s(h(outputs["member_name"])["value"])
+	memberNameExp := "bobs_car"
+	if memberName != memberNameExp {
+		t.Fatalf("member name was not set correctly: expected: %q, found: %q", memberNameExp, memberName)
+	}
+
+	memberDesc := s(h(outputs["member_description"])["value"])
+	memberDescExp := "bobs shiny car"
+	if memberDesc != memberDescExp {
+		t.Fatalf("member description was not set correctly: expected: %q, found: %q", memberDescExp, memberDesc)
+	}
+}

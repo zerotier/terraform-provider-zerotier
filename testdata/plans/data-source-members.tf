@@ -16,5 +16,14 @@ resource "zerotier_member" "bobs_car" {
 }
 
 data "zerotier_members" "bobs_garage" {
+  depends_on = [zerotier_member.bobs_car]
   network_id = zerotier_network.bobs_garage.id
+}
+
+output "member_name" {
+  value = one(data.zerotier_members.bobs_garage.members)["name"]
+}
+
+output "member_description" {
+  value = one(data.zerotier_members.bobs_garage.members)["description"]
 }
