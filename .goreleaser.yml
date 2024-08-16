@@ -59,5 +59,3 @@ signs:
 release:
   # Visit your project's GitHub Releases page to publish this release.
   draft: false
-changelog:
-  skip: true
