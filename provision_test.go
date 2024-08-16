@@ -140,6 +140,7 @@ func TestBasicMembers(t *testing.T) {
 				}
 
 				isBool(t, attrs["hidden"], true, "hidden")
+				isBool(t, attrs["sso_exempt"], true, "sso_exempt")
 				isBool(t, attrs["allow_ethernet_bridging"], true, "allow_ethernet_bridging")
 				isBool(t, attrs["no_auto_assign_ips"], true, "no_auto_assign_ips")
 

@@ -159,7 +159,6 @@ func toMember(d *schema.ResourceData) *spec.Member {
 		NetworkId: stringPtr(d.Get("network_id").(string)),
 		NodeId:    stringPtr(d.Get("member_id").(string)),
 		Hidden:    boolPtr(d.Get("hidden").(bool)),
-		//OfflineNotifyDelay: toInt(d, "offline_notify_delay"),
 		Name:        stringPtr(d.Get("name").(string)),
 		Description: stringPtr(d.Get("description").(string)),
 		Config: &spec.MemberConfig{

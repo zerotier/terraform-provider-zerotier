@@ -1,6 +1,7 @@
 provider "zerotier" {}
 
 resource "zerotier_identity" "alice" {}
+
 resource "zerotier_network" "alicenet" {
   name = "alicenet"
   assignment_pool {
@@ -21,4 +22,5 @@ resource "zerotier_member" "alice" {
   ip_assignments          = ["10.0.0.1"]
   capabilities            = [1, 2, 3]
   tags                    = [[1000, 100]]
+  sso_exempt              = true
 }
