@@ -4,11 +4,12 @@ import (
 	"context"
 	"crypto/md5"
 	"fmt"
+	"sort"
+	"strings"
+
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/zerotier/go-ztcentral"
-	"sort"
-	"strings"
 )
 
 func dataSourceMembers() *schema.Resource {
@@ -35,10 +36,7 @@ func dataSourceMembers() *schema.Resource {
 func datasourceMemberRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := m.(*ztcentral.Client)
 
-	nwid, _, err := resourceNetworkAndNodeIdentifiers(d)
-	if err != nil {
-		return diag.FromErr(err)
-	}
+	nwid := d.Get("network_id").(string)
 
 	networkMembers, err := c.GetMembers(ctx, nwid)
 	if err != nil {
@@ -48,10 +46,6 @@ func datasourceMemberRead(ctx context.Context, d *schema.ResourceData, m interfa
 	memberIDs := make([]string, 0, len(networkMembers))
 	for _, member := range networkMembers {
 		ipv4Assignments, ipv6Assignments := assignedIpsGrouping(*member.Config.IpAssignments)
-		_, nodeID, err := resourceNetworkAndNodeIdentifiers(d)
-		if err != nil {
-			return diag.FromErr(err)
-		}
 		members = append(members, map[string]interface{}{
 			"name":                    *member.Name,
 			"description":             *member.Description,
@@ -66,12 +60,15 @@ func datasourceMemberRead(ctx context.Context, d *schema.ResourceData, m interfa
 			"tags":                    *member.Config.Tags,
 			"ipv4_assignments":        ipv4Assignments,
 			"ipv6_assignments":        ipv6Assignments,
-			"rfc4193":                 rfc4193Address(nwid, nodeID),
-			"sixplane":                sixPlaneAddress(nwid, nodeID),
+			"rfc4193":                 rfc4193Address(nwid, *member.NodeId),
+			"sixplane":                sixPlaneAddress(nwid, *member.NodeId),
 		})
 		memberIDs = append(memberIDs, *member.NodeId)
 	}
-	d.Set("members", members)
+	err = d.Set("members", members)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	d.SetId(stringChecksum(strings.Join(memberIDs, "")))
 	return nil
 }
