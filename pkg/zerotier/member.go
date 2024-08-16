@@ -120,6 +120,12 @@ func buildMemberSchema(asResource bool) map[string]*schema.Schema {
 			Computed:    true,
 			Description: "Computed RFC4193 address. assign_ipv6.rfc4193 must be enabled on the network resource.",
 		},
+		"sso_exempt": {
+			Type:        schema.TypeBool,
+			Optional:    true,
+			Default:     false,
+			Description: "Is the member exempt from SSO?",
+		},
 	}
 	if asResource {
 		start["network_id"] = &schema.Schema{
@@ -163,6 +169,7 @@ func toMember(d *schema.ResourceData) *spec.Member {
 			Capabilities:    fetchIntSet(d, "capabilities"),
 			IpAssignments:   fetchStringSet(d, "ip_assignments"),
 			Tags:            fetchTags(d.Get("tags").(*schema.Set).List()),
+			SsoExempt:       boolPtr(d.Get("sso_exempt").(bool)),
 		},
 	}
 }
@@ -181,6 +188,7 @@ func memberToTerraform(d *schema.ResourceData, m *spec.Member) diag.Diagnostics 
 	d.Set("ip_assignments", *m.Config.IpAssignments)
 	d.Set("capabilities", *m.Config.Capabilities)
 	d.Set("tags", *m.Config.Tags)
+	d.Set("sso_exempt", *m.Config.SsoExempt)
 
 	ipv4Assignments, ipv6Assignments := assignedIpsGrouping(*m.Config.IpAssignments)
 	d.Set("ipv4_assignments", ipv4Assignments)
