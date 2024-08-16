@@ -1,5 +1,8 @@
 # terraform-provider-zerotier CHANGELOG
 
+## v1.6.0
+- Adding support for sso_exempt to zerotier_member
+
 ## v1.5.3
 - Updating go deps
 

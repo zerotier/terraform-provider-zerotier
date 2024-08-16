@@ -53,6 +53,7 @@ func datasourceMemberRead(ctx context.Context, d *schema.ResourceData, m interfa
 			"network_id":              *member.NetworkId,
 			"hidden":                  *member.Hidden,
 			"authorized":              *member.Config.Authorized,
+			"sso_exempt":              *member.Config.SsoExempt,
 			"allow_ethernet_bridging": *member.Config.ActiveBridge,
 			"no_auto_assign_ips":      *member.Config.NoAutoAssignIps,
 			"ip_assignments":          *member.Config.IpAssignments,
