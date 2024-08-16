@@ -1,5 +1,8 @@
 # terraform-provider-zerotier CHANGELOG
 
+## v1.5.3
+- Updating go deps
+
 ## v1.5.2
 - data_source_members fixes
 

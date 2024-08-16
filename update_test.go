@@ -86,7 +86,7 @@ func TestMemberUpdate(t *testing.T) {
 					member.Config.NoAutoAssignIps = boolPtr(false)
 					member.Config.IpAssignments = &[]string{"10.0.0.2"}
 					member.Config.Capabilities = &[]int{0, 1, 2}
-					member.Config.Tags = &[][]int{{0, 1}}
+					member.Config.Tags = &[][]interface{}{{0, 1}}
 				})
 				if err != nil {
 					t.Fatal(err)

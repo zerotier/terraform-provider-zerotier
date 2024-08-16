@@ -64,11 +64,11 @@ func fetchIntSet(d *schema.ResourceData, attr string) *[]int {
 	return toIntList(d.Get(attr).(*schema.Set).List()).(*[]int)
 }
 
-func fetchTags(d []interface{}) *[][]int {
-	tags := [][]int{}
+func fetchTags(d []interface{}) *[][]interface{} {
+	tags := [][]interface{}{}
 
 	for _, tagref := range d {
-		ref := []int{}
+		ref := []interface{}{}
 		for _, value := range tagref.([]interface{}) {
 			ref = append(ref, value.(int))
 		}
