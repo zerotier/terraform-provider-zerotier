@@ -3,6 +3,7 @@ package zerotier
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/sirupsen/logrus"
 	"github.com/zerotier/go-ztcentral/pkg/spec"
 )
@@ -69,6 +70,59 @@ var NetworkSchema = map[string]*schema.Schema{
 			},
 			Description: "A ipv4 or ipv6 network route",
 		},
+	},
+	"sso_config": {
+		Type:     schema.TypeSet,
+		Optional: true,
+		Computed: true,
+		Elem: &schema.Resource{
+			Schema: map[string]*schema.Schema{
+				"allow_list": {
+					Type: schema.TypeList,
+					Elem: &schema.Schema{
+						Type: schema.TypeString,
+					},
+					Required:    true,
+					Description: "A list of allows",
+				},
+				"authorization_endpoint": {
+					Type:        schema.TypeString,
+					Required:    true,
+					Description: "Authorization endpoint URL",
+				},
+				"client_id": {
+					Type:        schema.TypeString,
+					Required:    true,
+					Description: "SSO client ID. Client ID must be already configured in the Org",
+				},
+				"enabled": {
+					Type:        schema.TypeBool,
+					Optional:    true,
+					Default:     true,
+					Description: "SSO enabled/disabled on network",
+				},
+				"issuer": {
+					Type:        schema.TypeString,
+					Required:    true,
+					Description: "URL of the OIDC issuer",
+				},
+				"mode": {
+					Type:         schema.TypeString,
+					Optional:     true,
+					Description:  "SSO mode.  One of: `default`, `email`, `group`",
+					Default:      "default",
+					ValidateFunc: validation.StringInSlice([]string{"default", "email", "group"}, false),
+				},
+				"provider": {
+					Type:         schema.TypeString,
+					Optional:     true,
+					Description:  "Provider type",
+					Default:      "default",
+					ValidateFunc: validation.StringInSlice([]string{"default", "authelia", "auth0", "azure", "keycloak", "okta", "onelogin"}, false),
+				},
+			},
+		},
+		Description: "SSO config settings",
 	},
 	"dns": {
 		Type:     schema.TypeSet,
@@ -191,6 +245,11 @@ func toNetwork(d *schema.ResourceData) (*spec.Network, diag.Diagnostics) {
 		return nil, err
 	}
 
+	sso_config, err := mkSsoConfig(d.Get("sso_config"))
+	if err != nil {
+		return nil, err
+	}
+
 	network := &spec.Network{
 		Id:          stringPtr(d.Get("id").(string)),
 		RulesSource: stringPtr(d.Get("flow_rules").(string)),
@@ -205,6 +264,7 @@ func toNetwork(d *schema.ResourceData) (*spec.Network, diag.Diagnostics) {
 			MulticastLimit:    intPtr(d.Get("multicast_limit").(int)),
 			Private:           boolPtr(d.Get("private").(bool)),
 			Dns:               dns.(*spec.DNS),
+			SsoConfig:         sso_config.(*spec.NetworkSSOConfig),
 		},
 	}
 

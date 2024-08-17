@@ -156,9 +156,9 @@ func buildMemberSchema(asResource bool) map[string]*schema.Schema {
 
 func toMember(d *schema.ResourceData) *spec.Member {
 	return &spec.Member{
-		NetworkId: stringPtr(d.Get("network_id").(string)),
-		NodeId:    stringPtr(d.Get("member_id").(string)),
-		Hidden:    boolPtr(d.Get("hidden").(bool)),
+		NetworkId:   stringPtr(d.Get("network_id").(string)),
+		NodeId:      stringPtr(d.Get("member_id").(string)),
+		Hidden:      boolPtr(d.Get("hidden").(bool)),
 		Name:        stringPtr(d.Get("name").(string)),
 		Description: stringPtr(d.Get("description").(string)),
 		Config: &spec.MemberConfig{

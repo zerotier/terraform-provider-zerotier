@@ -89,6 +89,17 @@ resource "zerotier_network" "dns_settings" {
   }
 }
 
+# resource "zerotier_network" "sso_config" {
+#   name = "sso_config"
+#   sso_config {
+#     allow_list             = ["hi.com", "bye.com"]
+#     authorization_endpoint = "https://computers.biz"
+#     client_id              = "H4H4H4H0H0H0H0H3H3H3"
+#     issuer                 = "https://computers.biz"
+#     mode                   = "default"
+#     enabled                = false
+#   }
+# }
 
 resource "zerotier_identity" "bob" {}
 

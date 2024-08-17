@@ -261,6 +261,50 @@ func mkDNS(settings interface{}) (interface{}, diag.Diagnostics) {
 	return ret, nil
 }
 
+func mkSsoConfig(settings interface{}) (interface{}, diag.Diagnostics) {
+	m := settings.(*schema.Set)
+
+	ret := &spec.NetworkSSOConfig{}
+
+	for _, set := range m.List() {
+		tmp := set.(map[string]interface{})
+
+		if allowList, ok := tmp["allow_list"].([]interface{}); ok {
+			allowListStr := []string{}
+			for _, emailOrGroup := range allowList {
+				allowListStr = append(allowListStr, emailOrGroup.(string))
+			}
+			ret.AllowList = &allowListStr
+		}
+
+		if authorizationEndpoint, ok := tmp["authorization_endpoint"].(string); ok {
+			ret.AuthorizationEndpoint = &authorizationEndpoint
+		}
+
+		if clientId, ok := tmp["client_id"].(string); ok {
+			ret.ClientId = &clientId
+		}
+
+		if enabled, ok := tmp["enabled"].(bool); ok {
+			ret.Enabled = &enabled
+		}
+
+		if issuer, ok := tmp["issuer"].(string); ok {
+			ret.Issuer = &issuer
+		}
+
+		if mode, ok := tmp["mode"].(string); ok {
+			ret.Mode = &mode
+		}
+
+		if provider, ok := tmp["provider"].(string); ok {
+			ret.Provider = &provider
+		}
+	}
+
+	return ret, nil
+}
+
 func ipv6set(m interface{}) int {
 	ipv6 := m.(map[string]interface{})
 
