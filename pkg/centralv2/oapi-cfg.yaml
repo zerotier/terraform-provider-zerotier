@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/oapi-codegen/oapi-codegen/HEAD/configuration-schema.json
+package: centralv2
+output: client.gen.go
+generate:
+  models: true
+  client: true
+output-options:
+  # Only the operations the provider uses; unused schemas are pruned.
+  include-operation-ids:
+    - listOrgs
+    - getOrg
+    - createNetworkGroup
+    - getNetworkGroup
+    - updateNetworkGroup
+    - deleteNetworkGroup
+    - createNetwork
+    - getNetwork
+    - updateNetwork
+    - deleteNetwork
+    - getNetworkMember
+    - updateNetworkMember
+    - removeNetworkMembers
+    - authorizeNetworkMember
+    - deauthorizeNetworkMember
+    - rejectNetworkMember
+    - createServiceAccount
+    - getServiceAccount
+    - updateServiceAccount
+    - deleteServiceAccount
+    - createApiKey
+    - getApiKey
+    - updateApiKey
+    - deleteApiKey
