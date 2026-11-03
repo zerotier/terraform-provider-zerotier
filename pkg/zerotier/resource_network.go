@@ -39,24 +39,23 @@ func resourceNetworkCreate(ctx context.Context, d *schema.ResourceData, m interf
 		}}
 	}
 
-	rs, err := c.UpdateNetworkRules(ctx, *n.Id, d.Get("flow_rules").(string))
-	if err != nil {
-		return []diag.Diagnostic{{
-			Severity: diag.Error,
-			Summary:  "Unable to update ZeroTier Network flow rules",
-			Detail:   fmt.Sprintf("CreateNetwork returned error: %v", err),
-		}}
-	}
-	n.RulesSource = &rs
+	// Central ignores mtu, multicastLimit and rulesSource on create, so apply
+	// the full configuration with an update. The ID is recorded first so a
+	// failed update taints the network instead of orphaning it.
+	d.SetId(*n.Id)
 
-	return networkToTerraform(d, n)
+	return resourceNetworkUpdate(ctx, d, m)
 }
 
 func resourceNetworkRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	c := m.(*ztcentral.Client)
 	var diags diag.Diagnostics
 
-	ztNetwork, err := c.GetNetwork(ctx, d.Get("id").(string))
+	ztNetwork, err := c.GetNetwork(ctx, d.Id())
+	if ztcentral.IsNotFound(err) {
+		d.SetId("")
+		return nil
+	}
 	if err != nil {
 		diags = append(diags, diag.Diagnostic{
 			Severity: diag.Error,
@@ -102,7 +101,7 @@ func resourceNetworkDelete(ctx context.Context, d *schema.ResourceData, m interf
 	networkID := d.Id()
 
 	err := c.DeleteNetwork(ctx, networkID)
-	if err != nil {
+	if err != nil && !ztcentral.IsNotFound(err) {
 		return diag.FromErr(err)
 	}
 

@@ -31,6 +31,7 @@ data "zerotier_network" "bob" {
 - `enable_broadcast` (Boolean) Enable broadcast packets on the network
 - `flow_rules` (String) The layer 2 flow rules to apply to packets traveling across this network. Please see https://www.zerotier.com/manual/#3_4_1 for more information.
 - `id` (String) ZeroTier's internal network identifier, aka NetworkID
+- `mtu` (Number) MTU of the network's virtual interface, between 1280 and 10000
 - `multicast_limit` (Number) Maximum number of recipients per multicast or broadcast. Warning - Setting this to 0 will disable IPv4 communication on your network!
 - `name` (String) The name of the network
 - `private` (Boolean) Whether or not the network is private.  If false, members will *NOT* need to be authorized to join.

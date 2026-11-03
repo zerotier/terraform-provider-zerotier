@@ -21,6 +21,17 @@ func ptrBool(p *bool) bool {
 	return false
 }
 
+// deref returns the value p points to, or T's zero value if p is nil. Central
+// may omit any field, so responses must never be dereferenced directly.
+func deref[T any](p *T) T {
+	if p == nil {
+		var zero T
+		return zero
+	}
+
+	return *p
+}
+
 func stringPtr(s string) *string {
 	return &s
 }
@@ -225,6 +236,10 @@ func dnsset(m interface{}) int {
 func mktfDNS(dns *spec.DNS) *schema.Set {
 	ret := map[string]interface{}{}
 
+	if dns == nil {
+		dns = &spec.DNS{}
+	}
+
 	if dns.Domain != nil {
 		ret["domain"] = *dns.Domain
 	}
@@ -278,6 +293,10 @@ func ipv6set(m interface{}) int {
 }
 
 func mktfipv6assign(ipv6 *spec.IPV6AssignMode) *schema.Set {
+	if ipv6 == nil {
+		ipv6 = &spec.IPV6AssignMode{}
+	}
+
 	return schema.NewSet(ipv6set, []interface{}{
 		map[string]interface{}{
 			"zerotier": ipv6.Zt,
@@ -298,6 +317,10 @@ func ipv4set(m interface{}) int {
 }
 
 func mktfipv4assign(ipv4 *spec.IPV4AssignMode) *schema.Set {
+	if ipv4 == nil {
+		ipv4 = &spec.IPV4AssignMode{}
+	}
+
 	return schema.NewSet(ipv4set, []interface{}{map[string]interface{}{"zerotier": ipv4.Zt}})
 }
 
