@@ -5,7 +5,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/zerotier/go-ztcentral"
 )
 
 func resourceToken() *schema.Resource {
@@ -33,7 +32,10 @@ func resourceToken() *schema.Resource {
 }
 
 func resourceTokenCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c := m.(*ztcentral.Client)
+	c, err := v1Client(m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	user, err := c.User(ctx)
 	if err != nil {
@@ -72,7 +74,10 @@ func resourceTokenRead(ctx context.Context, d *schema.ResourceData, m interface{
 }
 
 func resourceTokenDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c := m.(*ztcentral.Client)
+	c, err := v1Client(m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	user, err := c.User(ctx)
 	if err != nil {

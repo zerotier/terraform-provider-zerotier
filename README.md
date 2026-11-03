@@ -14,6 +14,34 @@ socket interface.
 
 This Terraform provider allows you to manipulate objects in the [ZeroTier Central API](https://my.zerotier.com/help/api):
 
+# Central V2
+
+The `zerotier_v2_*` resources manage [Central V2](https://docs.zerotier.com/api/central/new/)
+accounts: network groups, networks, members, service accounts and API keys. They authenticate
+with a service account API key in `zerotier_central_v2_api_key` or `ZEROTIER_CENTRAL_V2_API_KEY`,
+and can be used in the same configuration as the Central V1 resources below.
+
+```hcl
+resource "zerotier_v2_network_group" "lab" {
+  org_id = "<your org id>"
+  name   = "lab"
+}
+
+resource "zerotier_v2_network" "lab" {
+  network_group_id = zerotier_v2_network_group.lab.id
+  name             = "lab"
+}
+
+resource "zerotier_identity" "server" {}
+
+resource "zerotier_v2_member" "server" {
+  network_id = zerotier_v2_network.lab.id
+  device_id  = zerotier_identity.server.id
+}
+```
+
+See [docs/resources](docs/resources) for every attribute.
+
 # Networks
 
 ZeroTier Networks can be thought of as encrypted virtual Ethernet

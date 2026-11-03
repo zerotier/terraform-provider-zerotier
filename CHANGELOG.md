@@ -1,5 +1,11 @@
 # terraform-provider-zerotier CHANGELOG
 
+## Unreleased
+- Adding Central V2 resources: zerotier_v2_network_group, zerotier_v2_network, zerotier_v2_member, zerotier_v2_service_account, zerotier_v2_api_key
+- Adding provider settings zerotier_central_v2_url and zerotier_central_v2_api_key (ZEROTIER_CENTRAL_V2_URL, ZEROTIER_CENTRAL_V2_API_KEY)
+- zerotier_central_token is now optional; only the Central V1 resources need it
+- The Central V2 resources use the Terraform plugin framework, served alongside the existing resources with terraform-plugin-mux (still plugin protocol 5)
+
 ## v1.6.0
 - Adding support for sso_exempt to zerotier_member
 

@@ -49,4 +49,5 @@ Read-Only:
 - `no_auto_assign_ips` (Boolean)
 - `rfc4193` (String)
 - `sixplane` (String)
+- `sso_exempt` (Boolean)
 - `tags` (Set of List of Number)

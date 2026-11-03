@@ -9,7 +9,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/zerotier/go-ztcentral"
 )
 
 func dataSourceMembers() *schema.Resource {
@@ -34,7 +33,10 @@ func dataSourceMembers() *schema.Resource {
 }
 
 func datasourceMemberRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c := m.(*ztcentral.Client)
+	c, err := v1Client(m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	nwid := d.Get("network_id").(string)
 

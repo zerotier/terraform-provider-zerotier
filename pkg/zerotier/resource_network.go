@@ -6,7 +6,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/zerotier/go-ztcentral"
 )
 
 func resourceNetwork() *schema.Resource {
@@ -24,7 +23,10 @@ func resourceNetwork() *schema.Resource {
 }
 
 func resourceNetworkCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c := m.(*ztcentral.Client)
+	c, err := v1Client(m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	net, derr := toNetwork(d)
 	if derr != nil {
 		return derr
@@ -53,7 +55,10 @@ func resourceNetworkCreate(ctx context.Context, d *schema.ResourceData, m interf
 }
 
 func resourceNetworkRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c := m.(*ztcentral.Client)
+	c, err := v1Client(m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	var diags diag.Diagnostics
 
 	ztNetwork, err := c.GetNetwork(ctx, d.Get("id").(string))
@@ -70,7 +75,10 @@ func resourceNetworkRead(ctx context.Context, d *schema.ResourceData, m interfac
 }
 
 func resourceNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c := m.(*ztcentral.Client)
+	c, err := v1Client(m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	net, derr := toNetwork(d)
 	if derr != nil {
 		return derr
@@ -96,12 +104,15 @@ func resourceNetworkUpdate(ctx context.Context, d *schema.ResourceData, m interf
 }
 
 func resourceNetworkDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c := m.(*ztcentral.Client)
+	c, err := v1Client(m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	var diags diag.Diagnostics
 
 	networkID := d.Id()
 
-	err := c.DeleteNetwork(ctx, networkID)
+	err = c.DeleteNetwork(ctx, networkID)
 	if err != nil {
 		return diag.FromErr(err)
 	}
