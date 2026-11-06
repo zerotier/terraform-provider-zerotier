@@ -3,6 +3,7 @@ package zerotier
 import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/sirupsen/logrus"
 	"github.com/zerotier/go-ztcentral/pkg/spec"
 )
@@ -43,6 +44,13 @@ var NetworkSchema = map[string]*schema.Schema{
 		Optional:    true,
 		Default:     32,
 		Description: "Maximum number of recipients per multicast or broadcast. Warning - Setting this to 0 will disable IPv4 communication on your network!",
+	},
+	"mtu": {
+		Type:             schema.TypeInt,
+		Optional:         true,
+		Default:          2800,
+		ValidateDiagFunc: validation.ToDiagFunc(validation.IntBetween(1280, 10000)),
+		Description:      "MTU of the network's virtual interface, between 1280 and 10000",
 	},
 	"private": {
 		Type:        schema.TypeBool,
@@ -192,7 +200,7 @@ func toNetwork(d *schema.ResourceData) (*spec.Network, diag.Diagnostics) {
 	}
 
 	network := &spec.Network{
-		Id:          stringPtr(d.Get("id").(string)),
+		Id:          stringPtr(d.Id()),
 		RulesSource: stringPtr(d.Get("flow_rules").(string)),
 		Description: stringPtr(d.Get("description").(string)),
 		Config: &spec.NetworkConfig{
@@ -203,6 +211,7 @@ func toNetwork(d *schema.ResourceData) (*spec.Network, diag.Diagnostics) {
 			V6AssignMode:      (v6assign).(*spec.IPV6AssignMode),
 			EnableBroadcast:   boolPtr(d.Get("enable_broadcast").(bool)),
 			MulticastLimit:    intPtr(d.Get("multicast_limit").(int)),
+			Mtu:               intPtr(d.Get("mtu").(int)),
 			Private:           boolPtr(d.Get("private").(bool)),
 			Dns:               dns.(*spec.DNS),
 		},
@@ -212,19 +221,25 @@ func toNetwork(d *schema.ResourceData) (*spec.Network, diag.Diagnostics) {
 }
 
 func networkToTerraform(d *schema.ResourceData, n *spec.Network) diag.Diagnostics {
-	d.SetId(*n.Id)
-	d.Set("flow_rules", *n.RulesSource)
-	d.Set("description", *n.Description)
-	d.Set("name", n.Config.Name)
-	d.Set("creation_time", *n.Config.CreationTime)
-	d.Set("route", mktfRoutes(n.Config.Routes))
-	d.Set("assignment_pool", mktfRanges(n.Config.IpAssignmentPools))
-	d.Set("enable_broadcast", ptrBool(n.Config.EnableBroadcast))
-	d.Set("multicast_limit", n.Config.MulticastLimit)
-	d.Set("private", ptrBool(n.Config.Private))
-	d.Set("assign_ipv4", mktfipv4assign(n.Config.V4AssignMode))
-	d.Set("assign_ipv6", mktfipv6assign(n.Config.V6AssignMode))
-	dns := mktfDNS(n.Config.Dns)
+	cfg := n.Config
+	if cfg == nil {
+		cfg = &spec.NetworkConfig{}
+	}
+
+	d.SetId(deref(n.Id))
+	d.Set("flow_rules", deref(n.RulesSource))
+	d.Set("description", deref(n.Description))
+	d.Set("name", deref(cfg.Name))
+	d.Set("creation_time", deref(cfg.CreationTime))
+	d.Set("route", mktfRoutes(cfg.Routes))
+	d.Set("assignment_pool", mktfRanges(cfg.IpAssignmentPools))
+	d.Set("enable_broadcast", ptrBool(cfg.EnableBroadcast))
+	d.Set("multicast_limit", deref(cfg.MulticastLimit))
+	d.Set("mtu", deref(cfg.Mtu))
+	d.Set("private", ptrBool(cfg.Private))
+	d.Set("assign_ipv4", mktfipv4assign(cfg.V4AssignMode))
+	d.Set("assign_ipv6", mktfipv6assign(cfg.V6AssignMode))
+	dns := mktfDNS(cfg.Dns)
 	logrus.Info("dns:", dns)
 	d.Set("dns", dns)
 

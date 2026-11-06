@@ -38,6 +38,10 @@ func resourceMemberRead(ctx context.Context, d *schema.ResourceData, m interface
 	}
 
 	member, err := c.GetMember(ctx, nwid, nodeId)
+	if ztcentral.IsNotFound(err) {
+		d.SetId("")
+		return nil
+	}
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -79,7 +83,7 @@ func resourceMemberDelete(ctx context.Context, d *schema.ResourceData, m interfa
 	c := m.(*ztcentral.Client)
 	member := toMember(d)
 
-	if err := c.DeleteMember(ctx, *member.NetworkId, *member.NodeId); err != nil {
+	if err := c.DeleteMember(ctx, *member.NetworkId, *member.NodeId); err != nil && !ztcentral.IsNotFound(err) {
 		return diag.FromErr(err)
 	}
 
@@ -101,8 +105,14 @@ func resourceNetworkAndNodeIdentifiers(d *schema.ResourceData) (string, string, 
 	return nwid, nodeID, nil
 }
 
+// parseMemberId splits an import ID into network and node IDs. Both the
+// documented "nwid-nodeid" form and the "nwid/nodeid" form stored in state are
+// accepted.
 func parseMemberId(id string) (string, string, error) {
 	parts := strings.SplitN(id, "-", 2)
+	if len(parts) != 2 {
+		parts = strings.SplitN(id, "/", 2)
+	}
 
 	if len(parts) != 2 {
 		return "", "", errors.New(fmt.Sprintf("invalid format: '%s' (wrong syntax)", id))
