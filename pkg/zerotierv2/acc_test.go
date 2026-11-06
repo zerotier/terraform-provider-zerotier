@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -59,6 +60,35 @@ func (e accEnv) client(t *testing.T, apiKey string) *centralv2.ClientWithRespons
 		t.Fatal(err)
 	}
 	return c
+}
+
+// entitlement reports a boolean entitlement of the test org's plan. The
+// subscription endpoint is not in the generated client, so it is read
+// directly.
+func (e accEnv) entitlement(t *testing.T, name string) bool {
+	t.Helper()
+	req, err := http.NewRequest(http.MethodGet, e.url+"/api/v2/org/"+e.orgID+"/subscription", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("Authorization", "Bearer "+e.apiKey)
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer resp.Body.Close()
+
+	var sub struct {
+		// Numeric entitlements (device and network limits) sit alongside the
+		// boolean ones, so values are decoded loosely.
+		Entitlements map[string]struct {
+			Value any `json:"value"`
+		} `json:"entitlements"`
+	}
+	if resp.StatusCode != http.StatusOK || json.NewDecoder(resp.Body).Decode(&sub) != nil {
+		t.Fatalf("reading org %s subscription: %s", e.orgID, resp.Status)
+	}
+	return sub.Entitlements[name].Value == true
 }
 
 func accName(prefix string) string {
@@ -165,7 +195,6 @@ resource "zerotier_v2_network" "n" {
   description         = "terraform acceptance test"
   mtu                 = 1400
   multicast_limit     = 64
-  private             = false
   v4_subnet           = "10.123.45.0/24"
   v4_assignment_pools = [{ start = "10.123.45.10", end = "10.123.45.250" }]
   routes              = [{ target = "192.168.123.0/24", via = "10.123.45.1" }]
@@ -176,7 +205,6 @@ resource "zerotier_v2_network" "n" {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("zerotier_v2_network.n", "mtu", "1400"),
 					resource.TestCheckResourceAttr("zerotier_v2_network.n", "multicast_limit", "64"),
-					resource.TestCheckResourceAttr("zerotier_v2_network.n", "private", "false"),
 					resource.TestCheckResourceAttr("zerotier_v2_network.n", "v4_subnet", "10.123.45.0/24"),
 					resource.TestCheckResourceAttr("zerotier_v2_network.n", "routes.0.via", "10.123.45.1"),
 					resource.TestCheckResourceAttr("zerotier_v2_network.n", "dns_servers.0", "10.123.45.53"),
@@ -199,6 +227,35 @@ resource "zerotier_v2_network" "n" {
 			{ResourceName: "zerotier_v2_network.n", ImportState: true, ImportStateVerify: true},
 			{ResourceName: "zerotier_v2_network_group.g", ImportState: true, ImportStateVerify: true},
 		},
+	})
+}
+
+// Making a network public (private = false) needs the org's publicNetworks
+// entitlement. With it the change applies; without it Central answers 402 and
+// the provider explains that the plan lacks the setting.
+func TestAccNetworkPublic(t *testing.T) {
+	env := accPreCheck(t)
+	entitled := env.entitlement(t, "publicNetworks")
+	t.Logf("org %s publicNetworks entitlement: %v", env.orgID, entitled)
+
+	config := accProvider + accGroup(env.orgID, accName("tf-acc")) + fmt.Sprintf(`
+resource "zerotier_v2_network" "n" {
+  network_group_id = zerotier_v2_network_group.g.id
+  name             = %q
+  private          = false
+}
+`, accName("tf-acc"))
+
+	step := resource.TestStep{Config: config}
+	if entitled {
+		step.Check = resource.TestCheckResourceAttr("zerotier_v2_network.n", "private", "false")
+	} else {
+		step.ExpectError = regexp.MustCompile(`(?s)402.*plan\s+does\s+not\s+include\s+this\s+setting`)
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV5ProviderFactories: providerFactories,
+		Steps:                    []resource.TestStep{step},
 	})
 }
 
@@ -338,7 +395,8 @@ resource "zerotier_v2_member" "m" {
 				ImportStateVerify: true,
 			},
 			{
-				// Removed outside Terraform: expect 404 and a planned re-create.
+				// Removed outside Terraform: Central answers 400 "unknown network
+				// member" (code 4101); the provider must plan a re-create.
 				PreConfig: func() {
 					c := env.client(t, env.apiKey)
 					networkID := memberNetworkID

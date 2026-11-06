@@ -11,6 +11,7 @@ import (
 // APIError is a non-2xx response from Central V2.
 type APIError struct {
 	StatusCode int
+	Code       int // Central's error code, when the body has one
 	Message    string
 	Details    []string
 }
@@ -22,6 +23,10 @@ func (e *APIError) Error() string {
 	}
 	if len(e.Details) > 0 {
 		msg += " (" + strings.Join(e.Details, "; ") + ")"
+	}
+	if e.StatusCode == http.StatusPaymentRequired {
+		// Central sends no detail with a 402.
+		msg += ". The organization's plan does not include this setting (for example public networks, custom routes or custom DNS)"
 	}
 	return fmt.Sprintf("Central V2 API returned %d: %s", e.StatusCode, msg)
 }
@@ -37,6 +42,7 @@ func newAPIError(resp *http.Response, body []byte) error {
 	apiErr := &APIError{StatusCode: resp.StatusCode}
 
 	var parsed struct {
+		Code    int    `json:"code"`
 		Message string `json:"message"`
 		Details []struct {
 			Field   string `json:"field"`
@@ -44,6 +50,7 @@ func newAPIError(resp *http.Response, body []byte) error {
 		} `json:"details"`
 	}
 	if json.Unmarshal(body, &parsed) == nil {
+		apiErr.Code = parsed.Code
 		apiErr.Message = parsed.Message
 		for _, d := range parsed.Details {
 			apiErr.Details = append(apiErr.Details, strings.TrimSpace(d.Field+": "+d.Message))
@@ -55,18 +62,39 @@ func newAPIError(resp *http.Response, body []byte) error {
 	return apiErr
 }
 
-// isGone reports whether err means the object no longer exists.
+// Central V2's "unknown <object>" error codes, returned with a 400
+// (core/common/errorcodes.go in central-v2).
+var unknownObjectCodes = map[int]bool{
+	2001: true, // org
+	3001: true, // network group
+	4001: true, // network
+	4101: true, // network member
+	5101: true, // service account
+	5201: true, // api key
+}
+
+// isGone reports whether err means the object no longer exists. Central V2
+// says so in three ways:
 //
-// Central V2 checks permissions before it looks an object up, and deleting an
-// object removes its permission tuples, so reading a deleted network group,
-// network, service account or API key returns 403 rather than 404. Members
-// are looked up by the handler and return 404.
+//   - 403: it checks permissions before looking an object up, and deleting an
+//     object removes its permission tuples, so a deleted network group,
+//     network, service account or API key (or a member of a deleted network)
+//     reads as forbidden.
+//   - 400 with an "unknown <object>" code: a member removed from a network
+//     that still exists (code 4101).
+//   - 404.
 func isGone(err error) bool {
 	var apiErr *APIError
 	if !errors.As(err, &apiErr) {
 		return false
 	}
-	return apiErr.StatusCode == http.StatusNotFound || apiErr.StatusCode == http.StatusForbidden
+	switch apiErr.StatusCode {
+	case http.StatusNotFound, http.StatusForbidden:
+		return true
+	case http.StatusBadRequest:
+		return unknownObjectCodes[apiErr.Code]
+	}
+	return false
 }
 
 // check returns nil when the request succeeded (json200 != nil), otherwise

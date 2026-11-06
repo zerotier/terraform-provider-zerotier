@@ -14,19 +14,27 @@ func TestAccHarnessAgainstFake(t *testing.T) {
 		t.Skip("TF_ACC is set; the acceptance tests run against the configured Central V2")
 	}
 
-	for name, test := range map[string]func(*testing.T){
-		"NetworkGroupAndNetwork":         TestAccNetworkGroupAndNetwork,
-		"NetworkDeletedOutsideTerraform": TestAccNetworkDeletedOutsideTerraform,
-		"Member":                         TestAccMember,
-		"ServiceAccountAndAPIKey":        TestAccServiceAccountAndAPIKey,
-	} {
-		t.Run(name, func(t *testing.T) {
+	tests := []struct {
+		name           string
+		test           func(*testing.T)
+		publicNetworks bool
+	}{
+		{"NetworkGroupAndNetwork", TestAccNetworkGroupAndNetwork, false},
+		{"NetworkPublic/entitled", TestAccNetworkPublic, true},
+		{"NetworkPublic/not entitled", TestAccNetworkPublic, false},
+		{"NetworkDeletedOutsideTerraform", TestAccNetworkDeletedOutsideTerraform, false},
+		{"Member", TestAccMember, false},
+		{"ServiceAccountAndAPIKey", TestAccServiceAccountAndAPIKey, false},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
 			f := newFakeCentral(t)
+			f.publicNetworks = tc.publicNetworks
 			t.Setenv("TF_ACC", "1")
 			t.Setenv("ZEROTIER_CENTRAL_V2_URL", f.srv.URL)
 			t.Setenv("ZEROTIER_CENTRAL_V2_API_KEY", testAPIKey)
 			t.Setenv("ZEROTIER_CENTRAL_V2_ORG_ID", testOrgID)
-			test(t)
+			tc.test(t)
 		})
 	}
 }

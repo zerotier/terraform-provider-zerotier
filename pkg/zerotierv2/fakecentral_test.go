@@ -15,11 +15,16 @@ import (
 const testAPIKey = "test-key"
 
 // fakeCentral is an in-memory Central V2 covering the operations the provider
-// uses. It mirrors the server behaviors the provider depends on: request
-// bodies are decoded strictly, a create takes all config or none, updates
-// merge over the current config, members are auto-assigned an address when
-// authorized, and reading a deleted object returns 403 (its permission tuples
-// are gone) except for members, which return 404.
+// uses. It mirrors the server behaviors the provider depends on, as observed
+// against a local Central V2: request bodies are decoded strictly, a create
+// takes all config or none, updates merge over the current config, making a
+// network public needs the publicNetworks entitlement (402 otherwise), reading
+// a deleted object returns 403 (its permission tuples are gone), and reading a
+// removed member returns 400 "unknown network member" (code 4101).
+//
+// It also assigns an authorized member an address straight away. The real
+// controller does that once the device joins; doing it at once checks that the
+// provider copes with addresses Central assigns.
 type fakeCentral struct {
 	t   *testing.T
 	srv *httptest.Server
@@ -31,6 +36,10 @@ type fakeCentral struct {
 	members  map[string]map[string]*fakeMember // network ID -> device ID
 	accounts map[string]*fakeAccount
 	keys     map[string]*fakeKey
+
+	// publicNetworks is the org's entitlement to make a network public
+	// (private = false). Central answers 402 without it.
+	publicNetworks bool
 }
 
 type fakeGroup struct {
@@ -126,6 +135,8 @@ func newFakeCentral(t *testing.T) *fakeCentral {
 		members:  map[string]map[string]*fakeMember{},
 		accounts: map[string]*fakeAccount{},
 		keys:     map[string]*fakeKey{},
+
+		publicNetworks: true,
 	}
 
 	mux := http.NewServeMux()
@@ -149,6 +160,7 @@ func newFakeCentral(t *testing.T) *fakeCentral {
 	mux.HandleFunc("GET /api/v2/api-key/{id}", f.getKey)
 	mux.HandleFunc("POST /api/v2/api-key/{id}", f.updateKey)
 	mux.HandleFunc("DELETE /api/v2/api-key/{id}", f.deleteKey)
+	mux.HandleFunc("GET /api/v2/org/{org}/subscription", f.getSubscription)
 
 	f.srv = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		f.mu.Lock()
@@ -187,7 +199,7 @@ func writeJSON(w http.ResponseWriter, status int, v any) {
 }
 
 func forbidden(w http.ResponseWriter) {
-	writeJSON(w, http.StatusForbidden, map[string]string{"message": "permission denied"})
+	writeJSON(w, http.StatusForbidden, map[string]string{"message": "403 Forbidden"})
 }
 
 func badRequest(w http.ResponseWriter, msg string) {
@@ -364,6 +376,10 @@ func (f *fakeCentral) updateNetwork(w http.ResponseWriter, r *http.Request) {
 			badRequest(w, "multicastLimit must be 0 when enableBroadcast is false")
 			return
 		}
+		if n.Config.Private && !merged.Private && !f.publicNetworks {
+			writeJSON(w, http.StatusPaymentRequired, map[string]string{"message": "402 Payment Required"})
+			return
+		}
 		n.Config = merged
 	}
 	if req.Name != nil {
@@ -401,7 +417,7 @@ func (f *fakeCentral) getMember(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if m == nil {
-		writeJSON(w, http.StatusNotFound, map[string]string{"message": "member not found"})
+		writeJSON(w, http.StatusBadRequest, map[string]any{"code": 4101, "message": "unknown network member"})
 		return
 	}
 	writeJSON(w, http.StatusOK, m)
@@ -466,7 +482,7 @@ func (f *fakeCentral) memberStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if m == nil {
-		writeJSON(w, http.StatusNotFound, map[string]string{"message": "member not found"})
+		writeJSON(w, http.StatusBadRequest, map[string]any{"code": 4101, "message": "unknown network member"})
 		return
 	}
 	switch r.PathValue("action") {
@@ -629,6 +645,14 @@ func (f *fakeCentral) deleteKey(w http.ResponseWriter, r *http.Request) {
 	}
 	delete(f.keys, id)
 	writeJSON(w, http.StatusOK, map[string]string{"message": "api key deleted"})
+}
+
+func (f *fakeCentral) getSubscription(w http.ResponseWriter, r *http.Request) {
+	writeJSON(w, http.StatusOK, map[string]any{
+		"entitlements": map[string]any{
+			"publicNetworks": map[string]any{"value": f.publicNetworks, "kind": "boolean"},
+		},
+	})
 }
 
 func readAll(r *http.Request) ([]byte, error) {
