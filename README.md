@@ -317,7 +317,7 @@ And everything should be cleaned up! Note that you can do more with the allocati
 
 Included here is a description of the Make tasks and environment variables you need to run the tests and perform builds.
 
-- `make checks`: Everything you need to do to get through CI
+- `make checks`: runs `fmt`, `lint`, `docs` and `test`
 - `make test`
   - `FORCE_TESTS=1`: do not use test cache
   - `QUIET_TESTS=1`: do not show test log (just results)
@@ -325,6 +325,8 @@ Included here is a description of the Make tasks and environment variables you n
 - `ZEROTIER_CENTRAL_TOKEN`
   - set in env or write to `test-token.txt` at the root.
     - env is preferred but the token from file is just propagated to env and gitignored. No different, just easier to use.
+
+GitHub Actions (`.github/workflows/ci.yaml`) runs `go build ./...`, `go vet ./...` and `go test -race ./pkg/...`. The acceptance tests in the repo root need `ZEROTIER_CENTRAL_TOKEN` and Docker, and do not run in CI.
 
 ## Cleanup commands you may find useful
 Sometimes tests fail and resources get left behind
