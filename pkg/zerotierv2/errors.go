@@ -25,8 +25,11 @@ func (e *APIError) Error() string {
 		msg += " (" + strings.Join(e.Details, "; ") + ")"
 	}
 	if e.StatusCode == http.StatusPaymentRequired {
-		// Central sends no detail with a 402.
-		msg += ". The organization's plan does not include this setting (for example public networks, custom routes or custom DNS)"
+		// Central sends no detail with a 402. It means a plan feature is
+		// missing (code 7001) or a plan limit would be exceeded (code 7002).
+		msg += ". The organization's plan doesn't allow this change: either it doesn't include the feature " +
+			"(for example public networks, custom routes or custom DNS), or the change would exceed a plan limit, " +
+			"such as the number of authorized devices"
 	}
 	return fmt.Sprintf("Central V2 API returned %d: %s", e.StatusCode, msg)
 }

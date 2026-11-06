@@ -250,7 +250,7 @@ resource "zerotier_v2_network" "n" {
 	if entitled {
 		step.Check = resource.TestCheckResourceAttr("zerotier_v2_network.n", "private", "false")
 	} else {
-		step.ExpectError = regexp.MustCompile(`(?s)402.*plan\s+does\s+not\s+include\s+this\s+setting`)
+		step.ExpectError = regexp.MustCompile(`(?s)402.*plan\s+doesn't\s+allow\s+this\s+change`)
 	}
 
 	resource.Test(t, resource.TestCase{

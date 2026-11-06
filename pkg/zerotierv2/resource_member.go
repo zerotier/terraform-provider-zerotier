@@ -62,8 +62,9 @@ func (r *memberResource) Metadata(_ context.Context, req resource.MetadataReques
 
 func (r *memberResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
-		Description: "A device's membership of a Central V2 network. The device does not need to have joined yet; " +
-			"creating the member pre-approves it.",
+		Description: "A device's membership of a Central V2 network. The member can be created before the device joins; " +
+			"with `status = \"authorized\"` (the default) the device is allowed on as soon as it joins. " +
+			"Authorized members count toward the organization's device limit.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:      true,

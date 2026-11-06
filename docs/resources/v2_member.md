@@ -3,12 +3,12 @@
 page_title: "zerotier_v2_member Resource - terraform-provider-zerotier"
 subcategory: ""
 description: |-
-  A device's membership of a Central V2 network. The device does not need to have joined yet; creating the member pre-approves it.
+  A device's membership of a Central V2 network. The member can be created before the device joins; with status = "authorized" (the default) the device is allowed on as soon as it joins. Authorized members count toward the organization's device limit.
 ---
 
 # zerotier_v2_member (Resource)
 
-A device's membership of a Central V2 network. The device does not need to have joined yet; creating the member pre-approves it.
+A device's membership of a Central V2 network. The member can be created before the device joins; with `status = "authorized"` (the default) the device is allowed on as soon as it joins. Authorized members count toward the organization's device limit.
 
 ## Example Usage
 
