@@ -318,6 +318,7 @@ And everything should be cleaned up! Note that you can do more with the allocati
 Included here is a description of the Make tasks and environment variables you need to run the tests and perform builds.
 
 - `make checks`: Everything you need to do to get through CI
+- GitHub Actions (`.github/workflows/ci.yaml`) runs `go build`, `go vet` and the unit tests in `pkg/`. The acceptance tests in the repo root need `ZEROTIER_CENTRAL_TOKEN` and do not run in CI.
 - `make test`
   - `FORCE_TESTS=1`: do not use test cache
   - `QUIET_TESTS=1`: do not show test log (just results)
