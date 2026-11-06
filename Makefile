@@ -94,3 +94,10 @@ docs:
 	go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs
 
 .PHONY: docs
+
+# Refresh the Central V2 spec from docs.zerotier.com and regenerate the client.
+centralv2-client:
+	curl -sSfL https://docs.zerotier.com/openapi/central/v2.yaml >pkg/centralv2/spec.yaml
+	cd pkg/centralv2 && go generate ./...
+
+.PHONY: centralv2-client

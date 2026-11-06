@@ -2,6 +2,7 @@ package zerotier
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 
@@ -9,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/sirupsen/logrus"
 	"github.com/zerotier/go-ztcentral"
+	"github.com/zerotier/terraform-provider-zerotier/pkg/providerschema"
 )
 
 // Provider -
@@ -22,19 +24,32 @@ func Provider() *schema.Provider {
 	logrus.SetLevel(level)
 	logrus.Infof("ZeroTier %s provider initialized", Version)
 
+	// The provider schema is shared with the Central V2 half of the provider
+	// (pkg/zerotierv2) and must stay identical to it; see providerschema.
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
-			"zerotier_central_url": {
+			providerschema.CentralURL: {
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("ZEROTIER_CENTRAL_URL", ztcentral.BaseURLV1),
-				Description: "ZeroTier Central API endpoint. Unlikely you'll need to alter this unless you're testing ZeroTier central itself.",
+				Description: providerschema.CentralURLDescription,
 			},
-			"zerotier_central_token": {
+			providerschema.CentralToken: {
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("ZEROTIER_CENTRAL_TOKEN", nil),
-				Description: "ZeroTier Central API Token; you can generate a new one at https://my.zerotier.com/account.",
+				Description: providerschema.CentralTokenDescription,
+			},
+			providerschema.CentralV2URL: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: providerschema.CentralV2URLDescription,
+			},
+			providerschema.CentralV2APIKey: {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Sensitive:   true,
+				Description: providerschema.CentralV2APIKeyDescription,
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
@@ -54,27 +69,40 @@ func Provider() *schema.Provider {
 func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
 	defer logrus.Debug("ZeroTier provider configured")
 
-	ztControllerToken := d.Get("zerotier_central_token").(string)
-	ztControllerURL := d.Get("zerotier_central_url").(string)
+	ztControllerToken := d.Get(providerschema.CentralToken).(string)
+	ztControllerURL := d.Get(providerschema.CentralURL).(string)
 
-	if ztControllerToken != "" {
-		// NOTE this whole block is extremely order-dependent
-		//      deal with it
-		if ztControllerURL != "" {
-			ztcentral.BaseURLV1 = ztControllerURL
-		}
-
-		c, err := ztcentral.NewClient(ztControllerToken)
-		if err != nil {
-			return nil, diag.FromErr(err)
-		}
-
-		logrus.Debug("Token configured successfully")
-
-		c.SetUserAgent(fmt.Sprintf("terraform-provider-zerotier/%s", Version))
-
-		return c, nil
+	// The token is optional so the provider can be used for Central V2 alone.
+	// V1 resources report a missing token when they are used (see v1Client).
+	if ztControllerToken == "" {
+		return nil, nil
 	}
 
-	return nil, diag.Errorf("zerotier_central_token must be specified, or ZEROTIER_CENTRAL_TOKEN must be specified in environment")
+	// NOTE this whole block is extremely order-dependent
+	//      deal with it
+	if ztControllerURL != "" {
+		ztcentral.BaseURLV1 = ztControllerURL
+	}
+
+	c, err := ztcentral.NewClient(ztControllerToken)
+	if err != nil {
+		return nil, diag.FromErr(err)
+	}
+
+	logrus.Debug("Token configured successfully")
+
+	c.SetUserAgent(fmt.Sprintf("terraform-provider-zerotier/%s", Version))
+
+	return c, nil
+}
+
+// v1Client returns the Central V1 client, or an error if no V1 token was
+// configured.
+func v1Client(m interface{}) (*ztcentral.Client, error) {
+	c, ok := m.(*ztcentral.Client)
+	if !ok || c == nil {
+		return nil, errors.New("zerotier_central_token must be specified, or ZEROTIER_CENTRAL_TOKEN must be specified in environment")
+	}
+
+	return c, nil
 }

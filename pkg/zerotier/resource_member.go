@@ -8,7 +8,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/zerotier/go-ztcentral"
 )
 
 func resourceMember() *schema.Resource {
@@ -30,7 +29,10 @@ func resourceMember() *schema.Resource {
 //
 
 func resourceMemberRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c := m.(*ztcentral.Client)
+	c, err := v1Client(m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	nwid, nodeId, err := resourceNetworkAndNodeIdentifiers(d)
 	if err != nil {
@@ -47,9 +49,12 @@ func resourceMemberRead(ctx context.Context, d *schema.ResourceData, m interface
 
 func resourceMemberCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	member := toMember(d)
-	c := m.(*ztcentral.Client)
+	c, err := v1Client(m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
-	_, err := c.CreateAuthorizedMember(ctx, *member.NetworkId, *member.NodeId, *member.Name)
+	_, err = c.CreateAuthorizedMember(ctx, *member.NetworkId, *member.NodeId, *member.Name)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -63,7 +68,10 @@ func resourceMemberCreate(ctx context.Context, d *schema.ResourceData, m interfa
 }
 
 func resourceMemberUpdate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c := m.(*ztcentral.Client)
+	c, err := v1Client(m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	member := toMember(d)
 
@@ -76,7 +84,10 @@ func resourceMemberUpdate(ctx context.Context, d *schema.ResourceData, m interfa
 }
 
 func resourceMemberDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
-	c := m.(*ztcentral.Client)
+	c, err := v1Client(m)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	member := toMember(d)
 
 	if err := c.DeleteMember(ctx, *member.NetworkId, *member.NodeId); err != nil {

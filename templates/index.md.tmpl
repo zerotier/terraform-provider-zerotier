@@ -13,6 +13,28 @@ This terraform provider allows you to stitch the following objects from the [Zer
 - Members
 - Identities
 
+## Central V1 and Central V2
+
+The provider manages both ZeroTier Central APIs, and one configuration can use both at once:
+
+- **Central V1** (`my.zerotier.com`): the `zerotier_network`, `zerotier_member` and `zerotier_token`
+  resources. Set `zerotier_central_token` (or `ZEROTIER_CENTRAL_TOKEN`).
+- **Central V2** (`central.zerotier.com`): the `zerotier_v2_*` resources for network groups, networks,
+  members, service accounts and API keys. Set `zerotier_central_v2_api_key`
+  (or `ZEROTIER_CENTRAL_V2_API_KEY`) to a service account API key.
+
+Each credential is only needed for the resources that use it. `zerotier_identity` needs neither.
+
+```terraform
+provider "zerotier" {
+  # Central V1, from ZEROTIER_CENTRAL_TOKEN when unset
+  zerotier_central_token = var.central_v1_token
+
+  # Central V2, from ZEROTIER_CENTRAL_V2_API_KEY when unset
+  zerotier_central_v2_api_key = var.central_v2_api_key
+}
+```
+
 ## Example Usage
 
 {{tffile "examples/provider/provider.tf"}}
