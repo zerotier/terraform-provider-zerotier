@@ -151,17 +151,28 @@ func newFakeCentral(t *testing.T) *fakeCentral {
 	mux.HandleFunc("DELETE /api/v2/api-key/{id}", f.deleteKey)
 
 	f.srv = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Header.Get("Authorization") != "Bearer "+testAPIKey {
-			writeJSON(w, http.StatusUnauthorized, map[string]string{"message": "invalid or revoked api key"})
-			return
-		}
 		f.mu.Lock()
 		defer f.mu.Unlock()
-		mux.ServeHTTP(w, r)
+
+		switch auth := r.Header.Get("Authorization"); {
+		case auth == "Bearer "+testAPIKey:
+			mux.ServeHTTP(w, r)
+		case f.issuedKey(strings.TrimPrefix(auth, "Bearer ")):
+			// Keys created through the API belong to service accounts with
+			// no roles: authenticated, but allowed nothing.
+			forbidden(w)
+		default:
+			writeJSON(w, http.StatusUnauthorized, map[string]string{"message": "invalid or revoked api key"})
+		}
 	}))
 	t.Cleanup(f.srv.Close)
 
 	return f
+}
+
+func (f *fakeCentral) issuedKey(secret string) bool {
+	_, ok := f.keys[strings.TrimPrefix(secret, "secret-")]
+	return ok && strings.HasPrefix(secret, "secret-")
 }
 
 func (f *fakeCentral) id(n int) string {
