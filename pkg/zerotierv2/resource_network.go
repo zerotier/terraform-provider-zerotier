@@ -2,6 +2,7 @@ package zerotierv2
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
@@ -33,6 +34,10 @@ var (
 const (
 	defaultMTU            = 2800
 	defaultMulticastLimit = 32
+
+	// networkKindV1 is the kind of network this resource manages. Central
+	// V2 can hold other kinds, whose configuration has a different shape.
+	networkKindV1 = "v1"
 )
 
 // The provider is served on plugin protocol 5 so it keeps working with every
@@ -118,7 +123,7 @@ func (r *networkResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 			},
 			"kind": schema.StringAttribute{
 				Computed:      true,
-				Description:   "Kind of network. `v1` is a ZeroTier One network.",
+				Description:   "Kind of network. This resource manages `v1` (ZeroTier One) networks.",
 				PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 			},
 			"creation_time": schema.StringAttribute{
@@ -302,6 +307,12 @@ func (r *networkResource) Read(ctx context.Context, req resource.ReadRequest, re
 			return
 		}
 		resp.Diagnostics.AddError("Unable to read network", err.Error())
+		return
+	}
+	if network.Kind != networkKindV1 {
+		resp.Diagnostics.AddError("Unsupported network kind",
+			fmt.Sprintf("zerotier_v2_network manages networks of kind %q; network %s is of kind %q, which this resource does not support.",
+				networkKindV1, network.Id, network.Kind))
 		return
 	}
 

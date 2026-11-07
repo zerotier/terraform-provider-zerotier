@@ -60,7 +60,7 @@ resource "zerotier_v2_network" "lab" {
 
 - `creation_time` (String) When the network was created (RFC 3339).
 - `id` (String) Network ID.
-- `kind` (String) Kind of network. `v1` is a ZeroTier One network.
+- `kind` (String) Kind of network. This resource manages `v1` (ZeroTier One) networks.
 
 <a id="nestedatt--routes"></a>
 ### Nested Schema for `routes`

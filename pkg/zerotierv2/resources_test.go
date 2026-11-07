@@ -191,6 +191,42 @@ resource "zerotier_v2_network" "n" {
 	})
 }
 
+// A network of another kind has a different configuration shape, so the
+// resource refuses it instead of mapping it onto the v1 attributes.
+func TestNetworkOtherKindRefused(t *testing.T) {
+	f := newFakeCentral(t)
+
+	config := providerConfig(f) + fmt.Sprintf(`
+resource "zerotier_v2_network_group" "g" {
+  org_id = %q
+  name   = "lab"
+}
+
+resource "zerotier_v2_network" "n" {
+  network_group_id = zerotier_v2_network_group.g.id
+  name             = "other"
+}
+`, testOrgID)
+
+	resource.UnitTest(t, resource.TestCase{
+		ProtoV5ProviderFactories: providerFactories,
+		Steps: []resource.TestStep{
+			{Config: config},
+			{
+				PreConfig: func() {
+					f.lock(func() {
+						for _, n := range f.networks {
+							n.Kind = "other"
+						}
+					})
+				},
+				Config:      config,
+				ExpectError: regexp.MustCompile(`Unsupported network kind`),
+			},
+		},
+	})
+}
+
 func TestMember(t *testing.T) {
 	f := newFakeCentral(t)
 
