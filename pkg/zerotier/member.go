@@ -174,22 +174,27 @@ func toMember(d *schema.ResourceData) *spec.Member {
 }
 
 func memberToTerraform(d *schema.ResourceData, m *spec.Member) diag.Diagnostics {
-	d.SetId(strings.Join([]string{*m.NetworkId, *m.NodeId}, "/"))
+	cfg := m.Config
+	if cfg == nil {
+		cfg = &spec.MemberConfig{}
+	}
 
-	d.Set("name", *m.Name)
-	d.Set("description", *m.Description)
-	d.Set("member_id", *m.NodeId)
-	d.Set("network_id", *m.NetworkId)
-	d.Set("hidden", *m.Hidden)
-	d.Set("authorized", *m.Config.Authorized)
-	d.Set("allow_ethernet_bridging", *m.Config.ActiveBridge)
-	d.Set("no_auto_assign_ips", *m.Config.NoAutoAssignIps)
-	d.Set("ip_assignments", *m.Config.IpAssignments)
-	d.Set("capabilities", *m.Config.Capabilities)
-	d.Set("tags", *m.Config.Tags)
-	d.Set("sso_exempt", *m.Config.SsoExempt)
+	d.SetId(strings.Join([]string{deref(m.NetworkId), deref(m.NodeId)}, "/"))
 
-	ipv4Assignments, ipv6Assignments := assignedIpsGrouping(*m.Config.IpAssignments)
+	d.Set("name", deref(m.Name))
+	d.Set("description", deref(m.Description))
+	d.Set("member_id", deref(m.NodeId))
+	d.Set("network_id", deref(m.NetworkId))
+	d.Set("hidden", deref(m.Hidden))
+	d.Set("authorized", deref(cfg.Authorized))
+	d.Set("allow_ethernet_bridging", deref(cfg.ActiveBridge))
+	d.Set("no_auto_assign_ips", deref(cfg.NoAutoAssignIps))
+	d.Set("ip_assignments", deref(cfg.IpAssignments))
+	d.Set("capabilities", deref(cfg.Capabilities))
+	d.Set("tags", deref(cfg.Tags))
+	d.Set("sso_exempt", deref(cfg.SsoExempt))
+
+	ipv4Assignments, ipv6Assignments := assignedIpsGrouping(deref(cfg.IpAssignments))
 	d.Set("ipv4_assignments", ipv4Assignments)
 	d.Set("ipv6_assignments", ipv6Assignments)
 

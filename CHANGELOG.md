@@ -1,5 +1,14 @@
 # terraform-provider-zerotier CHANGELOG
 
+## Unreleased
+- Adding `mtu` to zerotier_network
+- Fixing `multicast_limit` (and `mtu`) being ignored on network create
+- Networks and members deleted outside Terraform are now removed from state instead of failing
+- Fixing crashes when Central omits fields in network or member responses
+- Central error messages (e.g. migration-lock, plan limits) are now shown instead of only the status code
+- zerotier_member import accepts `network/member` as well as `network-member`
+- Requires go-ztcentral v0.7.0
+
 ## v1.6.0
 - Adding support for sso_exempt to zerotier_member
 

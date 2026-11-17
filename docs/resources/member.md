@@ -47,6 +47,7 @@ resource "zerotier_member" "alice" {
 - `no_auto_assign_ips` (Boolean) Exempt this member from the IP auto assignment pool on a Network
 - `rfc4193` (String) Computed RFC4193 address. assign_ipv6.rfc4193 must be enabled on the network resource.
 - `sixplane` (String) Computed 6PLANE address. assign_ipv6.sixplane must be enabled on the network resource.
+- `sso_exempt` (Boolean) Is the member exempt from SSO?
 - `tags` (Set of List of Number) List of network tags
 
 ### Read-Only
